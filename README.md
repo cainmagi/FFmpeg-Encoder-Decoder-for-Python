@@ -40,7 +40,7 @@ An example of transfer the coding of a video with an assigned codec:
   opened = e.FFmpegSetup() # Load the encoder.
   if opened: # If encoder is not loaded successfully, do not continue.
       p = True
-      while p:
+      while p is not None:
           p = d.ExtractGOP() # Extract current GOP.
           for i in p: # Select every frame.
               e.EncodeFrame(i) # Encode current frame.
