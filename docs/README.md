@@ -20,8 +20,8 @@ Getting your versions here! You could also visit the [release page](https://gith
 
 | Version  | Platform | Python Ver. | Numpy Ver. | FFmpeg Ver. |
 | ---------- | -----------|
-| [1.7](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Linux.7z, "Linux, 1.7")   | Linux   | 3.5   | 1.13   | 3.3   |
-| [1.7](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Win.7z, "Windows, 1.7")   | Windows   | 3.5   | 1.13   | 3.3   |
+| [1.7](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Linux.7z "Linux, 1.7")   | Linux   | 3.5   | 1.13   | 3.3   |
+| [1.7](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Win.7z "Windows, 1.7")   | Windows   | 3.5   | 1.13   | 3.3   |
 
 ## Usage 
 
