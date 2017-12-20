@@ -16,7 +16,7 @@ This is a mpegcoder adapted from FFmpeg & Python-c-api. Using it you could get a
 
 ## Download
 
-Getting your versions here! You could also visit the [release page](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases, "Release Page") for current mpegCoder.
+Getting your versions here! You could also visit the [release page](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases "Release Page") for current mpegCoder.
 
 | Version  | Platform | Python Ver. | Numpy Ver. | FFmpeg Ver. |
 | ---------- | -----------|
