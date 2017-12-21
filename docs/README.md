@@ -22,8 +22,10 @@ Getting your versions here! You could also visit the [release page](https://gith
 
 | Version  | Platform | Python Ver. | Numpy Ver. | FFmpeg Ver. |
 | ---------- | ----------- | ----------- | ----------- | ----------- |
-| [1.7](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Linux.7z "Linux, 1.7")   | Linux   | 3.5   | 1.13   | 3.3   |
-| [1.7](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Win.7z "Windows, 1.7")   | Windows   | 3.5   | 1.13   | 3.3   |
+| [1.8]([down1_8_l] "Linux, 1.7")   | Linux   | 3.5   | 1.13   | 3.3   |
+| [1.8]([down1_8_w] "Windows, 1.7")   | Windows   | 3.5   | 1.13   | 3.3   |
+| [1.7]([down1_7_l] "Linux, 1.7")   | Linux   | 3.5   | 1.13   | 3.3   |
+| [1.7]([down1_7_w] "Windows, 1.7")   | Windows   | 3.5   | 1.13   | 3.3   |
 
 ## Usage 
 
@@ -124,3 +126,8 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 * libavutil.so.56.5.100
 * libswresample.so.3.0.101
 * libswscale.so.5.0.101
+
+[down1_8_l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.8/mpegCoder_1_8_Linux.7z
+[down1_8_w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.8/mpegCoder_1_8_Win.7z
+[down1_7_l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Linux.7z
+[down1_7_w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Win.7z
