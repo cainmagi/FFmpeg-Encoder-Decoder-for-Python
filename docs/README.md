@@ -71,7 +71,7 @@ For more instructions, you could tap `help(mpegCoder)`.
 
 ### V1.8 update report:
 
-1. Provide options (widthDst, heightDst) to let MpegDecoder could control the output size manually. To ensure the option is valid, we must use the method `setParameter` before 'FFmpegSetup'. Now you could use this options to get a rescaled output directly:
+1. Provide options (widthDst, heightDst) to let MpegDecoder could control the output size manually. To ensure the option is valid, we must use the method `setParameter` before `FFmpegSetup`. Now you could use this options to get a rescaled output directly:
 
     ```python
       d = mpegCoder.MpegDecoder() # initialize
