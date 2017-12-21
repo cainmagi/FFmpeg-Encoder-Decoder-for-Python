@@ -69,6 +69,30 @@ For more instructions, you could tap `help(mpegCoder)`.
 
 ## Update Report
 
+### V1.8 update report:
+
+1. Provide options (widthDst, heightDst) to let MpegDecoder could control the output size manually. To ensure the option is valid, we must use the method `setParameter` before 'FFmpegSetup'. Now you could use this options to get a rescaled output directly:
+
+    ```python
+      d = mpegCoder.MpegDecoder() # initialize
+      d.setParameter(widthDst=400, heightDst=300) # noted that these options must be set before 'FFmpegSetup'! 
+      d.FFmpegSetup(b'i.avi') # the original video size would not influence the output
+      print(d) # examine the parameters. You could also get the original video size by 'getParameter'
+      d.ExtractFrame(0, 100) # get 100 frames with 400x300
+    ```
+
+    In another example, the set optional parameters could be inherited by encoder, too:
+
+    ```python
+      d.setParameter(widthDst=400, heightDst=300) # set optional parameters
+      ...
+      e.setParameter(decoder=d) # the width/height would inherit from widthDst/heightDst rather than original width/height of the decoder.
+    ```
+
+    Noted that we do not provide `widthDst`/`heightDst` in `getParameter`, because these 2 options are all set by users. There is no need to get them from the video metadata. 
+    
+2. Optimize some realization of Decoder so that its efficiency could be improved.
+
 ### V1.7-linux update report:
 
 Thanks to God, we succeed in this work!
