@@ -112,7 +112,7 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 ```Bash
  $ git clone https://git.ffmpeg.org/ffmpeg.git
  $ cd ffmpeg
- $ ./configure --prefix=host --enable-gpl --enable-shared --disable-static --disable-doc
+ $ ./configure --prefix=host --enable-gpl --enable-libx264 --enable-libx265 --enable-shared --disable-static --disable-doc
  $ make
  $ make install
 ```
@@ -123,26 +123,22 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 
 2. Provide a global option `dumpLevel` to control the log shown in the screen.
 
-3. Fix bugs in initalize functions.
+3. Fix bugs in initialize functions.
 
 ### V1.5 update report:
 
-1. Provide an incomplete version of encoder, which could encode frames as a 
- video stream that could not be played by player.
+1. Provide an incomplete version of encoder, which could encode frames as a video stream that could not be played by player.
  
 ### V1.4 update report:
 
-1. Fix a severe bug of the decoder, which causes the memory collapsed if 
- decoding a lot of frames.
+1. Fix a severe bug of the decoder, which causes the memory collapsed if decoding a lot of frames.
  
 ### V1.2 update report:
 
-1. Use numpy array to replace the native pyList, which improves the speed 
- significantlly.
+1. Use numpy array to replace the native pyList, which improves the speed  significantly.
  
 ### V1.0 update report:
-1. Provide the decoder which could decode videos in arbitrary formats and 
- arbitrary coding.
+1. Provide the decoder which could decode videos in arbitrary formats and arbitrary coding.
  
 ## Version of currently used FFmpeg library
 * libavcodec.so.58.6.103
