@@ -1,3 +1,18 @@
+# Others
+include/*
+lib/*
+.vs/*
+*.pdb
+*.pyd
+*.ipdb
+*.iobj
+*.exp
+*.log
+*.tlog
+*.lastbuildstate
+unsuccessfulbuild
+
+
 # Prerequisites
 *.d
 
