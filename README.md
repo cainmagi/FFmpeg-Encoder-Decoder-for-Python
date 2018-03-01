@@ -1,152 +1,70 @@
-
 # FFmpeg-Encoder-Decoder-for-Python
 
+```
 *****
-      __   _                         _ _ _                ,___            
-     ( /  /        /        o       ( / ) )              /   /     /      
-      (__/ , , _, /_  _  _ _'  (     / / /  ,_   _  _,  /    __ __/ _  _  
-       _/_(_/_(__/ /_(/_/ / /_/_)_  / / (__/|_)_(/_(_)_(___/(_)(_/_(/_/ (_
-      //                                   /|       /|                    
-     (/                                   (/       (/                     
+\  /o _| _ _   (~_|_._ _ _ ._ _   |~\ _._ _      o._ (~|  |~|_  _ _| o._ (~|  |~)._ _ (~|._ _ ._ _   
+ \/ |(_|}_(_)  _) | | }_(_|| | |  |_/}_| | ||_|><|| | _|  |_| |}_(_|<|| | _|  |~ | (_) _|| (_|| | |  
 *****
-
-## Yuchen's Mpeg Coder - Readme
-
-This is a mpegcoder adapted from FFmpeg & Python-c-api.Using it you could get access to processing video easily. Just use it as a common module in python like this.
-
-```python
-  import mpegCoder
 ```
 
-Noted that this API need you to install numpy. 
+## Video Stream Demuxing Checking Program - Readme
 
-An example of decoding a video in an arbitrary format:
+This is an example of showing the effectiveness of the MpegClient. It would extract the video stream and show you every step where the client write the received data into buffer.
 
+Noted that you need to download the py-library to this project if you want to test it. You could download the compiled libraries in [main] or [release].
+
+### Theory
+
+As is shown in the figure below, we use a sub-thread to grant that we could demux the source stream continuously.
+
+| The theoretical structure of the client |
+| ------ |
+|![][theory-show]|
+
+Since the server is pushing stream continuously, we have to decode the stream continuously, too. Otherwise, we may lose some frames when we do not decode frames, which makes we could not recover our decoding process once we want more frames, because in any time a frame needs its prior frames to help itself get decoded. Thus, we have to use 2 threads to solve this problem.
+
+The first thread, `writer`, is decoding the stream without any interruption. No matter whether we need these frames, it would write newly decoded frames in a circular buffer, as is shown in the above graph. Because we usually need to get a series of continuous frames, we have to allocate a larger cache/buffer so that when we need to get frames from the buffer, the writer could keep decoding and writing frames to where we would not read. In this example, we need No.3-No.7 frames, currently the pointer of the writer is at the No.8 frame. The reader would begin to read at No.3 frame until it get the No.7 frame. While during this time the writer would still write No.8, No.9 ... until it get to the No.2 frame. Therefore, we know that if the buffer is large enough (especially relative to the number of frames we read), the writing process would not be blocked because of reading.
+
+### Usage
+
+In short, to extract the stream, you need to follow these steps:
+
+1. **Create the client**: use `d = mpegCoder.MpegClient()` to complete this work.
+
+2. **Set parameters**: Here is an example which shows what we could do with the source stream:
+    
     ```python
-    d = mpegCoder.MpegDecoder()
-    d.FFmpegSetup(b'inputVideo.mp4')
-    p = d.ExtractGOP(10) # Get a gop of current video by setting the start position of 10th frame.
-    p = d.ExtractGOP() # Get a gop of current video, using the current position after the last ExtractGOP.
-    d.ExtractFrame(100, 100) # Extract 100 frames from the begining of 100th frame.
+    d.setParameter(widthDst=480, heightDst=360, dstFrameRate=(5,1), readSize=5, cacheSize=12)
     ```
-
-An example of transfer the coding of a video with an assigned codec:
-
+    
+    In this example, we let the `width` and the `height` of the source resized to `(480, 360)`. Then we normalize the FPS of the source to 5 FPS. 
+    
+    Noted that we have to give two critical parameters: `readSize` and `cacheSize` to the client. Because we need to allocate the buffer and specify the default number of the frames we extract for once.
+    
+3. **Connect to the server**: Use such code to make the connection:
+    
     ```python
-    d = mpegCoder.MpegDecoder()
-    d.FFmpegSetup(b'i.avi')
-    e = mpegCoder.MpegEncoder()
-    e.setParameter(decoder=d, codecName=b'libx264', videoPath=b'o.mp4') # inherit most of parameters from the decoder.
-    opened = e.FFmpegSetup() # Load the encoder.
-    if opened: # If encoder is not loaded successfully, do not continue.
-        p = True
-        while p is not None:
-            p = d.ExtractGOP() # Extract current GOP.
-            for i in p: # Select every frame.
-                e.EncodeFrame(i) # Encode current frame.
-        e.FFmpegClose() # End encoding, and flush all frames in cache.
-    d.clear() # Close the input video.
-    ```
-
-An example of demuxing the video streamer from a server:
-
-    ```python
-    d = mpegCoder.MpegClient() # create the handle
-    d.setParameter(dstFrameRate=(5,1), readSize=5, cacheSize=12) # normalize the frame rate to 5 FPS, and use a cache which size is 12 frames. Read 5 frames each time.
     success = d.FFmpegSetup(b'rtsp://localhost:8554/video')
-    if not success: # exit if fail to connect with the server
-        exit()
-    d.start() # start the sub-thread for demuxing the stream.
-    for i in range(10): # processing loop
-        time.sleep(5)
-        p = d.ExtractFrame() # every 5 seconds, read 5 frames (1 sec.)
-        # do some processing
-    d.terminate() # shut down the current thread. You could call start() and let it restart.
-    d.clear() # Disconnect with the stream.
     ```
+    
+    We could use the returned flag to check whether the connection is successful. Noted that if the connection is failed, we should not do the following steps.
+    
+4. **Control the decoding thread**: We use a sub-thread to demux the source stream continuously. Call `start()` to start the stream and use `terminate()` to stop it. Noted that these two methods should be called after the success of `FFmpegSetup()`
 
-For more instructions, you could tap `help(mpegCoder)`. 
+5. **Extract frames**: Use the code like this to extract frames:
+    
+    ```python
+    p = d.ExtractFrame()
+    ```
+    
+    It would return a numpy-array with a shape of `(num, height, width, channels)` in which `num` indicates the number of extracted frames of this time. If the `p` gets `None`, we know that we lose the connection or the stream is stopped.
+    
+6. **Clear**: After the program, use `clear()` to clear all parameters including the connection to server. If we have not use it at all, it may be called implicitly before the exit of program.
 
 ## Update Report
-
-### V2.0 update report:
-
-    1. Revise the bug of the encoder which may cause the stream duration is shorter than the real duration of the video in some not advanced media players.
-
-    2. Improve the structure of the code and remove some unnecessary codes.
-
-    3. Provide a complete version of client, which could demux the video stream from a server in any network protocol.
-
-### V1.8 update report:
-
-    1. Provide options (widthDst, heightDst) to let MpegDecoder could control the output size manually. To ensure the option is valid, we must use the method `setParameter` before `FFmpegSetup`. Now you could use this options to get a rescaled output directly:
-
-        ```python
-          d = mpegCoder.MpegDecoder() # initialize
-          d.setParameter(widthDst=400, heightDst=300) # noted that these options must be set before 'FFmpegSetup'! 
-          d.FFmpegSetup(b'i.avi') # the original video size would not influence the output
-          print(d) # examine the parameters. You could also get the original video size by 'getParameter'
-          d.ExtractFrame(0, 100) # get 100 frames with 400x300
-        ```
-
-        In another example, the set optional parameters could be inherited by encoder, too:
-
-        ```python
-          d.setParameter(widthDst=400, heightDst=300) # set optional parameters
-          ...
-          e.setParameter(decoder=d) # the width/height would inherit from widthDst/heightDst rather than original width/height of the decoder.
-        ```
-
-        Noted that we do not provide `widthDst`/`heightDst` in `getParameter`, because these 2 options are all set by users. There is no need to get them from the video metadata. 
-    
-    2. Optimize some realization of Decoder so that its efficiency could be improved.
-
-### V1.7-linux update report:
-
-    Thanks to God, we succeed in this work!
-
-    A new version is avaliable for Linux. To implement this tool, you need to install some libraries firstly:
-
-    * python3.5
-
-    * numpy 1.13
-
-    If you want, you could install `ffmpeg` on Linux: Here are some instructions
-
-    1. Check every pack which ffmpeg needs here: [Dependency of FFmpeg](https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu "Dependency of FFmpeg")
-
-    2. Use these steps to install ffmpeg instead of provided commands on the above site.
-
-    ```Bash
-     $ git clone https://git.ffmpeg.org/ffmpeg.git
-     $ cd ffmpeg
-     $ ./configure --prefix=host --enable-gpl --enable-libx264 --enable-libx265 --enable-shared --disable-static --disable-doc
-     $ make
-     $ make install
-    ```
-
-### V1.7 update report:
-
-    1. Realize the encoder totally.
-
-    2. Provide a global option `dumpLevel` to control the log shown in the screen.
-
-    3. Fix bugs in initialize functions.
-
-### V1.5 update report:
-
-    1. Provide an incomplete version of encoder, which could encode frames as a video stream that could not be played by player.
  
-### V1.4 update report:
-
-    1. Fix a severe bug of the decoder, which causes the memory collapsed if decoding a lot of frames.
- 
-### V1.2 update report:
-
-    1. Use numpy array to replace the native pyList, which improves the speed  significantly.
- 
-### V1.0 update report:
-    1. Provide the decoder which could decode videos in arbitrary formats and arbitrary coding.
+### V1.0 update report @ 2018/3/1:
+    1. Create the test program for demuxing an real-time stream. This example would show how the API is  running normally.
  
 ## Version of currently used FFmpeg library
     * libavcodec.so.58.6.103
@@ -154,3 +72,7 @@ For more instructions, you could tap `help(mpegCoder)`.
     * libavutil.so.56.5.100
     * libswresample.so.3.0.101
     * libswscale.so.5.0.101
+
+[main]:https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/ "main page"
+[release]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases "release page"
+[theory-show]:display/client_show.png
