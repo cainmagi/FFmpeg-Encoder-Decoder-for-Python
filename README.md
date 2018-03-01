@@ -1,13 +1,13 @@
 # FFmpeg-Encoder-Decoder-for-Python
 
-```
 *****
+```
         __   ___  __      __  ___  __   ___                __                 ___  __  
 \  / | |  \ |__  /  \    /__`  |  |__) |__   /\   |\/|    |__) |     /\  \ / |__  |__) 
  \/  | |__/ |___ \__/    .__/  |  |  \ |___ /~~\  |  |    |    |___ /~~\  |  |___ |  \ 
                                                                                        
-*****
 ```
+*****
 
 ## Video Stream Player based on real-time demuxer - Readme
 
