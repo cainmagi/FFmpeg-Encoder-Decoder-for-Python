@@ -64,14 +64,14 @@ In short, to extract the stream, you need to follow these steps:
 ## Update Report
  
 ### V1.0 update report @ 2018/3/1:
-    1. Create the test program for demuxing an real-time stream. This example would show how the API is  running normally.
+1. Create the test program for demuxing an real-time stream. This example would show how the API is  running normally.
  
 ## Version of currently used FFmpeg library
-    * libavcodec.so.58.6.103
-    * libavformat.so.58.3.100
-    * libavutil.so.56.5.100
-    * libswresample.so.3.0.101
-    * libswscale.so.5.0.101
+* libavcodec.so.58.6.103
+* libavformat.so.58.3.100
+* libavutil.so.56.5.100
+* libswresample.so.3.0.101
+* libswscale.so.5.0.101
 
 [main]:https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/ "main page"
 [release]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases "release page"
