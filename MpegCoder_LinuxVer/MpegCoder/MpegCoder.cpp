@@ -17,16 +17,6 @@ cmpc::CMpegDecoder::CMpegDecoder(void)
     videoPath.clear();
     _str_codec.clear();
 
-    for (auto i = std::begin(video_dst_data); i < std::end(video_dst_data); i++) {
-        *i = nullptr;
-    }
-
-    for (auto i = std::begin(video_dst_linesize); i < std::end(video_dst_linesize); i++) {
-        *i = 0;
-    }
-
-    video_dst_bufsize = 0;
-
     /* Enable or disable frame reference counting. You are not supposed to support
     * both paths in your application but pick the one most appropriate to your
     * needs. Look for the use of refcount in this example to see what are the
@@ -59,34 +49,18 @@ void cmpc::CMpegDecoder::clear(void) {
         sws_freeContext(PswsCtx);
         PswsCtx = nullptr;
     }
-    //PswsCtx = nullptr;
-    //cout << "SWS Freed!" << endl;
     if (RGBbuffer) {
         av_free(RGBbuffer);
         RGBbuffer = nullptr;
     }
-    //cout << "Buffer Freed!" << endl;
     if (PCodecCtx) {
         avcodec_free_context(&PCodecCtx);
         PCodecCtx = nullptr;
     }
-    //cout << "Condec Contex Freed!" << endl;
     if (PFormatCtx) {
         avformat_close_input(&PFormatCtx);
         PFormatCtx = nullptr;
     }
-    //cout << "Format Contex Freed!" << endl;
-    if (video_dst_data[0])
-        av_freep(&video_dst_data[0]);
-    //cout << "DST Buffer Freed!" << endl;
-    for (auto i = std::begin(video_dst_data); i < std::end(video_dst_data); i++) {
-        *i = nullptr;
-    }
-    for (auto i = std::begin(video_dst_linesize); i < std::end(video_dst_linesize); i++) {
-        *i = 0;
-    }
-
-    video_dst_bufsize = 0;
     refcount = 1;
 }
 
@@ -120,14 +94,6 @@ cmpc::CMpegDecoder::CMpegDecoder(CMpegDecoder &&ref) noexcept
     ref.PCodecCtx = nullptr;
     ref.PVideoStream = nullptr;
     ref.PswsCtx = nullptr;
-    for (auto i = std::begin(video_dst_data), j = std::begin(ref.video_dst_data); \
-        i < std::end(video_dst_data), j = std::end(ref.video_dst_data); i++, j++) {
-        *i = *j;
-    }
-    for (auto i = std::begin(video_dst_linesize), j = std::begin(ref.video_dst_linesize); \
-        i < std::end(video_dst_linesize), j = std::end(ref.video_dst_linesize); i++, j++) {
-        *i = *j;
-    }
 }
 
 cmpc::CMpegDecoder& cmpc::CMpegDecoder::operator=(CMpegDecoder &&ref) noexcept {
@@ -155,14 +121,6 @@ cmpc::CMpegDecoder& cmpc::CMpegDecoder::operator=(CMpegDecoder &&ref) noexcept {
         ref.PVideoStream = nullptr;
         ref.RGBbuffer = nullptr;
         ref.PswsCtx = nullptr;
-        for (auto i = std::begin(video_dst_data), j = std::begin(ref.video_dst_data); \
-            i < std::end(video_dst_data), j = std::end(ref.video_dst_data); i++, j++) {
-            *i = *j;
-        }
-        for (auto i = std::begin(video_dst_linesize), j = std::begin(ref.video_dst_linesize); \
-            i < std::end(video_dst_linesize), j = std::end(ref.video_dst_linesize); i++, j++) {
-            *i = *j;
-        }
         refcount = ref.refcount;
     }
     return *this;
@@ -268,14 +226,6 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
         PPixelFormat = PCodecCtx->pix_fmt;
         _duration = static_cast<double>(PVideoStream->duration) / static_cast<double>(time_base.den) * static_cast<double>(time_base.num);
         _predictFrameNum = av_rescale(static_cast<int64_t>(_duration*0xFFFF), frame_base.num, frame_base.den)/0xFFFF;
-        ret = av_image_alloc(video_dst_data, video_dst_linesize,
-                width, height, PPixelFormat, 1); //使用源格式的，一律保持原状
-        if (ret < 0) {
-            cerr << "Could not allocate raw video buffer" << endl;
-            clear();
-            return false;
-        }
-        video_dst_bufsize = ret;
     }
 
     /* dump input information to stderr */
@@ -292,13 +242,11 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
     if (widthDst > 0 && heightDst > 0) {
         PswsCtx = sws_getContext(width, height, PPixelFormat, widthDst, heightDst, AV_PIX_FMT_RGB24, SCALE_FLAGS, nullptr, nullptr, nullptr);
         auto numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
-        video_dst_bufsize = numBytes;
         RGBbuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
     }
     else {
         PswsCtx = sws_getContext(width, height, PPixelFormat, width, height, AV_PIX_FMT_RGB24, SCALE_FLAGS, nullptr, nullptr, nullptr);
         auto numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, 1);
-        video_dst_bufsize = numBytes;
         RGBbuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
     }
     return true;
@@ -427,13 +375,8 @@ int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFra
 
             /* copy decoded frame to destination buffer:
             * this is required since rawvideo expects non aligned data */
-            /*av_image_copy(video_dst_data, video_dst_linesize, 
-                (const uint8_t **)frame->data, frame->linesize,
-                PPixelFormat, width, height);*/
 
             sws_scale(PswsCtx, frame->data, frame->linesize, 0, height, frameRGB->data, frameRGB->linesize);
-
-            //cout << "Complete Conv ";
             
             /* write to rawvideo file */
             if (widthDst>0 && heightDst>0)
@@ -441,8 +384,6 @@ int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFra
             else
                 OneFrame = _SaveFrame_castToPyFrameArray(frameRGB->data, width, height);
             PyList_Append(PyFrameList, OneFrame);
-            //cout << "[" << width << "-" << height << ", " << width*height << ", " << video_dst_bufsize << "]" << endl;
-            //cout << "PTS = " << frameRGB->pts << ", coded Fnum = " << frameRGB->coded_picture_number << endl;
             processed = true;
         }
     }
@@ -522,8 +463,6 @@ int cmpc::CMpegDecoder::_SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame,
                 PPixelFormat, width, height);*/
 
             sws_scale(PswsCtx, frame->data, frame->linesize, 0, height, frameRGB->data, frameRGB->linesize);
-
-            //cout << "Complete Conv ";
 
             /* write to rawvideo file */
             if (widthDst>0 && heightDst>0)
@@ -768,7 +707,6 @@ bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, i
     else {
         framePos_TimeBase = __FrameToPts(framePos);
     }
-    //cout << framePos_TimeBase << endl;
     if (av_seek_frame(PFormatCtx, PVideoStreamIDX, framePos_TimeBase, AVSEEK_FLAG_BACKWARD) < 0) {
         cerr << "AV seek frame fail!" << endl;
         av_seek_frame(PFormatCtx, -1, 0, AVSEEK_FLAG_BACKWARD);
@@ -783,7 +721,6 @@ bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, i
     }
 
     while (av_read_frame(PFormatCtx, &pkt) >= 0) {
-        //cout << "[Test - " << pkt.size << " ]" << endl;
         AVPacket orig_pkt = pkt;
         frameProcessed = false;
         do {
@@ -807,22 +744,12 @@ bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, i
         _SaveFrame(PyFrameList, frame, frameRGB, pkt, got_frame, framePos_TimeBase, frameProcessed, 1);
     } while (got_frame);
 
-    //cout << "Demuxing succeeded." << endl;
-
     if (PVideoStream && count>0 && (__dumpControl > 0)) {
         cout << "Succeed in convert frames into Python_List" << endl;
     }
 
-    //av_free(RGBbuffer);
-    //RGBbuffer = nullptr;
-    //cout << "Free Buffer" << endl;
-    //sws_freeContext(PswsCtx);
-    //cout << "Free ctx" << endl;
-    //PswsCtx = nullptr;
     av_frame_free(&frameRGB);
     av_frame_free(&frame);
-
-    //cout << "End Process" << endl;
 
     return true;
 }
@@ -925,7 +852,7 @@ cmpc::CMpegEncoder::CMpegEncoder(CMpegEncoder &&ref) noexcept:
     codecName.assign(ref.codecName);
 }
 
-    cmpc::CMpegEncoder& cmpc::CMpegEncoder::operator=(CMpegEncoder &&ref) noexcept {
+cmpc::CMpegEncoder& cmpc::CMpegEncoder::operator=(CMpegEncoder &&ref) noexcept {
     videoPath.assign(ref.videoPath);
     codecName.assign(ref.codecName);
     bitRate = ref.bitRate;
@@ -981,8 +908,6 @@ void cmpc::CMpegEncoder::__log_packet(){
     AVRational *time_base = &PFormatCtx->streams[Ppacket->stream_index]->time_base;
     cout << "pts:" << av_ts2str(Ppacket->pts) << " pts_time:" << av_ts2timestr(Ppacket->pts, time_base)
         << " dts:" << av_ts2str(Ppacket->dts) << " dts_time:" << av_ts2timestr(Ppacket->dts, time_base) << endl;
-         //<< " duration:" << av_ts2str(Ppacket->duration) << " duration_time:" 
-         //<< av_ts2timestr(Ppacket->duration, time_base) << " stream_index:"<< Ppacket->stream_index << endl;
 }
 
 int cmpc::CMpegEncoder::__write_frame(){
@@ -1012,8 +937,6 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
         codec_id = (*codec)->id;
         PFormatCtx->oformat->video_codec = codec_id;
     }
-    //auto codec_id = PFormatCtx->oformat->video_codec;
-    //*codec = avcodec_find_encoder(codec_id);
     if (!(*codec)) {
         cerr << "Could not find encoder for '" << avcodec_get_name(codec_id) << "'" << endl;
         return false;
@@ -1044,11 +967,13 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
         * of which frame timestamps are represented. For fixed-fps content,
         * timebase should be 1/framerate and timestamp increments should be
         * identical to 1. */
-        PStreamContex.st->time_base = timeBase;
+        PStreamContex.st->time_base.den = 0;
+        PStreamContex.st->time_base.num = 0;
         //av_stream_set_r_frame_rate(PStreamContex.st, frameRate);
         //cout << "(" << frameRate.num << ", " << frameRate.den << ")" << endl;
         //PStreamContex.st->r_frame_rate
-        c->time_base = PStreamContex.st->time_base;
+        c->time_base = timeBase;
+        
         //PStreamContex.st->frame
         c->framerate = frameRate;
 
@@ -1204,11 +1129,8 @@ AVFrame *cmpc::CMpegEncoder::__get_video_frame(PyArrayObject* PyFrame) {
         }
     }
 
-    //PStreamContex.next_frame++;
-    //PStreamContex.frame->pts = __FrameToPts(PStreamContex.next_frame);
     PStreamContex.frame->pts = PStreamContex.next_frame;
     PStreamContex.next_frame++;
-    //PStreamContex.frame->pts = PStreamContex.next_pts++;
     return PStreamContex.frame;
 }
 
@@ -1439,14 +1361,6 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
         int *ref = reinterpret_cast<int *>(ptr);
         MaxBFrame = *ref;
     }
-    /*else if (keyword.compare("timeBase") == 0) {
-        PyObject *ref = reinterpret_cast<PyObject *>(ptr);
-        auto refObj = PyTuple_GetItem(ref, 0);
-        int num = static_cast<int>(PyLong_AsLong(refObj));
-        refObj = PyTuple_GetItem(ref, 1);
-        int den = static_cast<int>(PyLong_AsLong(refObj));
-        timeBase = _setAVRational(num, den);
-    }*/
     else if (keyword.compare("frameRate") == 0) {
         PyObject *ref = reinterpret_cast<PyObject *>(ptr);
         auto refObj = PyTuple_GetItem(ref, 0);
@@ -1476,7 +1390,7 @@ bool cmpc::CMpegEncoder::FFmpegSetup() {
     /* allocate the output media context */
     //auto getFormat = av_guess_format(codecName.c_str(), nullptr, nullptr);
     avformat_alloc_output_context2(&PFormatCtx, nullptr, nullptr, videoPath.c_str());
-    PFormatCtx->avoid_negative_ts = AVFMT_AVOID_NEG_TS_MAKE_ZERO;
+    PFormatCtx->avoid_negative_ts = AVFMT_AVOID_NEG_TS_AUTO;
     if (!PFormatCtx) {
         cout << "Could not select the encoder automatically: using MPEG." << endl;
         //cout << "Could not deduce output format from file extension: using MPEG." << endl;

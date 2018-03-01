@@ -30,6 +30,12 @@
     <ClInclude Include="MpegPyd.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MpegStreamer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MpegBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -42,6 +48,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="snprintf.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MpegStreamer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

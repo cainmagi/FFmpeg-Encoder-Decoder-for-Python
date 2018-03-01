@@ -7,84 +7,10 @@
 #ifndef MPEGCODER_H_INCLUDED
 #define MPEGCODER_H_INCLUDED
 
-#define MPEGCODER_EXPORTS
-#ifdef MPEGCODER_EXPORTS
-    #define MPEGCODER_API __declspec(dllexport)
-#else
-    #define MPEGCODER_API __declspec(dllimport)
-#endif
-
-extern "C"
-{
-    #include "libavcodec/avcodec.h"
-    #include "libavformat/avformat.h"
-    #include "libswscale/swscale.h"
-    #include "libavutil/imgutils.h"
-    #include "libavutil/samplefmt.h"
-    #include "libavutil/timestamp.h"
-    #include "libavutil/opt.h"
-    #include "libavutil/avassert.h"
-    #include "libavutil/channel_layout.h"
-    #include "libavutil/opt.h"
-    #include "libavutil/mathematics.h"
-    #include "libswresample/swresample.h"
-}
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-
-#define MPEGCODER_CURRENT_VERSION "1.8"
-
-#define STREAM_PIX_FMT    AV_PIX_FMT_YUV420P /* default pix_fmt */
-
-#define SCALE_FLAGS SWS_BICUBIC
-//SWS_BILINEAR
-
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include <fstream>
-#include <Python.h>
-#include <numpy/arrayobject.h>
-using std::string;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ostream;
-
-#ifdef  __cplusplus
-    static const string av_make_error_string2(int errnum){
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(errnum, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        string strerrbuf = errbuf;
-        return strerrbuf;
-    }
-    #undef av_err2str
-    #define av_err2str(errnum) av_make_error_string2(errnum).c_str()
-    static const string av_ts_make_string_cpp(int64_t ts) {
-        char tsstrbuf[AV_TS_MAX_STRING_SIZE];
-        av_ts_make_string(tsstrbuf, ts);
-        string strtsstrbuf = tsstrbuf;
-        return strtsstrbuf;
-    }
-    #undef av_ts2str
-    #define av_ts2str(ts) av_ts_make_string_cpp(ts).c_str()
-    static const string av_ts_make_time_string_cpp(int64_t ts, AVRational *tb) {
-        char tsstrbuf[AV_TS_MAX_STRING_SIZE];
-        av_ts_make_time_string(tsstrbuf, ts, tb);
-        string strtsstrbuf = tsstrbuf;
-        return strtsstrbuf;
-    }
-    #undef av_ts2timestr
-    #define av_ts2timestr(ts, tb) av_ts_make_time_string_cpp(ts, tb).c_str()
-#endif // __cplusplus
-
-// compatibility with newer API
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
-    #define av_frame_alloc avcodec_alloc_frame
-    #define av_frame_free avcodec_free_frame
-#endif
+#include "MpegBase.h"
 
 #define MPEGCODER_DEBUG
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 // 此类导出自 MpegCoder.dll
 namespace cmpc {
@@ -125,10 +51,6 @@ namespace cmpc {
         enum AVPixelFormat PPixelFormat;    // 像素格式枚举
         AVStream *PVideoStream;             // 视频流
 
-        uint8_t *video_dst_data[4];         // 图像像素的保存空间，大小在1~4个byte之间
-        int video_dst_linesize[4];          // 图像像素的行大小
-        int video_dst_bufsize;              // 图像像素的缓存空间
-
         int PVideoStreamIDX;                // 视频流的编号
         int PVideoFrameCount;               // 解码的帧数计数
         uint8_t *RGBbuffer;                 // RGB图像的缓存
@@ -155,7 +77,6 @@ namespace cmpc {
         int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
         int64_t __FrameToPts(int64_t seekFrame) const;
         int64_t __TimeToPts(double seekTime) const;
-        //bool _SaveFrame(PyObject* PyFrame, AVFrame *pFrame, int width, int height, int iFrame);   //将AVFrame转换成PyFrame
     };
 
     // a wrapper around a single output AVStream
@@ -164,15 +85,10 @@ namespace cmpc {
         AVCodecContext *enc;
 
         /* pts of the next frame that will be generated */
-        //int64_t next_pts;
         int64_t next_frame;
-
-        //int samples_count;
 
         AVFrame *frame;
         AVFrame *tmp_frame;
-
-        //float t, tincr, tincr2;
 
         struct SwsContext *sws_ctx;
     } OutputStream;
@@ -195,7 +111,6 @@ namespace cmpc {
         bool FFmpegSetup(); //设置编码器，打开待保存文件
         bool FFmpegSetup(string inVideoPath); //带参设置，相当于重设视频路径
         void FFmpegClose(); //关闭编码器，完成视频写入
-        //bool EncodeFrame(PyArrayObject* PyFrame, int64_t framePos, double timePos, int mode); //向编码器写入一帧内容
         int EncodeFrame(PyArrayObject* PyFrame);
         void setParameter(string keyword, void *ptr); //设置参量
     private:
@@ -226,7 +141,6 @@ namespace cmpc {
         int __avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame, bool &got_packet);
         int __avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt, bool &got_packet);
         int __avcodec_encode_video2Old(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame, bool &got_packet);
-        //void __avcodec_encode(AVFrame *frame, AVPacket *pkt);
         void __copyMetaData(const CMpegEncoder &ref);
     };
 }
