@@ -13,25 +13,25 @@
 
 This is a mpegcoder adapted from FFmpeg & Python-c-api.Using it you could get access to processing video easily. Just use it as a common module in python like this.
 
-    ```python
+```python
     import mpegCoder
-    ```
+```
 
 Noted that this API need you to install numpy. 
 
 An example of decoding a video in an arbitrary format:
 
-    ```python
+```python
     d = mpegCoder.MpegDecoder()
     d.FFmpegSetup(b'inputVideo.mp4')
     p = d.ExtractGOP(10) # Get a gop of current video by setting the start position of 10th frame.
     p = d.ExtractGOP() # Get a gop of current video, using the current position after the last ExtractGOP.
     d.ExtractFrame(100, 100) # Extract 100 frames from the begining of 100th frame.
-    ```
+```
 
 An example of transfer the coding of a video with an assigned codec:
 
-    ```python
+```python
     d = mpegCoder.MpegDecoder()
     d.FFmpegSetup(b'i.avi')
     e = mpegCoder.MpegEncoder()
@@ -45,11 +45,11 @@ An example of transfer the coding of a video with an assigned codec:
                 e.EncodeFrame(i) # Encode current frame.
         e.FFmpegClose() # End encoding, and flush all frames in cache.
     d.clear() # Close the input video.
-    ```
+```
 
 An example of demuxing the video streamer from a server:
 
-    ```python
+```python
     d = mpegCoder.MpegClient() # create the handle
     d.setParameter(dstFrameRate=(5,1), readSize=5, cacheSize=12) # normalize the frame rate to 5 FPS, and use a cache which size is 12 frames. Read 5 frames each time.
     success = d.FFmpegSetup(b'rtsp://localhost:8554/video')
@@ -62,7 +62,9 @@ An example of demuxing the video streamer from a server:
         # do some processing
     d.terminate() # shut down the current thread. You could call start() and let it restart.
     d.clear() # Disconnect with the stream.
-    ```
+```
+
+You could also find some more explanations in two examples about `MpegClient` in [here][exp1] and [here][exp2].
 
 For more instructions, you could tap `help(mpegCoder)`. 
 
@@ -153,3 +155,6 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 * libavutil.so.56.5.100
 * libswresample.so.3.0.101
 * libswscale.so.5.0.101
+
+[exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
+[exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"
