@@ -11,7 +11,7 @@
 
 This is an example of showing the effectiveness of the MpegClient. It would extract the video stream and show you every step where the client write the received data into buffer.
 
-Noted that you need to download the py-library to this project if you want to test it. You could download the compiled libraries in [main] or [release].
+Noted that you need to download the py-library to this project if you want to test it. You could download the compiled libraries in [here][main] or [here][release].
 
 ### Theory
 
