@@ -165,6 +165,9 @@ Yuchen's Mpeg Coder - Readme
         >>> d.clear() # Disconnect with the stream.
     For more instructions, you could tap help(mpegCoder). 
 ================================================================================
+V2.01 update report:
+    Fix a bug that occurs when the first received frame may has a PTS larger than 
+    zero.
 V2.0 update report:
     1. Revise the bug of the encoder which may cause the stream duration is shorter
        than the real duration of the video in some not advanced media players.

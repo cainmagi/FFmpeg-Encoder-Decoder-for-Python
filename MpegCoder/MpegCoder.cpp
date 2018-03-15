@@ -201,7 +201,9 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
     int ret = 0;
 
     // Register all formats and codecs.
-    av_register_all();
+    #ifndef FFMPG3_4
+        av_register_all();
+    #endif
 
     /* register all formats and codecs */
     if (avformat_open_input(&PFormatCtx, videoPath.c_str(), nullptr, nullptr) < 0) {
@@ -1377,7 +1379,9 @@ bool cmpc::CMpegEncoder::FFmpegSetup() {
     int ret;
 
     /* Initialize libavcodec, and register all codecs and formats. */
-    av_register_all();
+    #ifndef FFMPG3_4
+        av_register_all();
+    #endif
 
     Ppacket = av_packet_alloc();
     if (!Ppacket)

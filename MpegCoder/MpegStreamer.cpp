@@ -192,7 +192,9 @@ bool cmpc::CMpegClient::FFmpegSetup() {
     PCodecCtx = nullptr;
 
     // Register everything
-    av_register_all();
+    #ifndef FFMPG3_4
+        av_register_all();
+    #endif
     avformat_network_init();
 
     /* open RTSP: register all formats and codecs */
@@ -764,10 +766,20 @@ void cmpc::Buffer_List::freezeWrite(int64_t read_size) {
     __Read_size = read_size;
 }
 bool cmpc::Buffer_List::write(SwsContext *PswsCtx, AVFrame *frame) {
-    if (frame->pts < next_pts)
-        return false;
-    else
-        next_pts += interval_pts;
+    if (frame->pts < next_pts) {
+        if (frame->pts > (next_pts - 2 * interval_pts)) {
+            return false;
+        }
+        else {
+            next_pts = frame->pts + interval_pts;
+        }
+    }
+    else {
+        if (next_pts > 0)
+            next_pts += interval_pts;
+        else
+            next_pts = frame->pts;
+    }
     if (_Buffer_pos == _Buffer_rpos) {
         return false;
     }

@@ -8,6 +8,8 @@
     #define MPEGCODER_API __declspec(dllimport)
 #endif
 
+#define FFMPG3_4
+
 extern "C"
 {
 #include "libavcodec/avcodec.h"

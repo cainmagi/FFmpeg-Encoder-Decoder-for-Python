@@ -70,6 +70,12 @@ For more instructions, you could tap `help(mpegCoder)`.
 
 ## Update Report
 
+### V2.01 update report:
+
+1. Fix a bug that occurs when the first received frame may has a PTS larger than zero.
+
+2. Enable the project produce the newest ffmpeg 3.4.2 version and use Python 3.6.4, numpy 1.14. 
+
 ### V2.0 update report:
 
 1. Revise the bug of the encoder which may cause the stream duration is shorter than the real duration of the video in some not advanced media players.
