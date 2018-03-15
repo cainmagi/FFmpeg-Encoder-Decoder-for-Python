@@ -21,6 +21,7 @@ Getting your versions here! You could also visit the [release page](https://gith
 
 | Version  | Platform | Python Ver. | Numpy Ver. | FFmpeg Ver. |
 | ---------- | ----------- | ----------- | ----------- | ----------- |
+| [2.01][down201w] | Windows   | 3.6   | 1.14   | 3.4.2  |
 | [2.0][down20l]   | Linux   | 3.5   | 1.13   | 3.3   |
 | [2.0][down20w]   | Windows   | 3.5   | 1.13   | 3.3   |
 | [1.8][down18l]   | Linux   | 3.5   | 1.13   | 3.3   |
@@ -66,7 +67,7 @@ An example of transfer the coding of a video with an assigned codec:
     d.clear() # Close the input video.
 ```
 
-An example of demuxing the video streamer from a server:
+An example of demuxing the video stream from a server:
 
 ```python
     d = mpegCoder.MpegClient() # create the handle
@@ -88,6 +89,12 @@ You could also find some more explanations in two examples about `MpegClient` in
 For more instructions, you could tap `help(mpegCoder)`. 
 
 ## Update Report
+
+### V2.01 update report:
+
+1. Fix a bug that occurs when the first received frame may has a PTS larger than zero.
+
+2. Enable the project produce the newest ffmpeg 3.4.2 version and use Python 3.6.4, numpy 1.14. 
 
 ### V2.0 update report:
 
@@ -178,8 +185,9 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
 [exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"
 
-[down20l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.0/mpegCoder_2_0_Linux.7z "Linux, 1.8"
-[down20w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.0/mpegCoder_2_0_Win.7z "Windows, 1.8"
+[down201w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.01/mpegCoder_2_0_1_Win.7z "Windows 2.01"
+[down20l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.0/mpegCoder_2_0_Linux.7z "Linux, 2.0"
+[down20w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.0/mpegCoder_2_0_Win.7z "Windows, 2.0"
 [down18l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.8/mpegCoder_1_8_Linux.7z "Linux, 1.8"
 [down18w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.8/mpegCoder_1_8_Win.7z "Windows, 1.8"
 [down17l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/1.7/mpegCoder_1_7_Linux.7z "Linux, 1.7"

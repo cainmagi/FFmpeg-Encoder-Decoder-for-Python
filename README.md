@@ -47,7 +47,7 @@ An example of transfer the coding of a video with an assigned codec:
     d.clear() # Close the input video.
 ```
 
-An example of demuxing the video streamer from a server:
+An example of demuxing the video stream from a server:
 
 ```python
     d = mpegCoder.MpegClient() # create the handle
