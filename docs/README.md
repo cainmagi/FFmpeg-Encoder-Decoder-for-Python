@@ -184,15 +184,17 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 1. Provide the decoder which could decode videos in arbitrary formats and arbitrary coding.
  
 ## Version of currently used FFmpeg library
-* libavcodec.so.58.6.103
-* libavformat.so.58.3.100
-* libavutil.so.56.5.100
-* libswresample.so.3.0.101
-* libswscale.so.5.0.101
+* libavcodec.so.58.19.100
+* libavformat.so.58.13.100
+* libavutil.so.56.18.100
+* libswresample.so.3.2.100
+* libswscale.so.5.2.100
 
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
 [exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"
 
+[down205w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.05/mpegCoder_2_0_5_Win_py36.7z "Windows 2.05, Python 3.6"
+[down205w35]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.05/mpegCoder_2_0_5_Win_py35.7z "Windows 2.05, Python 3.5"
 [down201w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.01/mpegCoder_2_0_1_Win.7z "Windows 2.01"
 [down20l]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.0/mpegCoder_2_0_Linux.7z "Linux, 2.0"
 [down20w]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/2.0/mpegCoder_2_0_Win.7z "Windows, 2.0"
