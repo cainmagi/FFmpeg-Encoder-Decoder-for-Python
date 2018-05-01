@@ -21,8 +21,8 @@ Getting your versions here! You could also visit the [release page](https://gith
 
 | Version  | Platform | Python Ver. | Numpy Ver. | FFmpeg Ver. |
 | ---------- | ----------- | ----------- | ----------- | ----------- |
-| [2.05][down201w] | Windows   | 3.6   | 1.14   | 4.0  |
-| [2.05][down201w35] | Windows   | 3.5   | 1.13   | 4.0  |
+| [2.05][down205w] | Windows   | 3.6   | 1.14   | 4.0  |
+| [2.05][down205w35] | Windows   | 3.5   | 1.13   | 4.0  |
 | [2.01][down201w] | Windows   | 3.6   | 1.14   | 3.4.2  |
 | [2.0][down20l]   | Linux   | 3.5   | 1.13   | 3.3   |
 | [2.0][down20w]   | Windows   | 3.5   | 1.13   | 3.3   |
