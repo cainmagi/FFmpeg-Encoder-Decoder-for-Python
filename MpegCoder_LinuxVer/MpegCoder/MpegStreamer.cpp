@@ -191,10 +191,6 @@ bool cmpc::CMpegClient::FFmpegSetup() {
     PFormatCtx = avformat_alloc_context();
     PCodecCtx = nullptr;
 
-    // Register everything
-    av_register_all();
-    avformat_network_init();
-
     /* open RTSP: register all formats and codecs */
     if (avformat_open_input(&PFormatCtx, videoPath.c_str(), nullptr, nullptr) < 0) {
         cerr << "Could not open source address " << videoPath << endl;
@@ -764,10 +760,20 @@ void cmpc::Buffer_List::freezeWrite(int64_t read_size) {
     __Read_size = read_size;
 }
 bool cmpc::Buffer_List::write(SwsContext *PswsCtx, AVFrame *frame) {
-    if (frame->pts < next_pts)
-        return false;
-    else
-        next_pts += interval_pts;
+    if (frame->pts < next_pts) {
+        if (frame->pts > (next_pts - 2 * interval_pts)) {
+            return false;
+        }
+        else {
+            next_pts = frame->pts + interval_pts;
+        }
+    }
+    else {
+        if (next_pts > 0)
+            next_pts += interval_pts;
+        else
+            next_pts = frame->pts;
+    }
     if (_Buffer_pos == _Buffer_rpos) {
         return false;
     }
@@ -782,7 +788,7 @@ PyObject * cmpc::Buffer_List::read() {
     if (_Buffer_rpos < 0) {
         return nullptr;
     }
-    else if (PyArray_API == nullptr) {
+    else if (PyArray_API == NULL) {
         import_array();
     }
     auto _Buffer_rend = (_Buffer_rpos + __Read_size) % _Buffer_size;
@@ -791,10 +797,12 @@ PyObject * cmpc::Buffer_List::read() {
     auto p = newdata;
     for (auto i = _Buffer_rpos; i != _Buffer_rend; i = (i + 1) % _Buffer_size) {
         memcpy(p, _Buffer_List[i], _Buffer_capacity * sizeof(uint8_t));
-        p += _Buffer_capacity;
+        p += _Buffer_capacity; 
     }
     PyObject *PyFrame = PyArray_SimpleNewFromData(4, dims, NPY_UINT8, reinterpret_cast<void *>(newdata));
+    PyArray_ENABLEFLAGS((PyArrayObject*)PyFrame, NPY_ARRAY_OWNDATA);
     _Buffer_rpos = -1;
     __Read_size = 0;
-    return PyFrame;
+    return PyArray_Return((PyArrayObject*)PyFrame);
+    //Py_RETURN_NONE;
 }

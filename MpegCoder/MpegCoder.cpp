@@ -495,6 +495,7 @@ PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrameArray(uint8_t *data[], int
     auto newdata = new uint8_t[fHeight*fWidth * 3];
     memcpy(newdata, data[0], fHeight*fWidth * 3);
     PyObject *PyFrame = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, reinterpret_cast<void *>(newdata));
+    PyArray_ENABLEFLAGS((PyArrayObject*)PyFrame, NPY_ARRAY_OWNDATA);
     return PyFrame;
 }
 

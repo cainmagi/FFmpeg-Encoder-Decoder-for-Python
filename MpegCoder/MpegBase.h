@@ -9,6 +9,7 @@
 #endif
 
 #define FFMPG3_4
+#define FFMPG4_0
 
 extern "C"
 {
@@ -26,7 +27,7 @@ extern "C"
 #include "libswresample/swresample.h"
 }
 
-#define MPEGCODER_CURRENT_VERSION "2.0"
+#define MPEGCODER_CURRENT_VERSION "2.05"
 
 #define STREAM_PIX_FMT    AV_PIX_FMT_YUV420P /* default pix_fmt */
 

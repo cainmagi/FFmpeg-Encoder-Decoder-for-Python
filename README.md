@@ -70,6 +70,12 @@ For more instructions, you could tap `help(mpegCoder)`.
 
 ## Update Report
 
+### V2.05 update report:
+
+1. Fix a severe bug that causes the memory leak when using MpegClient.This bug also exists in MpegDecoder, but it seems that the bug would not cause memory leak in that case. (Although we have also fixed it now.)
+
+2. Upgrade to FFMpeg 4.0 Version.
+
 ### V2.01 update report:
 
 1. Fix a bug that occurs when the first received frame may has a PTS larger than zero.
@@ -156,11 +162,11 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 1. Provide the decoder which could decode videos in arbitrary formats and arbitrary coding.
  
 ## Version of currently used FFmpeg library
-* libavcodec.so.58.6.103
-* libavformat.so.58.3.100
-* libavutil.so.56.5.100
-* libswresample.so.3.0.101
-* libswscale.so.5.0.101
+* libavcodec.so.58.19.100
+* libavformat.so.58.13.100
+* libavutil.so.56.18.100
+* libswresample.so.3.2.100
+* libswscale.so.5.2.100
 
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
 [exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"

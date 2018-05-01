@@ -14,8 +14,8 @@ module1 = Extension(name = TARGET,
                                      ('MINOR_VERSION', '0')],
                     extra_compile_args = ['-std=c++11','-pthread'],
                     include_dirs = [PYTHON_INC_DIR, np.get_include(), '{0}/include'.format(FFMPEG_DIR), BASE_SRC_DIR],
-                    #libraries = ['python3.5', 'avcodec', 'avdevice', 'avfilter', 'avformat', 'avutil', 'postproc', 'swresample', 'swscale', 'npymath'],
-                    libraries = ['python3.5', 'avcodec', 'avformat', 'avutil', 'swscale', 'npymath'],
+                    libraries = ['python3.5', 'avcodec', 'avdevice', 'avfilter', 'avformat', 'avutil', 'postproc', 'swresample', 'swscale', 'npymath'],
+                    #libraries = ['python3.5', 'avcodec', 'avformat', 'avutil', 'swscale', 'npymath'],
                     library_dirs = [PYTHON_LIB_DIR, '{0}/lib'.format(NUMPY_DIR), '{0}/lib'.format(FFMPEG_DIR)],
                     sources = ['{0}/MpegCoder.cpp'.format(BASE_SRC_DIR), '{0}/dllmain.cpp'.format(BASE_SRC_DIR)])
 

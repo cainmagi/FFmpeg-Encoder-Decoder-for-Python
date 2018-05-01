@@ -21,6 +21,8 @@ Getting your versions here! You could also visit the [release page](https://gith
 
 | Version  | Platform | Python Ver. | Numpy Ver. | FFmpeg Ver. |
 | ---------- | ----------- | ----------- | ----------- | ----------- |
+| [2.05][down201w] | Windows   | 3.6   | 1.14   | 4.0  |
+| [2.05][down201w35] | Windows   | 3.5   | 1.13   | 4.0  |
 | [2.01][down201w] | Windows   | 3.6   | 1.14   | 3.4.2  |
 | [2.0][down20l]   | Linux   | 3.5   | 1.13   | 3.3   |
 | [2.0][down20w]   | Windows   | 3.5   | 1.13   | 3.3   |
@@ -89,6 +91,12 @@ You could also find some more explanations in two examples about `MpegClient` in
 For more instructions, you could tap `help(mpegCoder)`. 
 
 ## Update Report
+
+### V2.05 update report:
+
+1. Fix a severe bug that causes the memory leak when using MpegClient.This bug also exists in MpegDecoder, but it seems that the bug would not cause memory leak in that case. (Although we have also fixed it now.)
+
+2. Upgrade to FFMpeg 4.0 Version.
 
 ### V2.01 update report:
 

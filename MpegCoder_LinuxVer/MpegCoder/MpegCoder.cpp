@@ -200,9 +200,6 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
     meta_protected_clear();
     int ret = 0;
 
-    // Register all formats and codecs.
-    av_register_all();
-
     /* register all formats and codecs */
     if (avformat_open_input(&PFormatCtx, videoPath.c_str(), nullptr, nullptr) < 0) {
         cerr << "Could not open source file " << videoPath << endl;
@@ -493,6 +490,7 @@ PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrameArray(uint8_t *data[], int
     auto newdata = new uint8_t[fHeight*fWidth * 3];
     memcpy(newdata, data[0], fHeight*fWidth * 3);
     PyObject *PyFrame = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, reinterpret_cast<void *>(newdata));
+    PyArray_ENABLEFLAGS((PyArrayObject*)PyFrame, NPY_ARRAY_OWNDATA);
     return PyFrame;
 }
 
@@ -1375,9 +1373,6 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
 bool cmpc::CMpegEncoder::FFmpegSetup() {
     AVCodec *video_codec = nullptr;
     int ret;
-
-    /* Initialize libavcodec, and register all codecs and formats. */
-    av_register_all();
 
     Ppacket = av_packet_alloc();
     if (!Ppacket)
