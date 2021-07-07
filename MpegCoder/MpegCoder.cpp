@@ -2,18 +2,24 @@
 //
 
 #include "stdafx.h"
+
+#define NO_IMPORT_ARRAY
+#define PY_ARRAY_UNIQUE_SYMBOL MPEGARRAY_API
+#include <numpy/arrayobject.h>
 #include "MpegCoder.h"
+#include "MpegStreamer.h"
 
 int8_t cmpc::__dumpControl = 1;
 
 // 这是已导出类的构造函数。
 // 有关类定义的信息，请参阅 MpegCoder.h
 
-//构造函数系
+// Constructors.
 cmpc::CMpegDecoder::CMpegDecoder(void)
     : PFormatCtx(nullptr), PCodecCtx(nullptr), width(0), height(0), PVideoStream(nullptr), \
     PVideoStreamIDX(-1), PVideoFrameCount(0), _duration(0), _predictFrameNum(0), RGBbuffer(nullptr), \
-    PswsCtx(nullptr), currentGOPTSM(0), EndofGOP(false), widthDst(0), heightDst(0) {
+    PswsCtx(nullptr), currentGOPTSM(0), EndofGOP(false), widthDst(0), heightDst(0), \
+    PPixelFormat(STREAM_PIX_FMT) {
     videoPath.clear();
     _str_codec.clear();
 
@@ -41,6 +47,7 @@ void cmpc::CMpegDecoder::clear(void) {
     _predictFrameNum = 0;
     currentGOPTSM = 0;
     EndofGOP = false;
+    PPixelFormat = STREAM_PIX_FMT;
     _str_codec.clear();
     //videoPath.clear();
 
@@ -87,9 +94,9 @@ cmpc::CMpegDecoder::CMpegDecoder(CMpegDecoder &&ref) noexcept
     : PFormatCtx(ref.PFormatCtx), PCodecCtx(ref.PCodecCtx), width(ref.width), height(ref.height), \
     PVideoStream(ref.PVideoStream), PVideoStreamIDX(ref.PVideoStreamIDX), refcount(ref.refcount), \
     PVideoFrameCount(ref.PVideoFrameCount), _str_codec(ref._str_codec), _duration(ref._duration), \
-    _predictFrameNum(ref._predictFrameNum), RGBbuffer(ref.RGBbuffer), PswsCtx(ref.PswsCtx), \
-    currentGOPTSM(ref.currentGOPTSM), EndofGOP(ref.EndofGOP), widthDst(ref.widthDst), \
-    heightDst(ref.heightDst){
+    _predictFrameNum(ref._predictFrameNum), RGBbuffer(ref.RGBbuffer), PPixelFormat(ref.PPixelFormat) \
+    , PswsCtx(ref.PswsCtx), currentGOPTSM(ref.currentGOPTSM), EndofGOP(ref.EndofGOP), \
+    widthDst(ref.widthDst), heightDst(ref.heightDst){
     ref.PFormatCtx = nullptr;
     ref.PCodecCtx = nullptr;
     ref.PVideoStream = nullptr;
@@ -115,6 +122,7 @@ cmpc::CMpegDecoder& cmpc::CMpegDecoder::operator=(CMpegDecoder &&ref) noexcept {
         currentGOPTSM = ref.currentGOPTSM;
         EndofGOP = ref.EndofGOP;
         RGBbuffer = ref.RGBbuffer;
+        PPixelFormat = ref.PPixelFormat;
         PswsCtx = ref.PswsCtx;
         ref.PFormatCtx = nullptr;
         ref.PCodecCtx = nullptr;
@@ -142,23 +150,19 @@ void cmpc::CMpegDecoder::setGOPPosition(double inpos) {
 }
 
 int cmpc::CMpegDecoder::_open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, \
-    AVFormatContext *PFormatCtx, enum AVMediaType type) { //搜索合适的解码器，并进行相关设置
-    int ret, stream_index;
-    AVStream *st;               // 流
-    AVCodec *dec = nullptr;        // 解码器
-    AVDictionary *opts = nullptr;  // 参数设置字典
-    ret = av_find_best_stream(PFormatCtx, type, -1, -1, nullptr, 0);
+    AVFormatContext *PFormatCtx, enum AVMediaType type) { // Search the correct decoder, and make the configurations.
+    auto ret = av_find_best_stream(PFormatCtx, type, -1, -1, nullptr, 0);
     if (ret < 0) {
         cerr << "Could not find "<< av_get_media_type_string(type)  << \
             " stream in input file '" << videoPath << "'" << endl;
         return ret;
     }
     else {
-        stream_index = ret;
-        st = PFormatCtx->streams[stream_index];
+        auto stream_index = ret;
+        auto st = PFormatCtx->streams[stream_index];  // The AVStream object.
 
         /* find decoder for the stream */
-        dec = avcodec_find_decoder(st->codecpar->codec_id);
+        auto dec = avcodec_find_decoder(st->codecpar->codec_id);  // Decoder (AVCodec).
         if (!dec) {
             cerr << "Failed to find " << av_get_media_type_string(type) << " codec" << endl;
             return AVERROR(EINVAL);
@@ -166,46 +170,42 @@ int cmpc::CMpegDecoder::_open_codec_context(int &stream_idx, AVCodecContext *&de
         _str_codec.assign(dec->name);
 
         /* Allocate a codec context for the decoder */
-        dec_ctx = avcodec_alloc_context3(dec);
-        if (!dec_ctx) {
+        auto dec_ctx_ = avcodec_alloc_context3(dec);  // Decoder context (AVCodecContext).
+        if (!dec_ctx_) {
             cerr << "Failed to allocate the " << av_get_media_type_string(type) << " codec context" << endl;
             return AVERROR(ENOMEM);
         }
 
         /* Copy codec parameters from input stream to output codec context */
-        if ((ret = avcodec_parameters_to_context(dec_ctx, st->codecpar)) < 0) {
+        if ((ret = avcodec_parameters_to_context(dec_ctx_, st->codecpar)) < 0) {
             cerr << "Failed to copy " << av_get_media_type_string(type) << \
                 " codec parameters to decoder context" << endl;
             return ret;
         }
 
         /* Init the decoders, with or without reference counting */
+        AVDictionary *opts = nullptr;  // The uninitialized argument dictionary.
         av_dict_set(&opts, "refcounted_frames", refcount ? "1" : "0", 0);
-        if ((ret = avcodec_open2(dec_ctx, dec, &opts)) < 0) {
+        if ((ret = avcodec_open2(dec_ctx_, dec, &opts)) < 0) {
             cerr << "Failed to open " << av_get_media_type_string(type) << " codec" << endl;
             return ret;
         }
+        dec_ctx = dec_ctx_;
         stream_idx = stream_index;
-
     }
     return 0;
 }
 
 bool cmpc::CMpegDecoder::FFmpegSetup(string inVideoPath) {
-    videoPath.assign(inVideoPath);
+    resetPath(inVideoPath);
     return FFmpegSetup();
 }
 
-bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，并进行解码器的搜索与设置
+bool cmpc::CMpegDecoder::FFmpegSetup() {  // Open the video file, and search the correct codec.
     meta_protected_clear();
     int ret = 0;
 
-    // Register all formats and codecs.
-    #ifndef FFMPG3_4
-        av_register_all();
-    #endif
-
-    /* register all formats and codecs */
+    /* open input file, and allocate format context */
     if (avformat_open_input(&PFormatCtx, videoPath.c_str(), nullptr, nullptr) < 0) {
         cerr << "Could not open source file " << videoPath << endl;
         return false;
@@ -217,7 +217,7 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
         return false;
     }
 
-    if (_open_codec_context(PVideoStreamIDX, PCodecCtx, PFormatCtx, AVMEDIA_TYPE_VIDEO) >= 0) {
+    if (_open_codec_context(PVideoStreamIDX, PCodecCtx, PFormatCtx, AVMediaType::AVMEDIA_TYPE_VIDEO) >= 0) {
         PVideoStream = PFormatCtx->streams[PVideoStreamIDX];
         auto time_base = PVideoStream->time_base;
         auto frame_base = PVideoStream->avg_frame_rate;
@@ -231,10 +231,12 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
     }
 
     /* dump input information to stderr */
-    if (__dumpControl > 1)
+    auto dump_level = av_log_get_level();
+    if (dump_level >= AV_LOG_INFO) {
         av_dump_format(PFormatCtx, 0, videoPath.c_str(), 0);
+    }
 
-    if (!PVideoStream) { //检查视频流是否正常开启
+    if (!PVideoStream) { // Check whether the video stream is opened correctly.
         cerr << "Could not find audio or video stream in the input, aborting" << endl;
         clear();
         return false;
@@ -242,13 +244,13 @@ bool cmpc::CMpegDecoder::FFmpegSetup() { //打开指定路径的视频文件，�
 
     // Initialize SWS context for software scaling.
     if (widthDst > 0 && heightDst > 0) {
-        PswsCtx = sws_getContext(width, height, PPixelFormat, widthDst, heightDst, AV_PIX_FMT_RGB24, SCALE_FLAGS, nullptr, nullptr, nullptr);
-        auto numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
+        PswsCtx = sws_getContext(width, height, PPixelFormat, widthDst, heightDst, AVPixelFormat::AV_PIX_FMT_RGB24, SCALE_FLAGS, nullptr, nullptr, nullptr);
+        auto numBytes = av_image_get_buffer_size(AVPixelFormat::AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
         RGBbuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
     }
     else {
-        PswsCtx = sws_getContext(width, height, PPixelFormat, width, height, AV_PIX_FMT_RGB24, SCALE_FLAGS, nullptr, nullptr, nullptr);
-        auto numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, 1);
+        PswsCtx = sws_getContext(width, height, PPixelFormat, width, height, AVPixelFormat::AV_PIX_FMT_RGB24, SCALE_FLAGS, nullptr, nullptr, nullptr);
+        auto numBytes = av_image_get_buffer_size(AVPixelFormat::AV_PIX_FMT_RGB24, width, height, 1);
         RGBbuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
     }
     return true;
@@ -272,6 +274,63 @@ void cmpc::CMpegDecoder::setParameter(string keyword, void *ptr) {
         int *ref = reinterpret_cast<int *>(ptr);
         heightDst = *ref;
     }
+}
+
+PyObject* cmpc::CMpegDecoder::getParameter() {
+    auto res = PyDict_New();
+    string key;
+    PyObject* val = nullptr;
+    // Fill the values.
+    key.assign("videoPath");
+    val = Py_BuildValue("y", videoPath.c_str());
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("codecName");
+    val = Py_BuildValue("y", _str_codec.c_str());
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    if (PCodecCtx) {
+        key.assign("bitRate");
+        val = Py_BuildValue("L", PCodecCtx->bit_rate);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+        key.assign("GOPSize");
+        val = Py_BuildValue("i", PCodecCtx->gop_size);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+        key.assign("maxBframe");
+        val = Py_BuildValue("i", PCodecCtx->max_b_frames);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    if (widthDst > 0) {
+        key.assign("widthDst");
+        val = Py_BuildValue("i", widthDst);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    if (heightDst > 0) {
+        key.assign("heightDst");
+        val = Py_BuildValue("i", heightDst);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    key.assign("width");
+    val = Py_BuildValue("i", width);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("height");
+    val = Py_BuildValue("i", height);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    if (PVideoStream) {
+        key.assign("frameRate");
+        auto &frame_rate = PVideoStream->avg_frame_rate;
+        val = Py_BuildValue("(ii)", frame_rate.num, frame_rate.den);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    return res;
 }
 
 PyObject * cmpc::CMpegDecoder::getParameter(string keyword) {
@@ -333,16 +392,16 @@ int cmpc::CMpegDecoder::__avcodec_decode_video2(AVCodecContext *avctx, AVFrame *
     return 0;
 }
 
-int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket &pkt, bool &got_frame, int64_t minPTS, bool &processed, int cached) {
+int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket *&pkt, bool &got_frame, int64_t minPTS, bool &processed, int cached) {
     int ret = 0;
-    int decoded = pkt.size;
+    int decoded = pkt->size;
     PyObject *OneFrame = nullptr;
 
     got_frame = false;
 
-    if (pkt.stream_index == PVideoStreamIDX) {
+    if (pkt->stream_index == PVideoStreamIDX) {
         /* decode video frame */
-        ret = __avcodec_decode_video2(PCodecCtx, frame, got_frame, &pkt);
+        ret = __avcodec_decode_video2(PCodecCtx, frame, got_frame, pkt);
         if (ret < 0) {
             cout << "Error decoding video frame (" << av_err2str(ret) << ")" << endl;
             return ret;
@@ -370,9 +429,14 @@ int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFra
                 return -1;
             }
 
+            
+            PVideoFrameCount++;
             if (__dumpControl > 0) {
-                cout << "video_frame" << (cached ? "(cached)" : "") << " n:" << PVideoFrameCount++ <<
-                    " coded_n:" << frame->coded_picture_number << endl;
+                std::ostringstream str_data;
+                str_data << "video_frame" << (cached ? "(cached)" : "") << " n:" << PVideoFrameCount <<
+                         " coded_n:" << frame->coded_picture_number << endl;
+                auto str_data_s = str_data.str();
+                av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
             }
 
             /* copy decoded frame to destination buffer:
@@ -399,16 +463,16 @@ int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFra
     return decoded;
 }
 
-int cmpc::CMpegDecoder::_SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket &pkt, bool &got_frame, int &GOPstate, bool &processed, int cached) {
+int cmpc::CMpegDecoder::_SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket *&pkt, bool &got_frame, int &GOPstate, bool &processed, int cached) {
     int ret = 0;
-    int decoded = pkt.size;
+    int decoded = pkt->size;
     PyObject *OneFrame = nullptr;
 
     got_frame = false;
 
-    if (pkt.stream_index == PVideoStreamIDX) {
+    if (pkt->stream_index == PVideoStreamIDX) {
         /* decode video frame */
-        ret = __avcodec_decode_video2(PCodecCtx, frame, got_frame, &pkt);
+        ret = __avcodec_decode_video2(PCodecCtx, frame, got_frame, pkt);
         if (ret < 0) {
             cout << "Error decoding video frame (" << av_err2str(ret) << ")" << endl;
             return ret;
@@ -453,9 +517,13 @@ int cmpc::CMpegDecoder::_SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame,
                 return -1;
             }
 
+            PVideoFrameCount++;
             if (__dumpControl > 0) {
-                cout << "video_frame" << (cached ? "(cached)" : "") << " n:" << PVideoFrameCount++ <<
+                std::ostringstream str_data;
+                str_data << "video_frame" << (cached ? "(cached)" : "") << " n:" << PVideoFrameCount <<
                     " coded_n:" << frame->coded_picture_number << endl;
+                auto str_data_s = str_data.str();
+                av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
             }
 
             /* copy decoded frame to destination buffer:
@@ -488,12 +556,9 @@ int cmpc::CMpegDecoder::_SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame,
 }
 
 PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrameArray(uint8_t *data[], int fWidth, int fHeight) {
-    if (PyArray_API == NULL) {
-        import_array();
-    }
     npy_intp dims[] = { fHeight, fWidth, 3 };
-    auto newdata = new uint8_t[fHeight*fWidth * 3];
-    memcpy(newdata, data[0], fHeight*fWidth * 3);
+    auto newdata = new uint8_t[static_cast<size_t>(fHeight) * static_cast<size_t>(fWidth) * 3];
+    memcpy(newdata, data[0], static_cast<size_t>(fHeight) * static_cast<size_t>(fWidth) * 3);
     PyObject *PyFrame = PyArray_SimpleNewFromData(3, dims, NPY_UINT8, reinterpret_cast<void *>(newdata));
     PyArray_ENABLEFLAGS((PyArrayObject*)PyFrame, NPY_ARRAY_OWNDATA);
     return PyFrame;
@@ -501,11 +566,11 @@ PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrameArray(uint8_t *data[], int
 
 attribute_deprecated
 PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrameArrayOld(uint8_t *data[], int fWidth, int fHeight) {
-    if (PyArray_API == NULL){
-        import_array();
-    }
-    npy_intp dims[] = { fHeight*fWidth * 3 };
+    npy_intp dims[] = { static_cast<size_t>(fHeight) * static_cast<size_t>(fWidth) * 3 };
     PyObject *PyFrame = PyArray_SimpleNew(1, dims, NPY_UINT8);
+    if (PyFrame == NULL) {
+        Py_RETURN_NONE;
+    }
     auto out_iter = NpyIter_New((PyArrayObject *)PyFrame, NPY_ITER_READWRITE,
         NPY_CORDER, NPY_NO_CASTING, NULL);
     if (out_iter == NULL) {
@@ -539,24 +604,8 @@ PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrameArrayOld(uint8_t *data[], 
     PyFrame = PyArray_Reshape((PyArrayObject*)PyFrame, pyshape);
     Py_DECREF(pyshape);
     NpyIter_Deallocate(out_iter);
-    PyList_ClearFreeList();
+    PyGC_Collect();
     //Py_INCREF(PyFrame);
-    return PyFrame;
-}
-
-attribute_deprecated
-PyObject *cmpc::CMpegDecoder::_SaveFrame_castToPyFrame(uint8_t *data[], int fWidth, int fHeight) {
-    PyObject *e_i, *e_ij;
-    PyObject *PyFrame = PyList_New(static_cast<Py_ssize_t>(fHeight));
-    uint8_t * pdata = data[0];
-    for (auto i = 0; i < fHeight; i++) {
-        e_i = PyList_New(static_cast<Py_ssize_t>(fWidth));
-        for (auto j = 0; j < fWidth; j++, pdata+=3) {
-            e_ij = Py_BuildValue("[BBB]", pdata[0], pdata[1], pdata[2]);
-            PyList_SetItem(e_i, static_cast<Py_ssize_t>(j), e_ij);
-        }
-        PyList_SetItem(PyFrame, static_cast<Py_ssize_t>(i), e_i);
-    }
     return PyFrame;
 }
 
@@ -582,7 +631,7 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
         return false;
 
     AVFrame *frame = av_frame_alloc();
-    AVPacket pkt;
+    auto pkt = av_packet_alloc();
     if (!frame) {
         cerr << "Could not allocate frame" << endl;
         ret = AVERROR(ENOMEM);
@@ -594,11 +643,12 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
         return false;
     }
     /* initialize packet, set data to NULL, let the demuxer fill it */
-    av_init_packet(&pkt);
-    pkt.data = nullptr;
-    pkt.size = 0;
-    if (PVideoStream && (__dumpControl > 0))
-        cout << "Demuxing video from file '" << videoPath << "' into Python-List" << endl;
+    if (PVideoStream && (__dumpControl > 0)) {
+        std::ostringstream str_data;
+        str_data << "Demuxing video from file '" << videoPath << "' into Python-List" << endl;
+        auto str_data_s = str_data.str();
+        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+    }
 
     /* Reset the contex to remove the flushed state. */
     avcodec_flush_buffers(PCodecCtx);
@@ -615,40 +665,41 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
 
     // Assign appropriate parts of buffer to image planes in pFrameRGB Note that pFrameRGB is an AVFrame, but AVFrame is a superset of AVPicture
     if (widthDst > 0 && heightDst > 0) {
-        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
+        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AVPixelFormat::AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
     }
     else {
-        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AV_PIX_FMT_RGB24, width, height, 1);
+        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AVPixelFormat::AV_PIX_FMT_RGB24, width, height, 1);
     }
 
     int GOPstate = 0; // 0: Have not meed key frame; 1: During GOP; 2: End of GOP
     int count = 0;
 
-    while (av_read_frame(PFormatCtx, &pkt) >= 0) {
+    auto temp_pkt = av_packet_alloc();
+    while (av_read_frame(PFormatCtx, pkt) >= 0) {
         //cout << "[Test - " << pkt.size << " ]" << endl;
-        AVPacket orig_pkt = pkt;
+        av_packet_ref(temp_pkt, pkt);
         frameProcessed = false;
         do {
-            ret = _SaveFrameForGOP(PyFrameList, frame, frameRGB, pkt, got_frame, GOPstate, frameProcessed, 0);
+            ret = _SaveFrameForGOP(PyFrameList, frame, frameRGB, temp_pkt, got_frame, GOPstate, frameProcessed, 0);
             if (ret < 0)
                 break;
-            pkt.data += ret;
-            pkt.size -= ret;
-        } while (pkt.size > 0);
-        av_packet_unref(&orig_pkt);
+            temp_pkt->data += ret;
+            temp_pkt->size -= ret;
+        } while (temp_pkt->size > 0);
+        /* flush cached frames */
+        av_packet_unref(temp_pkt);
+        av_packet_unref(pkt);
         if (frameProcessed)
             count++;
         if (GOPstate == 2)
             break;
     }
+    av_packet_free(&temp_pkt);
 
     if (GOPstate == 1) { //If the end of reading is not raised by I frame, it indicates that the video reaches the end.
         EndofGOP = true;
     }
 
-    /* flush cached frames */
-    pkt.data = nullptr;
-    pkt.size = 0;
     do {
         _SaveFrameForGOP(PyFrameList, frame, frameRGB, pkt, got_frame, GOPstate, frameProcessed, 1);
     } while (got_frame);
@@ -656,7 +707,10 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
     //cout << "Demuxing succeeded." << endl;
 
     if (PVideoStream && (__dumpControl > 0)) {
-        cout << "Succeed in convert GOP into Python_List, got " << count << " frames." << endl;
+        std::ostringstream str_data;
+        str_data << "Succeed in convert GOP into Python_List, got " << count << " frames." << endl;
+        auto str_data_s = str_data.str();
+        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
     }
 
     //av_free(RGBbuffer);
@@ -665,8 +719,15 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
     //sws_freeContext(PswsCtx);
     //cout << "Free ctx" << endl;
     //PswsCtx = nullptr;
-    av_frame_free(&frameRGB);
-    av_frame_free(&frame);
+    if (frameRGB) {
+        av_frame_free(&frameRGB);
+    }
+    if (frame) {
+        av_frame_free(&frame);
+    }
+    if (pkt) {
+        av_packet_free(&pkt);
+    }
 
     //cout << "End Process" << endl;
 
@@ -676,24 +737,30 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
 bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, int64_t frameNum, double timePos, int mode) {
     int ret;
     bool got_frame;
-    AVFrame *frame = av_frame_alloc();
-    AVPacket pkt;
+    auto frame = av_frame_alloc();
     if (!frame) {
         cerr << "Could not allocate frame" << endl;
         ret = AVERROR(ENOMEM);
         return false;
     }
-    AVFrame *frameRGB = av_frame_alloc();
+    auto pkt = av_packet_alloc();
+    if (!pkt) {
+        cerr << "Could not allocate packet" << endl;
+        ret = AVERROR(ENOMEM);
+        return false;
+    }
+    auto frameRGB = av_frame_alloc();
     if (!frameRGB) {
         cerr << "Could not allocate frameRGB" << endl;
         return false;
     }
     /* initialize packet, set data to NULL, let the demuxer fill it */
-    av_init_packet(&pkt);
-    pkt.data = nullptr;
-    pkt.size = 0;
-    if (PVideoStream && (__dumpControl > 0))
-        cout << "Demuxing video from file '" << videoPath << "' into Python-List" << endl;
+    if (PVideoStream && (__dumpControl > 0)) {
+        std::ostringstream str_data;
+        str_data << "Demuxing video from file '" << videoPath << "' into Python-List" << endl;
+        auto str_data_s = str_data.str();
+        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+    }
 
     /* Reset the contex to remove the flushed state. */
     avcodec_flush_buffers(PCodecCtx);
@@ -717,42 +784,53 @@ bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, i
 
     // Assign appropriate parts of buffer to image planes in pFrameRGB Note that pFrameRGB is an AVFrame, but AVFrame is a superset of AVPicture
     if (widthDst > 0 && heightDst > 0) {
-        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
+        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AVPixelFormat::AV_PIX_FMT_RGB24, widthDst, heightDst, 1);
     }
     else {
-        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AV_PIX_FMT_RGB24, width, height, 1);
+        av_image_fill_arrays(frameRGB->data, frameRGB->linesize, RGBbuffer, AVPixelFormat::AV_PIX_FMT_RGB24, width, height, 1);
     }
 
-    while (av_read_frame(PFormatCtx, &pkt) >= 0) {
-        AVPacket orig_pkt = pkt;
+    auto temp_pkt = av_packet_alloc();
+    while (av_read_frame(PFormatCtx, pkt) >= 0) {
+        av_packet_ref(temp_pkt, pkt);
         frameProcessed = false;
         do {
-            ret = _SaveFrame(PyFrameList, frame, frameRGB, pkt, got_frame, framePos_TimeBase, frameProcessed, 0);
+            ret = _SaveFrame(PyFrameList, frame, frameRGB, temp_pkt, got_frame, framePos_TimeBase, frameProcessed, 0);
             if (ret < 0)
                 break;
-            pkt.data += ret;
-            pkt.size -= ret;
-        } while (pkt.size > 0);
-        av_packet_unref(&orig_pkt);
+            temp_pkt->data += ret;
+            temp_pkt->size -= ret;
+        } while (temp_pkt->size > 0);
+        /* flush cached frames */
+        av_packet_unref(temp_pkt);
+        av_packet_unref(pkt);
         if (frameProcessed)
             count++;
         if (count >= frameNum)
             break;
     }
+    av_packet_free(&temp_pkt);
 
-    /* flush cached frames */
-    pkt.data = nullptr;
-    pkt.size = 0;
     do {
         _SaveFrame(PyFrameList, frame, frameRGB, pkt, got_frame, framePos_TimeBase, frameProcessed, 1);
     } while (got_frame);
 
-    if (PVideoStream && count>0 && (__dumpControl > 0)) {
-        cout << "Succeed in convert frames into Python_List" << endl;
+    if (PVideoStream && count > 0 && (__dumpControl > 0)) {
+        std::ostringstream str_data;
+        str_data << "Succeed in convert frames into Python_List" << endl;
+        auto str_data_s = str_data.str();
+        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
     }
 
-    av_frame_free(&frameRGB);
-    av_frame_free(&frame);
+    if (frameRGB) {
+        av_frame_free(&frameRGB);
+    }
+    if (frame) {
+        av_frame_free(&frame);
+    }
+    if (pkt) {
+        av_packet_free(&pkt);
+    }
 
     return true;
 }
@@ -782,10 +860,10 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegDecoder & self_class) {
 
 
 /**
- * 接下来的内容是编码器相关
+ * Related with the encoder.
  */
 
- //构造函数系，遵循三五法则
+ // Constructors following 3-5 law.
 cmpc::CMpegEncoder::CMpegEncoder(void):
     bitRate(1024), width(100), height(100), timeBase(_setAVRational(1, 25)), frameRate(_setAVRational(25, 1)),\
     GOPSize(10), MaxBFrame(1), PStreamContex({ 0 }), PFormatCtx(nullptr), PswsCtx(nullptr), RGBbuffer(nullptr), \
@@ -889,11 +967,11 @@ void cmpc::CMpegEncoder::resetPath(string inVideoPath) {
 }
 
 bool cmpc::CMpegEncoder::FFmpegSetup(string inVideoPath) {
-    videoPath.assign(inVideoPath);
+    resetPath(inVideoPath);
     return FFmpegSetup();
 }
 
-AVRational cmpc::CMpegEncoder::_setAVRational(int num, int den) {
+cmpc::AVRational cmpc::CMpegEncoder::_setAVRational(int num, int den) {
     AVRational res;
     res.num = num; res.den = den;
     return res;
@@ -909,8 +987,11 @@ int64_t cmpc::CMpegEncoder::__TimeToPts(double seekTime) const {
 
 void cmpc::CMpegEncoder::__log_packet(){
     AVRational *time_base = &PFormatCtx->streams[Ppacket->stream_index]->time_base;
-    cout << "pts:" << av_ts2str(Ppacket->pts) << " pts_time:" << av_ts2timestr(Ppacket->pts, time_base)
-        << " dts:" << av_ts2str(Ppacket->dts) << " dts_time:" << av_ts2timestr(Ppacket->dts, time_base) << endl;
+    std::ostringstream str_data;
+    str_data << "pts:" << av_ts2str(Ppacket->pts) << " pts_time:" << av_ts2timestr(Ppacket->pts, time_base)
+             << " dts:" << av_ts2str(Ppacket->dts) << " dts_time:" << av_ts2timestr(Ppacket->dts, time_base) << endl;
+    auto str_data_s = str_data.str();
+    av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
 }
 
 int cmpc::CMpegEncoder::__write_frame(){
@@ -945,7 +1026,7 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
         return false;
     }
 
-    PStreamContex.st = avformat_new_stream(PFormatCtx, NULL);
+    PStreamContex.st = avformat_new_stream(PFormatCtx, nullptr);
     if (!PStreamContex.st) {
         cerr << "Could not allocate stream" << endl;
         return false;
@@ -959,7 +1040,7 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
     PStreamContex.enc = c;
 
     switch ((*codec)->type) {
-    case AVMEDIA_TYPE_VIDEO:
+    case AVMediaType::AVMEDIA_TYPE_VIDEO:
         c->codec_id = codec_id;
 
         c->bit_rate = bitRate;
@@ -983,26 +1064,26 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
         c->gop_size = GOPSize; /* emit one intra frame every twelve frames at most */
         c->max_b_frames = MaxBFrame;
         c->pix_fmt = STREAM_PIX_FMT;
-        if (c->codec_id == AV_CODEC_ID_FLV1) {
+        if (c->codec_id == AVCodecID::AV_CODEC_ID_FLV1) {
             /* just for testing, we also add B-frames */
             c->max_b_frames = 0;
         }
-        if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
+        if (c->codec_id == AVCodecID::AV_CODEC_ID_MPEG2VIDEO) {
             /* just for testing, we also add B-frames */
             c->max_b_frames = 2;
         }
-        if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
+        if (c->codec_id == AVCodecID::AV_CODEC_ID_MPEG1VIDEO) {
             /* Needed to avoid using macroblocks in which some coeffs overflow.
             * This does not happen with normal video, it just happens here as
             * the motion of the chroma plane does not match the luma plane. */
             c->mb_decision = 2;
         }
-        if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
+        if (c->pix_fmt != STREAM_PIX_FMT) {
             /* as we only generate a YUV420P picture, we must convert it
             * to the codec pixel format if needed */
             if (!PStreamContex.sws_ctx) {
                 PStreamContex.sws_ctx = sws_getContext(c->width, c->height,
-                    AV_PIX_FMT_YUV420P,
+                    STREAM_PIX_FMT,
                     c->width, c->height,
                     c->pix_fmt,
                     SCALE_FLAGS, nullptr, nullptr, nullptr);
@@ -1014,7 +1095,7 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
         }
         if (!PswsCtx) {
             PswsCtx = sws_getContext(srcwidth, srcheight,
-                AV_PIX_FMT_RGB24,
+                AVPixelFormat::AV_PIX_FMT_RGB24,
                 c->width, c->height,
                 c->pix_fmt,
                 SCALE_FLAGS, nullptr, nullptr, nullptr);
@@ -1024,7 +1105,7 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
             }
         }
         if (!RGBbuffer) {
-            auto numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, srcwidth, srcheight, 1);
+            auto numBytes = av_image_get_buffer_size(AVPixelFormat::AV_PIX_FMT_RGB24, srcwidth, srcheight, 1);
             RGBbuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
         }
         break;
@@ -1040,7 +1121,7 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
 }
 
 /* video output */
-AVFrame* cmpc::CMpegEncoder::__alloc_picture(enum AVPixelFormat pix_fmt, int width, int height) {
+cmpc::AVFrame* cmpc::CMpegEncoder::__alloc_picture(enum AVPixelFormat pix_fmt, int width, int height) {
     auto picture = av_frame_alloc();
     if (!picture)
         return nullptr;
@@ -1079,8 +1160,8 @@ bool cmpc::CMpegEncoder::__open_video(AVCodec *codec, AVDictionary *opt_arg){
     * picture is needed too. It is then converted to the required
     * output format. */
     PStreamContex.tmp_frame = nullptr;
-    if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
-        PStreamContex.tmp_frame = __alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
+    if (c->pix_fmt != STREAM_PIX_FMT) {
+        PStreamContex.tmp_frame = __alloc_picture(STREAM_PIX_FMT, c->width, c->height);
         if (!PStreamContex.tmp_frame) {
             cerr << "Could not allocate temporary picture" << endl;
             return false;
@@ -1095,7 +1176,7 @@ bool cmpc::CMpegEncoder::__open_video(AVCodec *codec, AVDictionary *opt_arg){
     return true;
 }
 
-AVFrame *cmpc::CMpegEncoder::__get_video_frame(PyArrayObject* PyFrame) {
+cmpc::AVFrame *cmpc::CMpegEncoder::__get_video_frame(PyArrayObject* PyFrame) {
     auto c = PStreamContex.enc;
 
     /* check if we want to generate more frames */
@@ -1105,12 +1186,12 @@ AVFrame *cmpc::CMpegEncoder::__get_video_frame(PyArrayObject* PyFrame) {
     * internally; make sure we do not overwrite it here */
     if (av_frame_make_writable(PStreamContex.frame) < 0)
         return nullptr;
-    if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
+    if (c->pix_fmt != STREAM_PIX_FMT) {
         /* as we only generate a YUV420P picture, we must convert it
         * to the codec pixel format if needed */
         if (!PStreamContex.sws_ctx) {
             PStreamContex.sws_ctx = sws_getContext(c->width, c->height,
-                AV_PIX_FMT_YUV420P,
+                STREAM_PIX_FMT,
                 c->width, c->height,
                 c->pix_fmt,
                 SCALE_FLAGS, nullptr, nullptr, nullptr);
@@ -1139,9 +1220,6 @@ AVFrame *cmpc::CMpegEncoder::__get_video_frame(PyArrayObject* PyFrame) {
 
 bool cmpc::CMpegEncoder::_LoadFrame_castFromPyFrameArray(AVFrame *frame, PyArrayObject* PyFrame) {
     /* make sure the frame data is writable */
-    auto ret = av_frame_make_writable(frame);
-    if (ret < 0)
-        return false;
     if (!__frameRGB) {
         cerr << "Could not allocate frameRGB" << endl;
         return false;
@@ -1149,9 +1227,9 @@ bool cmpc::CMpegEncoder::_LoadFrame_castFromPyFrameArray(AVFrame *frame, PyArray
     auto out_dataptr = reinterpret_cast<uint8_t *>(PyArray_DATA(PyFrame));
     auto srcwidth = widthSrc > 0 ? widthSrc : width;
     auto srcheight = heightSrc > 0 ? heightSrc : height;
-    memcpy(RGBbuffer, out_dataptr, srcwidth * srcheight * 3 * sizeof(uint8_t));
+    memcpy(RGBbuffer, out_dataptr, static_cast<size_t>(srcwidth) * static_cast<size_t>(srcheight) * 3 * sizeof(uint8_t));
     // Assign appropriate parts of buffer to image planes in pFrameRGB Note that pFrameRGB is an AVFrame, but AVFrame is a superset of AVPicture
-    av_image_fill_arrays(__frameRGB->data, __frameRGB->linesize, RGBbuffer, AV_PIX_FMT_RGB24, srcwidth, srcheight, 1);
+    av_image_fill_arrays(__frameRGB->data, __frameRGB->linesize, RGBbuffer, AVPixelFormat::AV_PIX_FMT_RGB24, srcwidth, srcheight, 1);
     sws_scale(PswsCtx, __frameRGB->data, __frameRGB->linesize, 0, srcheight, frame->data, frame->linesize);
     //cout << "Free 1" << endl;
     //delete frameRGB;
@@ -1163,13 +1241,17 @@ bool cmpc::CMpegEncoder::_LoadFrame_castFromPyFrameArray(AVFrame *frame, PyArray
 * encode one video frame and send it to the muxer
 * return 1 when encoding is finished, 0 otherwise
 */
-int cmpc::CMpegEncoder::__avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame, bool &got_packet){
+int cmpc::CMpegEncoder::__avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame){
     int ret;
+    int wfret = 0;
 
-    got_packet = false;
     if (frame) {
-        if (__dumpControl > 1)
-            cout << "Send frame " << frame->pts << endl;
+        if (__dumpControl > 1) {
+            std::ostringstream str_data;
+            str_data << "Send frame " << frame->pts << endl;
+            auto str_data_s = str_data.str();
+            av_log(nullptr, AV_LOG_DEBUG, str_data_s.c_str());
+        }
     }
     else{
         return AVERROR(EAGAIN);
@@ -1183,22 +1265,36 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacke
     }
 
     ret = avcodec_receive_packet(enc_ctx, pkt);
-    if (!ret)
-        got_packet = true;
     if (ret == AVERROR(EAGAIN))
         return 0;
-    if (__dumpControl > 0)
-        cout << "Write packet " << pkt->pts << " (size=" << pkt->size << "), ";
 
+    if (__dumpControl > 0) {
+        std::ostringstream str_data;
+        str_data << "Write packet " << pkt->pts << " (size=" << pkt->size << "), ";
+        auto str_data_s = str_data.str();
+        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+    }
+
+    if (!ret) {
+        wfret = __write_frame();
+        av_packet_unref(Ppacket);
+        if (wfret < 0) {
+            cerr << "Error while writing video frame: " << av_err2str(ret) << endl;
+            return wfret;
+        }
+    }
     return ret;
 }
 
-int cmpc::CMpegEncoder::__avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt, bool &got_packet) {
+int cmpc::CMpegEncoder::__avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt) {
     int ret;
     int wfret = 0;
-    got_packet = false;
-    if (__dumpControl > 1)
-        cout << "Flush all packets" << endl;
+    if (__dumpControl > 1) {
+        std::ostringstream str_data;
+        str_data << "Flush all packets" << endl;
+        auto str_data_s = str_data.str();
+        av_log(nullptr, AV_LOG_DEBUG, str_data_s.c_str());
+    }
 
     ret = avcodec_send_frame(enc_ctx, nullptr);
     // In particular, we don't expect AVERROR(EAGAIN), because we read all
@@ -1210,15 +1306,17 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2_flush(AVCodecContext *enc_ctx, A
     while (ret >= 0) {
         ret = avcodec_receive_packet(enc_ctx, pkt);
         if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
-            got_packet = false;
             return 0;
         }
-        if (!ret)
-            got_packet = true;
-        if (__dumpControl > 0)
-            cout << "Write packet " << pkt->pts << " (size=" << pkt->size << "), ";
-        if (got_packet) {
+        if (__dumpControl > 0) {
+            std::ostringstream str_data;
+            str_data << "Write packet " << pkt->pts << " (size=" << pkt->size << "), ";
+            auto str_data_s = str_data.str();
+            av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        }
+        if (!ret) {
             wfret = __write_frame();
+            av_packet_unref(pkt);
         }
         else {
             wfret = 0;
@@ -1227,85 +1325,36 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2_flush(AVCodecContext *enc_ctx, A
             cerr << "Error while writing video frame: " << av_err2str(ret) << endl;
             return wfret;
         }
-        av_packet_unref(pkt);
     }
     return ret;
 }
 
-attribute_deprecated
-int cmpc::CMpegEncoder::__avcodec_encode_video2Old(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame, bool &got_packet){
-    int ret;
-
-    /* send the frame to the encoder */
-    if (frame && (__dumpControl > 0))
-        cout << "Send frame " << frame->pts << endl;
-
-    ret = avcodec_send_frame(enc_ctx, frame);
-    if (ret < 0) {
-        //cerr << "Error sending a frame for encoding." << endl;
-        return ret == AVERROR_EOF ? 0 : ret;
-    }
-
-    while (ret >= 0) {
-        ret = avcodec_receive_packet(enc_ctx, pkt);
-        if (ret == AVERROR_EOF)
-            return 0;
-        else if (ret == AVERROR(EAGAIN))
-            return 0;
-        else if (ret < 0) {
-            cerr << "Error during encoding." << endl;
-            return ret;
-        }
-        got_packet = true;
-        if (__dumpControl > 0)
-            cout << "Write packet " << pkt->pts << " (size=" << pkt->size << ")" << endl;
-        av_packet_unref(pkt);
-    }
-    return 1;
-}
-
 int cmpc::CMpegEncoder::EncodeFrame(PyArrayObject* PyFrame) {
     int ret;
-    bool got_packet = false;
     auto c = PStreamContex.enc;
-    AVFrame *frame;
+    AVFrame *frame = nullptr;
     if ((!__have_video) || (!__enable_header))
         cerr << "Not allowed to use this method before FFmpegSetup()" << endl;
     if (PyFrame) {
         frame = __get_video_frame(PyFrame);
-        av_init_packet(Ppacket);
-        ret = __avcodec_encode_video2(c, Ppacket, frame, got_packet);
+        ret = __avcodec_encode_video2(c, Ppacket, frame);
     }
     else {
         frame = nullptr;
-        av_init_packet(Ppacket);
-        ret = __avcodec_encode_video2_flush(c, Ppacket, got_packet);
+        ret = __avcodec_encode_video2_flush(c, Ppacket);
     }
-
-    /* encode the image */
     
     if (ret < 0) {
         cerr << "Error encoding video frame: " << av_err2str(ret) << endl;
         return ret;
     }
-    //cout << "GOT PACKET: " << got_packet << endl;
-    if (got_packet) {
-        ret = __write_frame();
-    }
-    else {
-        ret = 0;
-    }
-    if (ret < 0) {
-        cerr << "Error while writing video frame: " << av_err2str(ret) << endl;
-        return ret;
-    }
-    return (frame || got_packet) ? 0 : 1;
+    return frame ? 0 : 1;
 }
 
 void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
     if (keyword.compare("decoder") == 0) {
         CMpegDecoder *ref = reinterpret_cast<CMpegDecoder *>(ptr);
-        videoPath.assign(ref->videoPath);
+        resetPath(ref->videoPath);
         codecName.assign(ref->_str_codec);
         if (ref->PCodecCtx) {
             bitRate = ref->PCodecCtx->bit_rate;
@@ -1328,17 +1377,163 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
             timeBase = _setAVRational(frameRate.den, frameRate.num);
         }
     }
+    else if (keyword.compare("client") == 0) {
+        CMpegClient* ref = reinterpret_cast<CMpegClient*>(ptr);
+        resetPath(ref->videoPath);
+        codecName.assign(ref->_str_codec);
+        if (ref->PCodecCtx) {
+            bitRate = ref->PCodecCtx->bit_rate;
+            GOPSize = ref->PCodecCtx->gop_size;
+            MaxBFrame = ref->PCodecCtx->max_b_frames;
+        }
+        if (ref->widthDst > 0 && ref->heightDst > 0) {
+            width = ref->widthDst;
+            height = ref->heightDst;
+        }
+        else {
+            width = ref->width;
+            height = ref->height;
+        }
+        widthSrc = width;
+        heightSrc = height;
+        if (ref->PVideoStream) {
+            //timeBase = ref->PVideoStream->time_base;
+            frameRate = ref->PVideoStream->avg_frame_rate;
+            timeBase = _setAVRational(frameRate.den, frameRate.num);
+        }
+    }
+    else if (keyword.compare("configDict") == 0) {
+        PyObject* ref = reinterpret_cast<PyObject*>(ptr);
+        if (PyDict_Check(ref)) {
+            string key;
+            PyObject* val;
+            // Set parameters.
+            key.assign("videoPath");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyBytes_Check(val)) {
+                    auto val_str = string(PyBytes_AsString(val));
+                    resetPath(val_str);
+                }
+            }
+            else {
+                key.assign("videoAddress");
+                val = PyDict_GetItemString(ref, key.c_str());
+                if (val) {
+                    if (PyBytes_Check(val)) {
+                        auto val_str = string(PyBytes_AsString(val));
+                        resetPath(val_str);
+                    }
+                }
+            }
+            key.assign("codecName");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyBytes_Check(val)) {
+                    auto val_str = string(PyBytes_AsString(val));
+                    codecName.assign(val_str);
+                }
+            }
+            key.assign("bitRate");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int64_t>(PyLong_AsLongLong(val));
+                    bitRate = val_num;
+                }
+            }
+            key.assign("GOPSize");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int>(PyLong_AsLong(val));
+                    GOPSize = val_num;
+                }
+            }
+            key.assign("maxBframe");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int>(PyLong_AsLong(val));
+                    MaxBFrame = val_num;
+                }
+            }
+            key.assign("width");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int>(PyLong_AsLong(val));
+                    width = val_num;
+                    widthSrc = val_num;
+                }
+            }
+            key.assign("height");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int>(PyLong_AsLong(val));
+                    height = val_num;
+                    heightSrc = val_num;
+                }
+            }
+            key.assign("widthSrc");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num_1 = static_cast<int>(PyLong_AsLong(val));
+                    key.assign("heightSrc");
+                    val = PyDict_GetItemString(ref, key.c_str());
+                    if (val) {
+                        if (PyLong_Check(val)) {
+                            auto val_num_2 = static_cast<int>(PyLong_AsLong(val));
+                            widthSrc = val_num_1;
+                            heightSrc = val_num_2;
+                        }
+                    }
+                }
+            }
+            key.assign("widthDst");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num_1 = static_cast<int>(PyLong_AsLong(val));
+                    key.assign("heightDst");
+                    val = PyDict_GetItemString(ref, key.c_str());
+                    if (val) {
+                        if (PyLong_Check(val)) {
+                            auto val_num_2 = static_cast<int>(PyLong_AsLong(val));
+                            width = val_num_1;
+                            height = val_num_2;
+                        }
+                    }
+                }
+            }
+            key.assign("frameRate");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyTuple_Check(val)) {
+                    auto valObj = PyTuple_GetItem(val, 0);
+                    int num = static_cast<int>(PyLong_AsLong(valObj));
+                    valObj = PyTuple_GetItem(val, 1);
+                    int den = static_cast<int>(PyLong_AsLong(valObj));
+                    frameRate = _setAVRational(num, den);
+                    timeBase = _setAVRational(den, num);
+                }
+            }
+        }
+    }
     else if (keyword.compare("videoPath") == 0) {
         string *ref = reinterpret_cast<string *>(ptr);
-        videoPath.assign(*ref);
+        resetPath(*ref);
     }
     else if (keyword.compare("codecName") == 0) {
         string *ref = reinterpret_cast<string *>(ptr);
         codecName.assign(*ref);
     }
     else if (keyword.compare("bitRate") == 0) {
-        int64_t *ref = reinterpret_cast<int64_t *>(ptr);
-        bitRate = *ref;
+        double *ref = reinterpret_cast<double *>(ptr);
+        auto bit_rate = static_cast<int64_t>((*ref) * 1024);
+        bitRate = bit_rate;
     }
     else if (keyword.compare("width") == 0) {
         int *ref = reinterpret_cast<int *>(ptr);
@@ -1375,15 +1570,103 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
     }
 }
 
+PyObject* cmpc::CMpegEncoder::getParameter(string keyword) {
+    if (keyword.compare("videoPath") == 0) {
+        return Py_BuildValue("y", videoPath.c_str());
+    }
+    else if (keyword.compare("codecName") == 0) {
+        return Py_BuildValue("y", codecName.c_str());
+    }
+    else if (keyword.compare("bitRate") == 0) {
+        auto bit_rate = static_cast<double>(bitRate) / 1024;
+        return Py_BuildValue("d", bit_rate);
+    }
+    else if (keyword.compare("width") == 0) {
+        return Py_BuildValue("i", width);
+    }
+    else if (keyword.compare("height") == 0) {
+        return Py_BuildValue("i", height);
+    }
+    else if (keyword.compare("widthSrc") == 0) {
+        return Py_BuildValue("i", widthSrc);
+    }
+    else if (keyword.compare("heightSrc") == 0) {
+        return Py_BuildValue("i", heightSrc);
+    }
+    else if (keyword.compare("GOPSize") == 0) {
+        return Py_BuildValue("i", GOPSize);
+    }
+    else if (keyword.compare("maxBframe") == 0) {
+        return Py_BuildValue("i", MaxBFrame);
+    }
+    else if (keyword.compare("frameRate") == 0) {
+        auto frame_base = frameRate;
+        double frameRate = static_cast<double>(frame_base.num) / static_cast<double>(frame_base.den);
+        return Py_BuildValue("d", frameRate);
+    }
+    else {
+        Py_RETURN_NONE;
+    }
+}
+
+PyObject* cmpc::CMpegEncoder::getParameter() {
+    auto res = PyDict_New();
+    string key;
+    PyObject* val = nullptr;
+    // Fill the values.
+    key.assign("videoPath");
+    val = Py_BuildValue("y", videoPath.c_str());
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("codecName");
+    val = Py_BuildValue("y", codecName.c_str());
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("bitRate");
+    val = Py_BuildValue("L", bitRate);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("GOPSize");
+    val = Py_BuildValue("i", GOPSize);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("maxBframe");
+    val = Py_BuildValue("i", MaxBFrame);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    if (widthSrc > 0) {
+        key.assign("widthSrc");
+        val = Py_BuildValue("i", widthSrc);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    if (heightSrc > 0) {
+        key.assign("heightSrc");
+        val = Py_BuildValue("i", heightSrc);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    key.assign("width");
+    val = Py_BuildValue("i", width);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("height");
+    val = Py_BuildValue("i", height);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    key.assign("frameRate");
+    val = Py_BuildValue("(ii)", frameRate.num, frameRate.den);
+    PyDict_SetItemString(res, key.c_str(), val);
+    Py_DECREF(val);
+    return res;
+}
+
 bool cmpc::CMpegEncoder::FFmpegSetup() {
     AVCodec *video_codec = nullptr;
     int ret;
 
-    /* Initialize libavcodec, and register all codecs and formats. */
-    #ifndef FFMPG3_4
-        av_register_all();
-    #endif
-
+    if (Ppacket)
+        av_packet_free(&Ppacket);
     Ppacket = av_packet_alloc();
     if (!Ppacket)
         return false;
@@ -1408,7 +1691,7 @@ bool cmpc::CMpegEncoder::FFmpegSetup() {
 
     /* Add the audio and video streams using the default format codecs
     * and initialize the codecs. */
-    if (fmt->video_codec != AV_CODEC_ID_NONE) {
+    if (fmt->video_codec != AVCodecID::AV_CODEC_ID_NONE) {
         if (!__add_stream(&video_codec)) {
             FFmpegClose();
             return false;
@@ -1428,12 +1711,13 @@ bool cmpc::CMpegEncoder::FFmpegSetup() {
             __have_video = true;
     }
 
-    if (__dumpControl > 1)
+    if (__dumpControl > 1) {
         av_dump_format(PFormatCtx, 0, videoPath.c_str(), 1);
+    }
 
     /* open the output file, if needed */
     if (!(fmt->flags & AVFMT_NOFILE)) {
-        ret = avio_open(&PFormatCtx->pb, videoPath.c_str(), AVIO_FLAG_WRITE);
+        ret = avio_open2(&PFormatCtx->pb, videoPath.c_str(), AVIO_FLAG_WRITE, nullptr, nullptr);
         if (ret < 0) {
             cerr << "Could not open '" << videoPath << "': " << av_err2str(ret) << endl;
             FFmpegClose();
@@ -1467,8 +1751,12 @@ void cmpc::CMpegEncoder::FFmpegClose(){
         if ((x = EncodeFrame(nullptr)) == 0) {
            // cout << "Ret: " << x << endl;
         }
-        if (__dumpControl > 0)
-            cout << "All frames are flushed from cache, the video would be closed." << endl;
+        if (__dumpControl > 0) {
+            std::ostringstream str_data;
+            str_data << "All frames are flushed from cache, the video would be closed." << endl;
+            auto str_data_s = str_data.str();
+            av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        }
     }
     if (PFormatCtx) {
         if (__enable_header) {
@@ -1507,8 +1795,9 @@ void cmpc::CMpegEncoder::FFmpegClose(){
         avformat_free_context(PFormatCtx);
         PFormatCtx = nullptr;
     }
-    if (!Ppacket) {
+    if (Ppacket) {
         av_packet_free(&Ppacket);
+        Ppacket = nullptr;
     }
     if (__frameRGB) {
         av_frame_free(&__frameRGB);

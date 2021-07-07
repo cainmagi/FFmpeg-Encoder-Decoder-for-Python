@@ -1,86 +1,77 @@
 # FFmpeg-Encoder-Decoder-for-Python
 
-*****
-      __   _                         _ _ _                ,___            
-     ( /  /        /        o       ( / ) )              /   /     /      
-      (__/ , , _, /_  _  _ _'  (     / / /  ,_   _  _,  /    __ __/ _  _  
-       _/_(_/_(__/ /_(/_/ / /_/_)_  / / (__/|_)_(/_(_)_(___/(_)(_/_(/_/ (_
-      //                                   /|       /|                    
-     (/                                   (/       (/                     
-*****
-
-## Yuchen's Mpeg Coder - Readme
-
-This is a mpegcoder adapted from FFmpeg & Python-c-api.Using it you could get access to processing video easily. Just use it as a common module in python like this.
+This is a mpegcoder adapted from FFmpeg & Python-c-api. Using it you could get access to processing video easily. Just use it as a common module in python like this.
 
 ```python
-    import mpegCoder
+import mpegCoder
 ```
 
-Noted that this API need you to install numpy. 
+|     Branch      |  Description  |
+| :-------------: | :-----------: |
+| `master` :link: | The source project of `mpegCoder`, Windows version. |
+| `master-linux` :link: | The source project of `mpegCoder`, Linux version. |
+| [`example-client-check` :link:][exp1] | A testing project of the online video stream demuxing. |
+| [`example-client-player` :link:][exp2] | A testing project of the simple online video stream player. |
 
-An example of decoding a video in an arbitrary format:
+## Source project of `mpegCoder` (Windows)
 
-```python
-    d = mpegCoder.MpegDecoder()
-    d.FFmpegSetup(b'inputVideo.mp4')
-    p = d.ExtractGOP(10) # Get a gop of current video by setting the start position of 10th frame.
-    p = d.ExtractGOP() # Get a gop of current video, using the current position after the last ExtractGOP.
-    d.ExtractFrame(100, 100) # Extract 100 frames from the begining of 100th frame.
-```
+The following instructions are used for building the project on Windows with Visual Studio 2019.
 
-An example of transfer the coding of a video with an assigned codec:
+1. Clone the `master` branch which only contains the codes of `mpegCoder`:
 
-```python
-    d = mpegCoder.MpegDecoder()
-    d.FFmpegSetup(b'i.avi')
-    e = mpegCoder.MpegEncoder()
-    e.setParameter(decoder=d, codecName=b'libx264', videoPath=b'o.mp4') # inherit most of parameters from the decoder.
-    opened = e.FFmpegSetup() # Load the encoder.
-    if opened: # If encoder is not loaded successfully, do not continue.
-        p = True
-        while p is not None:
-            p = d.ExtractGOP() # Extract current GOP.
-            for i in p: # Select every frame.
-                e.EncodeFrame(i) # Encode current frame.
-        e.FFmpegClose() # End encoding, and flush all frames in cache.
-    d.clear() # Close the input video.
-```
+    ```bash
+    git clone --single-branch -b master https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python.git
+    ```
 
-An example of demuxing the video stream from a server:
+2. Download the FFMpeg dependencies, including `include` and `lib`.
 
-```python
-    d = mpegCoder.MpegClient() # create the handle
-    d.setParameter(dstFrameRate=(5,1), readSize=5, cacheSize=12) # normalize the frame rate to 5 FPS, and use a cache which size is 12 frames. Read 5 frames each time.
-    success = d.FFmpegSetup(b'rtsp://localhost:8554/video')
-    if not success: # exit if fail to connect with the server
-        exit()
-    d.start() # start the sub-thread for demuxing the stream.
-    for i in range(10): # processing loop
-        time.sleep(5)
-        p = d.ExtractFrame() # every 5 seconds, read 5 frames (1 sec.)
-        # do some processing
-    d.terminate() # shut down the current thread. You could call start() and let it restart.
-    d.clear() # Disconnect with the stream.
-```
+3. The following configurations should be set for `All` (both debug and release) and `x64`. Open the project by `MpegCoder.sln`. Then configure the following paths of the include directories and the library directories. In both configurations, the first item is required to be modified according to your python path, the second item is required to be modified according to your numpy path.
+    |  Path  |  Screenshot  |
+    | :----- | :----------: |
+    | `includes` | ![Configure includes](./display/config-include.png) |
+    | `libs` | ![Configure libs](./display/config-include.png) |
 
-You could also find some more explanations in two examples about `MpegClient` in [here][exp1] and [here][exp2].
+4. Modify the linker configs. We only need to change the item `python3x.lib` according to the python version you have.
+    ![Configure linker](./display/config-linker.png)
 
-For more instructions, you could tap `help(mpegCoder)`. 
+5. Run the `Release`, `x64` build. The built file should be saved as `x64\Release\mpegCoder.pyd`.
+
+6. The `mpegCoder.pyd` should be used together with the FFMpeg shared libraries, including:
+    ```shell
+    avcodec-58.dll
+    avformat-58.dll
+    avutil-56.dll
+    swresample-3.dll
+    swscale-5.dll
+    ```
 
 ## Update Report
 
+### V3.0.0 update report:
+
+1. Fix a severe memory leaking bugs when using `AVPacket`.
+
+2. Support the `MpegServer`. This class is used for serving the online video streams.
+
+3. Refactor the implementation of the loggings.
+
+4. Add `getParameter()` and `setParameter(configDict)` APIs to `MpegEncoder` and `MpegServer`.
+
+5. Move `FFMpeg` depedencies and the `OutputStream` class to the `cmpc` space.
+
+6. Upgrade to `FFMpeg 4.4` Version.
+
 ### V2.05 update report:
 
-1. Fix a severe bug that causes the memory leak when using MpegClient.This bug also exists in MpegDecoder, but it seems that the bug would not cause memory leak in that case. (Although we have also fixed it now.)
+1. Fix a severe bug that causes the memory leak when using `MpegClient`.This bug also exists in `MpegDecoder`, but it seems that the bug would not cause memory leak in that case. (Although we have also fixed it now.)
 
-2. Upgrade to FFMpeg 4.0 Version.
+2. Upgrade to `FFMpeg 4.0` Version.
 
 ### V2.01 update report:
 
 1. Fix a bug that occurs when the first received frame may has a PTS larger than zero.
 
-2. Enable the project produce the newest ffmpeg 3.4.2 version and use Python 3.6.4, numpy 1.14. 
+2. Enable the project produce the newest `FFMpeg 3.4.2` version and use `Python 3.6.4`, `numpy 1.14`. 
 
 ### V2.0 update report:
 
@@ -92,7 +83,7 @@ For more instructions, you could tap `help(mpegCoder)`.
 
 ### V1.8 update report:
 
-1. Provide options (widthDst, heightDst) to let MpegDecoder could control the output size manually. To ensure the option is valid, we must use the method `setParameter` before `FFmpegSetup`. Now you could use this options to get a rescaled output directly:
+1. Provide options `(widthDst, heightDst)` to let `MpegDecoder` could control the output size manually. To ensure the option is valid, we must use the method `setParameter` before `FFmpegSetup`. Now you could use this options to get a rescaled output directly:
 
     ```python
       d = mpegCoder.MpegDecoder() # initialize
@@ -162,11 +153,16 @@ If you want, you could install `ffmpeg` on Linux: Here are some instructions
 1. Provide the decoder which could decode videos in arbitrary formats and arbitrary coding.
  
 ## Version of currently used FFmpeg library
-* libavcodec.so.58.19.100
-* libavformat.so.58.13.100
-* libavutil.so.56.18.100
-* libswresample.so.3.2.100
-* libswscale.so.5.2.100
+
+Current FFMpeg version is `4.4`.
+
+|   Dependency    |    Version     |
+| :-------------: | :------------: |
+| `libavcodec`    | `58.134.100.0` |
+| `libavformat`   | `58.76.100.0`  |
+| `libavutil`     | `56.70.100.0`  |
+| `libswresample` | `3.9.100.0`    |
+| `libswscale`    | `5.9.100.0`    |
 
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
 [exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"

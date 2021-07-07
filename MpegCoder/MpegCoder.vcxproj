@@ -23,32 +23,32 @@
     <ProjectGuid>{57C5DB39-2AA7-40DD-B7E1-162B3E7F7044}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MpegCoder</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -77,8 +77,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../include;D:\ProgramData\Anaconda3\include;D:\ProgramData\Anaconda3\Lib\site-packages\numpy\core\include;$(IncludePath)</IncludePath>
-    <LibraryPath>../lib;D:\ProgramData\Anaconda3\libs;D:\ProgramData\Anaconda3\Lib\site-packages\numpy\core\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\yjin4\Anaconda3\envs\torch19\include;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\yjin4\Anaconda3\envs\torch19\libs;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -87,8 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>../include;D:\ProgramData\Anaconda3\include;D:\ProgramData\Anaconda3\Lib\site-packages\numpy\core\include;$(IncludePath)</IncludePath>
-    <LibraryPath>../lib;D:\ProgramData\Anaconda3\libs;D:\ProgramData\Anaconda3\Lib\site-packages\numpy\core\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\yjin4\Anaconda3\envs\torch19\include;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\yjin4\Anaconda3\envs\torch19\libs;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,9 +115,11 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib;python36.lib;python3.lib;npymath.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)mpegCoder.pyd</OutputFile>
+      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;python39.lib;python3.lib;npymath.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>echo F | xcopy /y /i "$(OutDir)$(TargetName)$(TargetExt)" "$(OutDir)mpegCoder.pyd"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -152,13 +154,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib;python36.lib;python3.lib;npymath.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)mpegCoder.pyd</OutputFile>
+      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;python39.lib;python3.lib;npymath.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>echo F | xcopy /y /i "$(OutDir)$(TargetName)$(TargetExt)" "$(OutDir)mpegCoder.pyd"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MpegBase.h" />
     <ClInclude Include="MpegCoder.h" />
@@ -178,6 +179,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\LICENSE" />
+    <None Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

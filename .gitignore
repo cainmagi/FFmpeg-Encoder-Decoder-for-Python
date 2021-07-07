@@ -11,7 +11,7 @@ lib/*
 *.tlog
 *.lastbuildstate
 unsuccessfulbuild
-
+/MpegCoder/x64/
 
 # Prerequisites
 *.d

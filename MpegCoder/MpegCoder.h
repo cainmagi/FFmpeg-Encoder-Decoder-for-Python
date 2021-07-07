@@ -10,123 +10,107 @@
 #include "MpegBase.h"
 
 #define MPEGCODER_DEBUG
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 // 此类导出自 MpegCoder.dll
 namespace cmpc {
 
     extern int8_t __dumpControl;
+    class CMpegClient;
+    class CMpegServer;
 
     class CMpegDecoder {
     public:
-        CMpegDecoder(void);                                         //构造函数
-        // 以下部分就是传说中的三五法则，定义其中之一就必须全部手动定义
-        ~CMpegDecoder(void);                                        //析构函数
-        CMpegDecoder(const CMpegDecoder &ref);                      //拷贝构造函数
-        CMpegDecoder& operator=(const CMpegDecoder &ref);           //拷贝赋值函数
-        CMpegDecoder(CMpegDecoder &&ref) noexcept;                  //移动构造函数
-        CMpegDecoder& operator=(CMpegDecoder &&ref) noexcept; //移动赋值函数
-        friend class CMpegEncoder; //使编码器能访问解码器的私有成员
-        // TODO:  在此添加您的方法。
-        //运算符重载
-        friend ostream & operator<<(ostream & out, CMpegDecoder & self_class);
-        void clear(void); //清除资源
-        void meta_protected_clear(void);
-        void dumpFormat(); //显示格式内容
-        void setParameter(string keyword, void *ptr); //设置参量
-        PyObject * getParameter(string keyword); //获取一些关键字信息
-        void resetPath(string inVideoPath); //重设输入路径
-        bool FFmpegSetup(); //设置解码器、提取基本参数，该过程也蕴涵在构造中
-        bool FFmpegSetup(string inVideoPath); //带参设置，相当于重设视频路径
-        bool ExtractFrame(PyObject* PyFrameList, int64_t framePos, int64_t frameNum, double timePos, int mode); //将帧数为framePos开始的frameNum数目的帧提取到PyFrame中
-        bool ExtractGOP(PyObject* PyFrameList); //提取一个GOP到PyFrame中
-        void setGOPPosition(int64_t inpos);
-        void setGOPPosition(double inpos);
+        CMpegDecoder(void);                                         // Constructor.
+        ~CMpegDecoder(void);                                        // 3-5 law. Destructor.
+        CMpegDecoder(const CMpegDecoder &ref);                      // Copy constructor.
+        CMpegDecoder& operator=(const CMpegDecoder &ref);           // Copy assignment operator.
+        CMpegDecoder(CMpegDecoder &&ref) noexcept;                  // Move constructor.
+        CMpegDecoder& operator=(CMpegDecoder &&ref) noexcept;       // Move assignment operator.
+        friend class CMpegEncoder;  // Let the encoder be able to access the member of this class.
+        friend class CMpegServer;  // Let the server be able to access the member of this class.
+        friend ostream & operator<<(ostream & out, CMpegDecoder & self_class);  // Show the results.
+        void clear(void);  // Clear all configurations and resources.
+        void meta_protected_clear(void);  // Clear the resources, but the configurations are remained.
+        void dumpFormat();  // Show the av_format results.
+        void setParameter(string keyword, void *ptr);  // Set arguments.
+        PyObject* getParameter(string keyword);  // Get the current arguments.
+        PyObject* getParameter();  // Get all key arguments.
+        void resetPath(string inVideoPath);  // Reset the path (encoded) of the online video stream.
+        bool FFmpegSetup();  // Configure the decoder, and extract the basic meta-data. This method is also equipped in the constructor.
+        bool FFmpegSetup(string inVideoPath);  // Configure the decoder with extra arguments.
+        bool ExtractFrame(PyObject* PyFrameList, int64_t framePos, int64_t frameNum, double timePos, int mode);  // Extract n frames as PyFrame, where n is given by frameNum, and the starting postion is given by framePos.
+        bool ExtractGOP(PyObject* PyFrameList);  // Extract a GOP as PyFrames.
+        void setGOPPosition(int64_t inpos);  // Set the current GOP poistion by the index of frames.
+        void setGOPPosition(double inpos);  // Set the cuurent GOP position by the time.
     private:
-        string videoPath;                   // 待解码文件的存储路径
-        AVFormatContext *PFormatCtx;        // 视频文件的格式上下文
-        AVCodecContext *PCodecCtx;          // 视频文件的解码上下文
-        int width, height;                  // 视频的宽和高
-        int widthDst, heightDst;            // 目标视频的尺寸
-        enum AVPixelFormat PPixelFormat;    // 像素格式枚举
-        AVStream *PVideoStream;             // 视频流
+        string videoPath;                   // The path of video stream to be decoded.
+        AVFormatContext *PFormatCtx;        // Format context of the video.
+        AVCodecContext *PCodecCtx;          // Codec context of the video.
+        int width, height;                  // Width, height of the video.
+        int widthDst, heightDst;            // Target width, height of ExtractFrame().
+        enum AVPixelFormat PPixelFormat;    // Enum object of the pixel format.
+        AVStream *PVideoStream;             // Video stream.
 
-        int PVideoStreamIDX;                // 视频流的编号
-        int PVideoFrameCount;               // 解码的帧数计数
-        uint8_t *RGBbuffer;                 // RGB图像的缓存
-        struct SwsContext *PswsCtx;         // 尺度变换器
+        int PVideoStreamIDX;                // The index of the video stream.
+        int PVideoFrameCount;               // The counter of the decoded frames.
+        uint8_t *RGBbuffer;                 // The buffer of the RGB formatted images.
+        struct SwsContext *PswsCtx;         // The context of the scale transformator.
 
-        string _str_codec;                  // 显示当前的解码器
-        double _duration;                   // 显示当前的时长（s）
-        int64_t _predictFrameNum;           // 显示预测的总帧数
+        string _str_codec;                  // Show the name of the current codec.
+        double _duration;                   // Show the time of the video play.
+        int64_t _predictFrameNum;           // The prediction of the total number of frames.
 
-        int64_t currentGOPTSM;              // 当前GOP时间戳指向的位置
-        bool EndofGOP;                      // GOP读取是否结束，只有重设起始位置才会将它复位为0
+        int64_t currentGOPTSM;              // The timestamp where the GOP cursor is pointinng to.
+        bool EndofGOP;                      // A flag of reading GOP. This value need to be reset to be false by the reset methods.
 
         /* Enable or disable frame reference counting. You are not supposed to support
         * both paths in your application but pick the one most appropriate to your
         * needs. Look for the use of refcount in this example to see what are the
         * differences of API usage between them. */
-        int refcount;                       // 视频帧的参考计数
+        int refcount;                       // Reference count of the video frame.
         int _open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, AVFormatContext *PFormatCtx, enum AVMediaType type);
-        int _SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket &pkt, bool &got_frame, int64_t minPTS, bool &processed, int cached);
-        int _SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket &pkt, bool &got_frame, int &GOPstate, bool &processed, int cached);
+        int _SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket *&pkt, bool &got_frame, int64_t minPTS, bool &processed, int cached);
+        int _SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket *&pkt, bool &got_frame, int &GOPstate, bool &processed, int cached);
         PyObject *_SaveFrame_castToPyFrameArray(uint8_t *data[], int fWidth, int fHeight);
         PyObject *_SaveFrame_castToPyFrameArrayOld(uint8_t *data[], int fWidth, int fHeight);
-        PyObject *_SaveFrame_castToPyFrame(uint8_t *data[], int fWidth, int fHeight);
         int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
         int64_t __FrameToPts(int64_t seekFrame) const;
         int64_t __TimeToPts(double seekTime) const;
     };
 
-    // a wrapper around a single output AVStream
-    typedef struct _OutputStream {
-        AVStream *st;
-        AVCodecContext *enc;
-
-        /* pts of the next frame that will be generated */
-        int64_t next_frame;
-
-        AVFrame *frame;
-        AVFrame *tmp_frame;
-
-        struct SwsContext *sws_ctx;
-    } OutputStream;
-
     class CMpegEncoder {
     public:
-        CMpegEncoder(void);                                         //构造函数
-                                                                    // 以下部分就是传说中的三五法则，定义其中之一就必须全部手动定义
-        ~CMpegEncoder(void);                                        //析构函数
-        CMpegEncoder(const CMpegEncoder &ref);                      //拷贝构造函数
-        CMpegEncoder& operator=(const CMpegEncoder &ref);           //拷贝赋值函数
-        CMpegEncoder(CMpegEncoder &&ref) noexcept;                  //移动构造函数
-        CMpegEncoder& operator=(CMpegEncoder &&ref) noexcept; //移动赋值函数
-                                                                // TODO:  在此添加您的方法。
-                                                                //运算符重载
-        friend ostream & operator<<(ostream & out, CMpegEncoder & self_class);
-        void clear(void); //清除资源
-        void resetPath(string inVideoPath); //重设输入路径
-        void dumpFormat(); //显示格式内容
-        bool FFmpegSetup(); //设置编码器，打开待保存文件
-        bool FFmpegSetup(string inVideoPath); //带参设置，相当于重设视频路径
-        void FFmpegClose(); //关闭编码器，完成视频写入
-        int EncodeFrame(PyArrayObject* PyFrame);
-        void setParameter(string keyword, void *ptr); //设置参量
+        CMpegEncoder(void);                                         // Constructor.
+        ~CMpegEncoder(void);                                        // 3-5 law. Destructor.
+        CMpegEncoder(const CMpegEncoder &ref);                      // Copy constructor.
+        CMpegEncoder& operator=(const CMpegEncoder &ref);           // Copy assignment operator.
+        CMpegEncoder(CMpegEncoder &&ref) noexcept;                  // Move constructor.
+        CMpegEncoder& operator=(CMpegEncoder &&ref) noexcept;       // Move assignment operator.
+        friend ostream & operator<<(ostream & out, CMpegEncoder & self_class);  // Show the results.
+        void clear(void);  // Clear all configurations and resources.
+        void resetPath(string inVideoPath);  // Reset the path of the output video stream.
+        void dumpFormat();  // Show the av_format results.
+        bool FFmpegSetup();  // Configure the encoder, and create the file handle. This method is also equipped in the constructor.
+        bool FFmpegSetup(string inVideoPath);  // Configure the encoder with extra arguments.
+        void FFmpegClose();  // Close the encoder, and finalize the written of the encoded video.
+        int EncodeFrame(PyArrayObject* PyFrame);  // Encode one frame.
+        void setParameter(string keyword, void *ptr);  // Set arguments.
+        PyObject* getParameter(string keyword);  // Get the current arguments.
+        PyObject* getParameter();  // Get all key arguments.
     private:
-        string videoPath;                   // 待解码文件的存储路径
-        string codecName;                   // 编码器名称
-        int64_t bitRate;                    // 码率
-        int width, height;                  // 帧尺寸
-        int widthSrc, heightSrc;            // 输入尺寸
-        AVRational timeBase, frameRate;     // 时基和帧率
-        int GOPSize, MaxBFrame;             // GOP大小和B帧的最大数目
-        OutputStream PStreamContex;         // 流的当前信息
-        AVFormatContext *PFormatCtx;
-        AVPacket *Ppacket;                  // AV包
-        struct SwsContext *PswsCtx;         // 尺度变换器
-        AVFrame *__frameRGB; //临时参量，不会用在正常的参数设置里。
-        uint8_t *RGBbuffer;                 // 缓存
+        string videoPath;                   // The path of the output video stream.
+        string codecName;                   // The name of the codec
+        int64_t bitRate;                    // The bit rate of the output video.
+        int width, height;                  // The size of the frames in the output video.
+        int widthSrc, heightSrc;            // The size of the input data (frames).
+        AVRational timeBase, frameRate;     // The time base and the frame rate.
+        int GOPSize, MaxBFrame;             // The size of GOPs, and the maximal number of B frames.
+        OutputStream PStreamContex;         // The context of the current video parser.
+        AVFormatContext *PFormatCtx;        // Format context of the video.
+        AVPacket *Ppacket;                  // AV Packet used for writing frames.
+        struct SwsContext *PswsCtx;         // The context of the scale transformator.
+        AVFrame *__frameRGB;                // A temp AV frame object. Used for converting the data format.
+        uint8_t *RGBbuffer;                 // Data buffer.
         bool __have_video, __enable_header;
         AVRational _setAVRational(int num, int den);
         int64_t __FrameToPts(int64_t seekFrame) const;
@@ -138,9 +122,8 @@ namespace cmpc {
         AVFrame* __alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
         bool __open_video(AVCodec *codec, AVDictionary *opt_arg);
         AVFrame *__get_video_frame(PyArrayObject* PyFrame);
-        int __avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame, bool &got_packet);
-        int __avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt, bool &got_packet);
-        int __avcodec_encode_video2Old(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame, bool &got_packet);
+        int __avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame);
+        int __avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt);
         void __copyMetaData(const CMpegEncoder &ref);
     };
 }

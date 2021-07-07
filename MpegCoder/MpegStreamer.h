@@ -8,106 +8,164 @@
 #define MPEGSTREAMER_H_INCLUDED
 
 #include "MpegBase.h"
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
-// 此类导出自 MpegCoder.dll
-    namespace cmpc {
+// Exported from MpegCoder.dll
+namespace cmpc {
 
-        extern int8_t __dumpControl;
+    extern int8_t __dumpControl;
+    class CMpegDecoder;
+    class CMpegEncoder;
 
-        class Buffer_List {  // A buffer holder of several frames
-        public:
-            Buffer_List(void);
-            ~Buffer_List(void);
-            Buffer_List(const Buffer_List &ref);
-            Buffer_List& operator=(const Buffer_List &ref);
-            Buffer_List(Buffer_List &&ref) noexcept;
-            Buffer_List& operator=(Buffer_List &&ref) noexcept;
-            void clear(void);
-            const int64_t size() const;
-            void set(int64_t set_size, int width, int height, int widthDst=0, int heightDst=0);
-            void set_timer(AVRational targetFrameRate, AVRational timeBase);
-            bool reset_memory();
-            void freezeWrite(int64_t read_size);
-            bool write(SwsContext *PswsCtx, AVFrame *frame);
-            PyObject *read();
-        private:
-            int64_t _Buffer_pos;               // 源缓存指针，指向现在正在写入的帧编号
-            int64_t _Buffer_rpos;              // 源缓存读指针，指向现在正在读取的帧编号
-            int64_t _Buffer_size;              // 源缓存大小，由所需帧数决定
-            int64_t __Read_size;               // 临时变量，用来记录需要读取的数据
-            int64_t next_pts;
-            int64_t interval_pts;
-            int dst_width, dst_height;
-            int src_width, src_height;
-            int _Buffer_capacity;
-            AVFrame *frameRGB;
-            uint8_t **_Buffer_List;           // 源缓存，大小由所需帧数决定
-        };
+    class BufferList {  // A buffer holder of several frames
+    public:
+        BufferList(void);
+        ~BufferList(void);
+        BufferList(const BufferList &ref);
+        BufferList& operator=(const BufferList &ref);
+        BufferList(BufferList &&ref) noexcept;
+        BufferList& operator=(BufferList &&ref) noexcept;
+        void clear(void);
+        const int64_t size() const;
+        void set(int64_t set_size, int width, int height, int widthDst=0, int heightDst=0);
+        void set_timer(AVRational targetFrameRate, AVRational timeBase);
+        bool reset_memory();
+        void freeze_write(int64_t read_size);
+        bool write(SwsContext *PswsCtx, AVFrame *frame);
+        PyObject *read();
+    private:
+        int64_t _Buffer_pos;               // Writring cursor of the source buffer，pointing to the index of the currently written frame.
+        int64_t _Buffer_rpos;              // Reading cursor of the source buffer，pointing to the index of the currently read frame.
+        int64_t _Buffer_size;              // Size of the source buffer, it should be determined by the numeber of required frames.
+        int64_t __Read_size;               // A temporary variable used for showing the size of the data to be read.
+        int64_t next_pts;
+        int64_t interval_pts;
+        int dst_width, dst_height;
+        int src_width, src_height;
+        int _Buffer_capacity;
+        AVFrame *frameRGB;
+        uint8_t **_Buffer_List;           // Source buffer, the size of this buffer is determined by the number of required frames.
+    };
 
-        class CMpegClient {
-        public:
-            CMpegClient(void);                                        //构造函数
-            // 以下部分就是传说中的三五法则，定义其中之一就必须全部手动定义
-            ~CMpegClient(void);                                       //析构函数
-            CMpegClient(const CMpegClient &ref) = delete;             //删除拷贝构造函数
-            CMpegClient& operator=(const CMpegClient &ref) = delete;  //删除拷贝赋值函数
-            CMpegClient(CMpegClient &&ref) noexcept;                  //移动构造函数
-            CMpegClient& operator=(CMpegClient &&ref) noexcept;       //移动赋值函数
-            //friend class CMpegEncoder; //使编码器能访问解码器的私有成员
-            // TODO:  在此添加您的方法。
-            //运算符重载
-            friend ostream & operator<<(ostream & out, CMpegClient & self_class);
-            void clear(void); //清除资源
-            void meta_protected_clear(void);
-            void dumpFormat(); //显示格式内容
-            void setParameter(string keyword, void *ptr); //设置参量
-            PyObject * getParameter(string keyword); //获取一些关键字信息
-            void resetPath(string inVideoPath); //重设输入路径
-            bool FFmpegSetup(); //设置解码器、提取基本参数，该过程也蕴涵在构造中
-            bool FFmpegSetup(string inVideoPath); //带参设置，相当于重设视频路径
-            bool start();
-            void terminate();
-            PyObject * ExtractFrame(int64_t readsize);
-            PyObject * ExtractFrame();
-        private:
-            string videoPath;                   // 待解码文件的存储路径
-            AVFormatContext *PFormatCtx;        // 视频文件的格式上下文
-            AVCodecContext *PCodecCtx;          // 视频文件的解码上下文
-            int width, height;                  // 视频的宽和高
-            int widthDst, heightDst;            // 目标视频的尺寸
-            enum AVPixelFormat PPixelFormat;    // 像素格式枚举
-            AVStream *PVideoStream;             // 视频流
+    class CMpegClient {
+    public:
+        CMpegClient(void);                                        // Constructor.
+        ~CMpegClient(void);                                       // 3-5 law. Destructor.
+        CMpegClient(const CMpegClient &ref) = delete;             // Delete the copy constructor.
+        CMpegClient& operator=(const CMpegClient &ref) = delete;  // Delete the copy assignment operator. 
+        CMpegClient(CMpegClient &&ref) noexcept;                  // Move constructor.
+        CMpegClient& operator=(CMpegClient &&ref) noexcept;       // Move assignment operator.
+        friend class CMpegEncoder;  // Let the encoder be able to access the member of this class.
+        friend class CMpegServer;  // Let the server be able to access the member of this class.
+        friend ostream & operator<<(ostream & out, CMpegClient & self_class);  // Show the results.
+        void clear(void);  // Clear all configurations and resources.
+        void meta_protected_clear(void);  // Clear the resources, but the configurations are remained.
+        void dumpFormat();  // Show the av_format results.
+        void setParameter(string keyword, void *ptr);  // Set arguments.
+        PyObject* getParameter(string keyword);  // Get the current arguments.
+        PyObject* getParameter();  // Get all key arguments.
+        void resetPath(string inVideoPath);  // Reset the path (URL) of the online video stream.
+        bool FFmpegSetup();  // Configure the decoder, and extract the basic meta-data. This method is also equipped in the constructor.
+        bool FFmpegSetup(string inVideoPath);  // Configure the decoder with extra arguments.
+        bool start();  // Start the listening to the online stream.
+        void terminate();  // Terminate the listener.
+        PyObject * ExtractFrame(int64_t readsize);  // Extract frames with the given number. 
+        PyObject * ExtractFrame();  // Extract frames. The number is configured in the class properties.
+    private:
+        string videoPath;                   // The path (URL) of the online video stream.
+        AVFormatContext *PFormatCtx;        // Format context of the video.
+        AVCodecContext *PCodecCtx;          // Codec context of the video.
+        int width, height;                  // Width, height of the video.
+        int widthDst, heightDst;            // Target width, height of ExtractFrame().
+        enum AVPixelFormat PPixelFormat;    // Enum object of the pixel format.
+        AVStream *PVideoStream;             // Video stream.
 
-            AVFrame *frame;
+        AVFrame *frame;
 
-            int PVideoStreamIDX;                // 视频流的编号
-            int PVideoFrameCount;               // 解码的帧数计数
-            Buffer_List buffer;                 // RGB图像的缓存
-            struct SwsContext *PswsCtx;         // 尺度变换器
-            int64_t cache_size, read_size;
-            AVRational frameRate;
+        int PVideoStreamIDX;                // The index of the video stream.
+        int PVideoFrameCount;               // The counter of the decoded frames.
+        BufferList buffer;                 // The buffer of the RGB formatted images.
+        struct SwsContext *PswsCtx;         // The context of the scale transformator.
+        int64_t cache_size, read_size;
+        AVRational frameRate;
 
-            std::thread read_handle;            // 接收数据的线程，用来控制上述这些参量
-            std::mutex read_check;              // 读状态检查锁
-            std::mutex info_lock;               // 取信息检查锁
-            bool reading;
+        std::thread read_handle;            // The thread of the circular frame reader.
+        std::mutex read_check;              // Lock for reading the status.
+        std::mutex info_lock;               // Lock for reading the info.
+        bool reading;
 
-            string _str_codec;                  // 显示当前的解码器
-            double _duration;                   // 显示当前的时长（s）
-            int64_t _predictFrameNum;           // 显示预测的总帧数
+        string _str_codec;                  // The name of the current codec.
+        double _duration;                   // The duration of the current video.
+        int64_t _predictFrameNum;           // The prediction of the total number of frames.
 
-            /* Enable or disable frame reference counting. You are not supposed to support
-            * both paths in your application but pick the one most appropriate to your
-            * needs. Look for the use of refcount in this example to see what are the
-            * differences of API usage between them. */
-            int refcount;                       // 视频帧的参考计数
-            bool __setup_check();
-            int _open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, AVFormatContext *PFormatCtx, enum AVMediaType type);
-            bool __client_holder();
-            AVRational _setAVRational(int num, int den);
-            int __save_frame(AVFrame *&frame, AVPacket &pkt, bool &got_frame, int cached);
-            int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
-        };
-    }
+        /* Enable or disable frame reference counting. You are not supposed to support
+        * both paths in your application but pick the one most appropriate to your
+        * needs. Look for the use of refcount in this example to see what are the
+        * differences of API usage between them. */
+        int refcount;                       // Reference count of the video frame.
+        bool __setup_check() const;
+        int _open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, AVFormatContext *PFormatCtx, enum AVMediaType type);
+        bool __client_holder();
+        AVRational _setAVRational(int num, int den);
+        int __save_frame(AVFrame *&frame, AVPacket *&pkt, bool &got_frame, int cached);
+        int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
+    };
+
+    class CMpegServer {
+    public:
+        CMpegServer(void);                                        // Constructor.
+        ~CMpegServer(void);                                       // 3-5 law. Destructor.
+        CMpegServer(const CMpegServer& ref);             // Delete the copy constructor.
+        CMpegServer& operator=(const CMpegServer& ref);  // Delete the copy assignment operator. 
+        CMpegServer(CMpegServer&& ref) noexcept;                  // Move constructor.
+        CMpegServer& operator=(CMpegServer&& ref) noexcept;       // Move assignment operator.
+        //friend class CMpegEncoder; // Let the server be able to access the member of this class.
+        friend ostream& operator<<(ostream& out, CMpegServer& self_class);  // Show the results.
+        void clear(void);  // Clear all configurations and resources.
+        void meta_protected_clear(void);  // Clear the resources, but the configurations are remained.
+        void resetPath(string inVideoPath);  // Reset the path of the output video stream.
+        void dumpFormat();  // Show the av_format results.
+        bool FFmpegSetup();  // Configure the encoder, and create the file handle. This method is also equipped in the constructor.
+        bool FFmpegSetup(string inVideoPath);  // Configure the encoder with extra arguments.
+        void FFmpegClose();  // Close the encoder, and finalize the written of the encoded video.
+        void setParameter(string keyword, void* ptr);  // Set arguments.
+        PyObject* getParameter(string keyword);  // Get the current arguments.
+        PyObject* getParameter();  // Get all key arguments.
+        int ServeFrameBlock(PyArrayObject* PyFrame);  // Encode the frame into the output stream (block mode). 
+        int ServeFrame(PyArrayObject* PyFrame);  // Encode the frame into the output stream. 
+    private:
+        string videoPath;                   // The path of the output video stream.
+        string __formatName;                // The format name of the stream. Could be "rtsp" or "rtmp". This value is detected from the videoPath.
+        string codecName;                   // The name of the codec
+        int64_t bitRate;                    // The bit rate of the output video.
+        int64_t __pts_ahead;                // The ahead pts.
+        int64_t __start_time;               // The start time stamp. This value is used for controlling the writing of the frames.
+        int64_t __cur_time;                 // The current time stamp. This value is restricted by __pts_ahead.
+        int width, height;                  // The size of the frames in the output video.
+        int widthSrc, heightSrc;            // The size of the input data (frames).
+        AVRational timeBase, frameRate;     // The time base and the frame rate.
+        AVRational time_base_q;             // The time base used for calculating the absolute time.
+        int GOPSize, MaxBFrame;             // The size of GOPs, and the maximal number of B frames.
+        OutputStream PStreamContex;         // The context of the current video parser.
+        AVFormatContext* PFormatCtx;        // Format context of the video.
+        AVPacket* Ppacket;                  // AV Packet used for writing frames.
+        struct SwsContext* PswsCtx;         // The context of the scale transformator.
+        AVFrame* __frameRGB;                // A temp AV frame object. Used for converting the data format.
+        uint8_t* RGBbuffer;                 // Data buffer.
+        bool __have_video, __enable_header;
+        AVRational _setAVRational(int num, int den);
+        int64_t __FrameToPts(int64_t seekFrame) const;
+        int64_t __TimeToPts(double seekTime) const;
+        bool __setup_check() const;
+        bool _LoadFrame_castFromPyFrameArray(AVFrame* frame, PyArrayObject* PyFrame);
+        void __log_packet();
+        int __write_frame();
+        bool __add_stream(AVCodec** codec);
+        AVFrame* __alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
+        bool __open_video(AVCodec* codec, AVDictionary* opt_arg);
+        AVFrame* __get_video_frame(PyArrayObject* PyFrame);
+        int __avcodec_encode_video2(AVCodecContext* enc_ctx, AVPacket* pkt, AVFrame* frame);
+        int __avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AVPacket* pkt);
+        void __copyMetaData(const CMpegServer& ref);
+    };
+}
 #endif

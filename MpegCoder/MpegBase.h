@@ -10,26 +10,29 @@
 
 #define FFMPG3_4
 #define FFMPG4_0
+#define FFMPG4_4
 
-extern "C"
-{
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-#include "libswscale/swscale.h"
-#include "libavutil/imgutils.h"
-#include "libavutil/samplefmt.h"
-#include "libavutil/timestamp.h"
-#include "libavutil/opt.h"
-#include "libavutil/avassert.h"
-#include "libavutil/channel_layout.h"
-#include "libavutil/opt.h"
-#include "libavutil/mathematics.h"
-#include "libswresample/swresample.h"
+namespace cmpc {
+    extern "C"
+    {
+        #include "libavcodec/avcodec.h"
+        #include "libavformat/avformat.h"
+        #include "libswscale/swscale.h"
+        #include "libavutil/imgutils.h"
+        #include "libavutil/samplefmt.h"
+        #include "libavutil/timestamp.h"
+        #include "libavutil/opt.h"
+        #include "libavutil/avassert.h"
+        #include "libavutil/channel_layout.h"
+        #include "libavutil/mathematics.h"
+        #include "libavutil/time.h"
+        #include "libswresample/swresample.h"
+    }
 }
 
-#define MPEGCODER_CURRENT_VERSION "2.05"
+#define MPEGCODER_CURRENT_VERSION "3.0.0"
 
-#define STREAM_PIX_FMT    AV_PIX_FMT_YUV420P /* default pix_fmt */
+#define STREAM_PIX_FMT AVPixelFormat::AV_PIX_FMT_YUV420P /* default pix_fmt */
 
 #define SCALE_FLAGS SWS_BICUBIC
 //SWS_BILINEAR
@@ -37,12 +40,13 @@ extern "C"
 #include <iostream>
 //#include <memory>
 #include <string>
+#include <functional>
 #include <iomanip>
+#include <sstream>
 #include <fstream>
 #include <thread>
 #include <mutex>
 #include <Python.h>
-#include <numpy/arrayobject.h>
 using std::string;
 using std::cerr;
 using std::cout;
@@ -50,6 +54,7 @@ using std::endl;
 using std::ostream;
 
 #ifdef  __cplusplus
+namespace cmpc {
     static const string av_make_error_string2(int errnum) {
         char errbuf[AV_ERROR_MAX_STRING_SIZE];
         av_strerror(errnum, errbuf, AV_ERROR_MAX_STRING_SIZE);
@@ -66,7 +71,7 @@ using std::ostream;
     }
     #undef av_ts2str
     #define av_ts2str(ts) av_ts_make_string_cpp(ts).c_str()
-    static const string av_ts_make_time_string_cpp(int64_t ts, AVRational *tb) {
+    static const string av_ts_make_time_string_cpp(int64_t ts, AVRational* tb) {
         char tsstrbuf[AV_TS_MAX_STRING_SIZE];
         av_ts_make_time_string(tsstrbuf, ts, tb);
         string strtsstrbuf = tsstrbuf;
@@ -74,7 +79,24 @@ using std::ostream;
     }
     #undef av_ts2timestr
     #define av_ts2timestr(ts, tb) av_ts_make_time_string_cpp(ts, tb).c_str()
+}
 #endif // __cplusplus
+
+namespace cmpc {
+    // a wrapper around a single output AVStream
+    typedef struct _OutputStream {
+        AVStream* st;
+        AVCodecContext* enc;
+
+        /* pts of the next frame that will be generated */
+        int64_t next_frame;
+
+        AVFrame* frame;
+        AVFrame* tmp_frame;
+
+        struct SwsContext* sws_ctx;
+    } OutputStream;
+}
 
 // compatibility with newer API
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)

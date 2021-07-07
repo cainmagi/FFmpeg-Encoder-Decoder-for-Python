@@ -1,6 +1,8 @@
 #ifndef MPEGPYD_H_INCLUDED
 #define MPEGPYD_H_INCLUDED
 
+#define PY_ARRAY_UNIQUE_SYMBOL MPEGARRAY_API
+
 #include <iostream>
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -13,87 +15,82 @@
 using std::string;
 using std::ostringstream;
 
-PyObject *str2PyStr(string Str) {
-    //½«Ô­Ê¼Êä³ö×ªÎªUnicode
+PyObject *str2PyStr(string Str) {  // Convert the output string to the widechar unicode string.
     int wlen = MultiByteToWideChar(CP_ACP, NULL, Str.c_str(), int(Str.size()), NULL, 0);
-    wchar_t* wszString = new wchar_t[wlen + 1];
+    wchar_t* wszString = new wchar_t[static_cast<size_t>(wlen) + 1];
     MultiByteToWideChar(CP_ACP, NULL, Str.c_str(), int(Str.size()), wszString, wlen);
     wszString[wlen] = 0;
-    PyObject* res = PyUnicode_FromUnicode((const Py_UNICODE*)wszString, wlen);
+    PyObject* res = PyUnicode_FromWideChar((const Py_UNICODE*)wszString, wlen);
     delete[] wszString;
     return res;
 }
 
 /*****************************************************************************
-* Àà/½á¹¹µÄ¶¨Òå:
-* Ö±½ÓÒýÓÃCMISS_HandleµÄÀà
-* ³ý´ËÖ®Íâ£¬²»ÔÚ¸ÃÀàÖÐÄÚÖÃÈÎºÎPython¶Ô¿ÚµÄÊý¾Ý£¬
-* ÒòÎªÏàÓ¦µÄÊý¾ÝÒÑ¾­·â×°ÔÚCMISS_HandleÖÐ
+* C style definition of Python classes.
+* Each class would ref the C implemented class directly.
+* No extra python data member is added to these classes,
+* because the data members have been already packed as private members of the
+* C classes.
 *****************************************************************************/
 typedef struct _C_MpegDecoder
 {
-    PyObject_HEAD             // == PyObject ob_base;  ¶¨ÒåÒ»¸öPyObject¶ÔÏó.
-                              //////////////////////////////////////////////////////////////////////////
-                              // Àà/½á¹¹µÄÕæÕý³ÉÔ±²¿·Ö.
-                              //
-    cmpc::CMpegDecoder *_in_Handle;
-}C_MpegDecoder;
+    PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
+    cmpc::CMpegDecoder *_in_Handle;  // Define the implementation of the C Object.
+} C_MpegDecoder;
 
 typedef struct _C_MpegEncoder
 {
-    PyObject_HEAD             // == PyObject ob_base;  ¶¨ÒåÒ»¸öPyObject¶ÔÏó.
-                              //////////////////////////////////////////////////////////////////////////
-                              // Àà/½á¹¹µÄÕæÕý³ÉÔ±²¿·Ö.
-                              //
-    cmpc::CMpegEncoder *_in_Handle;
-}C_MpegEncoder;
+    PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
+    cmpc::CMpegEncoder *_in_Handle;  // Define the implementation of the C Object.
+} C_MpegEncoder;
 
 typedef struct _C_MpegClient
 {
-    PyObject_HEAD             // == PyObject ob_base;  ¶¨ÒåÒ»¸öPyObject¶ÔÏó.
-                              //////////////////////////////////////////////////////////////////////////
-                              // Àà/½á¹¹µÄÕæÕý³ÉÔ±²¿·Ö.
-                              //
-        cmpc::CMpegClient *_in_Handle;
-}C_MpegClient;
+    PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
+    cmpc::CMpegClient *_in_Handle;  // Define the implementation of the C Object.
+} C_MpegClient;
 
-static PyMemberDef C_MPDC_DataMembers[] =        //×¢²áÀà/½á¹¹µÄÊý¾Ý³ÉÔ±.
-{ //²»×¢²áÈÎºÎÊý¾Ý£¬ÒòÎªÀàÊý¾ÝCMpegDecoderÔÚÉÏ²ãÊÇ²»¿É¼ûµÄ
+typedef struct _C_MpegServer
+{
+    PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
+    cmpc::CMpegServer* _in_Handle;  // Define the implementation of the C Object.
+} C_MpegServer;
+
+static PyMemberDef C_MPDC_DataMembers[] =        // Register the members of the python class.
+{ // Do not register any data, because all data of this class is private.
   //{"m_dEnglish", T_FLOAT,  offsetof(CScore, m_dEnglish), 0, "The English score of instance."},
     { "hAddress",   T_ULONGLONG, offsetof(C_MpegDecoder, _in_Handle),   READONLY, "The address of the handle in memory." },
     { nullptr, 0, 0, 0, nullptr }
 };
 
-static PyMemberDef C_MPEC_DataMembers[] =        //×¢²áÀà/½á¹¹µÄÊý¾Ý³ÉÔ±.
-{ //²»×¢²áÈÎºÎÊý¾Ý£¬ÒòÎªÀàÊý¾ÝCMpegDecoderÔÚÉÏ²ãÊÇ²»¿É¼ûµÄ
+static PyMemberDef C_MPEC_DataMembers[] =        // Register the members of the python class.
+{ // Do not register any data, because all data of this class is private.
   //{"m_dEnglish", T_FLOAT,  offsetof(CScore, m_dEnglish), 0, "The English score of instance."},
     { "hAddress",   T_ULONGLONG, offsetof(C_MpegEncoder, _in_Handle),   READONLY, "The address of the handle in memory." },
     { nullptr, 0, 0, 0, nullptr }
 };
 
-static PyMemberDef C_MPCT_DataMembers[] =        //×¢²áÀà/½á¹¹µÄÊý¾Ý³ÉÔ±.
-{ //²»×¢²áÈÎºÎÊý¾Ý£¬ÒòÎªÀàÊý¾ÝCMpegDecoderÔÚÉÏ²ãÊÇ²»¿É¼ûµÄ
+static PyMemberDef C_MPCT_DataMembers[] =        // Register the members of the python class.
+{ // Do not register any data, because all data of this class is private.
   //{"m_dEnglish", T_FLOAT,  offsetof(CScore, m_dEnglish), 0, "The English score of instance."},
     { "hAddress",   T_ULONGLONG, offsetof(C_MpegClient, _in_Handle),   READONLY, "The address of the handle in memory." },
     { nullptr, 0, 0, 0, nullptr }
 };
 
+static PyMemberDef C_MPSV_DataMembers[] =        // Register the members of the python class.
+{ // Do not register any data, because all data of this class is private.
+  //{"m_dEnglish", T_FLOAT,  offsetof(CScore, m_dEnglish), 0, "The English score of instance."},
+    { "hAddress",   T_ULONGLONG, offsetof(C_MpegServer, _in_Handle),   READONLY, "The address of the handle in memory." },
+    { nullptr, 0, 0, 0, nullptr }
+};
+
 /*****************************************************************************
-* È«º¯ÊýÉùÃ÷:
-* ÎªºóÐøµÄº¯Êý×¢²á×¼±¸ºÃÉùÃ÷µÄ¶ÔÏó
+* Delearaction of all methods and functions.
+* Prepare the function objects for the registeration of the classes and
+* functions.
 *****************************************************************************/
-/*static void C_CMISS_init(C_CMISS_h* Self, PyObject* pArgs);
-static void C_CMISS_Destruct(C_CMISS_h* Self);
-static PyObject* C_CMISS_Str(C_CMISS_h* Self);
-static PyObject* C_CMISS_Repr(C_CMISS_h* Self);
-static PyObject* C_CMISS_login(C_CMISS_h* Self, PyObject *args, PyObject *kwargs);
-static PyObject* C_CMISS_set_config(C_CMISS_h* Self, PyObject *args, PyObject *kwargs);
-static PyObject* C_CMISS_save_config(C_CMISS_h* Self, PyObject* args);
-static PyObject* C_CMISS_load_config(C_CMISS_h* Self, PyObject* args);
-static PyObject* C_CMISS_save_as_file(C_CMISS_h* Self);
-static PyObject* C_CMISS_download_bin_file(C_CMISS_h* Self);
-static PyObject* C_CMISS_save_as_file_XML(C_CMISS_h* Self, PyObject* args);
-PyMODINIT_FUNC PyInit_Score(void);*/
+/*static void Example(ClassName* Self, PyObject* pArgs);
+PyMODINIT_FUNC PyFunc_Example(void);*/
 
 static PyObject* C_MPC_Global(PyObject* Self, PyObject *args, PyObject *kwargs) {
     char dumpLevel = -1;
@@ -104,6 +101,18 @@ static PyObject* C_MPC_Global(PyObject* Self, PyObject *args, PyObject *kwargs) 
     }
     if (dumpLevel != -1) {
         cmpc::__dumpControl = static_cast<int8_t>(dumpLevel);
+        switch (dumpLevel) {
+        case 0:
+            cmpc::av_log_set_level(AV_LOG_ERROR);
+            break;
+        case 1:
+            cmpc::av_log_set_level(AV_LOG_INFO);
+            break;
+        case 2:
+        default:
+            cmpc::av_log_set_level(AV_LOG_DEBUG);
+            break;
+        }
     }
     Py_RETURN_NONE;
 }
@@ -165,6 +174,15 @@ Yuchen's Mpeg Coder - Readme
         >>> d.clear() # Disconnect with the stream.
     For more instructions, you could tap help(mpegCoder). 
 ================================================================================
+V3.0.0 update report:
+    1. Fix a severe memory leaking bugs when using AVPacket.
+    2. Support the MpegServer. This class is used for serving the online video
+       streams.
+    3. Refactor the implementation of the loggings.
+    4. Add getParameter() and setParameter(configDict) APIs to MpegEncoder and
+       MpegServer.
+    5. Move FFMpeg depedencies and the OutputStream class to the cmpc space.
+    6. Upgrade to FFMpeg 4.4 Version.
 V2.05 update report:
     1. Fix a severe bug that causes the memory leak when using MpegClient.
     This bug also exists in MpegDecoder, but it seems that the bug would not cause
@@ -206,9 +224,9 @@ V1.0 update report:
 }
 
 /*****************************************************************************
-* ÖØÔØC_CMISS_hÀàµÄËùÓÐÄÚÖÃ¡¢¹¹Ôì·½·¨¡£
+* Declare the core methods of the classes.
 *****************************************************************************/
-static int C_MPDC_init(C_MpegDecoder* Self, PyObject* args, PyObject *kwargs) { //ÖØÔØ¡¤¹¹Ôì·½·¨.
+static int C_MPDC_init(C_MpegDecoder* Self, PyObject* args, PyObject *kwargs) {  // Construct
     Py_buffer vpath = { 0 };
     static char *kwlist[] = { "videoPath", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
@@ -230,91 +248,101 @@ static int C_MPDC_init(C_MpegDecoder* Self, PyObject* args, PyObject *kwargs) { 
     return 0;
 }
 
-static int C_MPEC_init(C_MpegEncoder* Self) { //ÖØÔØ¡¤¹¹Ôì·½·¨.
+static int C_MPEC_init(C_MpegEncoder* Self) {  // Construct
     Self->_in_Handle = new cmpc::CMpegEncoder;
-    /*if (cmpc::__dumpControl > 1)
-        cout << "Create Handle of Encoder." << endl;*/
     return 0;
 }
 
-static int C_MPCT_init(C_MpegClient* Self) { //ÖØÔØ¡¤¹¹Ôì·½·¨.
+static int C_MPCT_init(C_MpegClient* Self) {  // Construct
     Self->_in_Handle = new cmpc::CMpegClient;
-    /*if (cmpc::__dumpControl > 1)
-    cout << "Create Handle of Encoder." << endl;*/
     return 0;
 }
 
-static void C_MPDC_Destruct(C_MpegDecoder* Self) { //ÖØÔØ¡¤Îö¹¹·½·¨
-    delete Self->_in_Handle; //Í¨¹ý¶¯Ì¬·ÖÅä/ÊÍ·ÅÀ´¼ä½ÓÎö¹¹£¬±È¾²Ì¬ÉùÃ÷¸ü±£ÏÕ
-
-                             //Èç¹û»¹ÓÐPyObject*³ÉÔ±µÄ»°£¬ÒªÒ»²¢ÊÍ·ÅÖ®.
-                             //Èç£ºPy_XDECREF(Self->Member);
-    Py_TYPE(Self)->tp_free((PyObject*)Self); //ÊÍ·Å¶ÔÏó/ÊµÀý.
+static int C_MPSV_init(C_MpegServer* Self) {  // Construct
+    Self->_in_Handle = new cmpc::CMpegServer;
+    return 0;
 }
 
-static void C_MPEC_Destruct(C_MpegEncoder* Self) { //ÖØÔØ¡¤Îö¹¹·½·¨
-    delete Self->_in_Handle; //Í¨¹ý¶¯Ì¬·ÖÅä/ÊÍ·ÅÀ´¼ä½ÓÎö¹¹£¬±È¾²Ì¬ÉùÃ÷¸ü±£ÏÕ
-
-                             //Èç¹û»¹ÓÐPyObject*³ÉÔ±µÄ»°£¬ÒªÒ»²¢ÊÍ·ÅÖ®.
-                             //Èç£ºPy_XDECREF(Self->Member);
-    Py_TYPE(Self)->tp_free((PyObject*)Self); //ÊÍ·Å¶ÔÏó/ÊµÀý.
+static void C_MPDC_Destruct(C_MpegDecoder* Self) {  // Destructor
+    delete Self->_in_Handle;  // Delete the allocated class implementation.
+    /* If there are still other members, also need to deallocate them,
+     * for example, Py_XDECREF(Self->Member); */
+    Py_TYPE(Self)->tp_free((PyObject*)Self);  // Destruct the PyObject.
 }
 
-static void C_MPCT_Destruct(C_MpegClient* Self) { //ÖØÔØ¡¤Îö¹¹·½·¨
-    delete Self->_in_Handle; //Í¨¹ý¶¯Ì¬·ÖÅä/ÊÍ·ÅÀ´¼ä½ÓÎö¹¹£¬±È¾²Ì¬ÉùÃ÷¸ü±£ÏÕ
-
-                             //Èç¹û»¹ÓÐPyObject*³ÉÔ±µÄ»°£¬ÒªÒ»²¢ÊÍ·ÅÖ®.
-                             //Èç£ºPy_XDECREF(Self->Member);
-    Py_TYPE(Self)->tp_free((PyObject*)Self); //ÊÍ·Å¶ÔÏó/ÊµÀý.
+static void C_MPEC_Destruct(C_MpegEncoder* Self) {  // Destructor
+    delete Self->_in_Handle;  // Delete the allocated class implementation.
+    /* If there are still other members, also need to deallocate them,
+     * for example, Py_XDECREF(Self->Member); */
+    Py_TYPE(Self)->tp_free((PyObject*)Self);  // Destruct the PyObject.
 }
 
-static PyObject* C_MPDC_Str(C_MpegDecoder* Self) { //ÖØÔØ¡¤µ÷ÓÃstr/printÊ±×Ô¶¯µ÷ÓÃ´Ëº¯Êý.
+static void C_MPCT_Destruct(C_MpegClient* Self) {  // Destructor
+    delete Self->_in_Handle;  // Delete the allocated class implementation.
+    /* If there are still other members, also need to deallocate them,
+     * for example, Py_XDECREF(Self->Member); */
+    Py_TYPE(Self)->tp_free((PyObject*)Self);  // Destruct the PyObject.
+}
+
+static void C_MPSV_Destruct(C_MpegServer* Self) {  // Destructor
+    delete Self->_in_Handle;  // Delete the allocated class implementation.
+    /* If there are still other members, also need to deallocate them,
+     * for example, Py_XDECREF(Self->Member); */
+    Py_TYPE(Self)->tp_free((PyObject*)Self);  // Destruct the PyObject.
+}
+
+static PyObject* C_MPDC_Str(C_MpegDecoder* Self) {  // The __str__ (print) operator.
     ostringstream OStr;
     OStr << *(Self->_in_Handle);
     string Str = OStr.str();
-
-    //½«Ô­Ê¼Êä³ö×ªÎªUnicode
-    return str2PyStr(Str);
+    return str2PyStr(Str);  // Convert the string to unicode wide char.
 }
 
-static PyObject* C_MPEC_Str(C_MpegEncoder* Self) { //ÖØÔØ¡¤µ÷ÓÃstr/printÊ±×Ô¶¯µ÷ÓÃ´Ëº¯Êý.
+static PyObject* C_MPEC_Str(C_MpegEncoder* Self) {  // The __str__ (print) operator.
     ostringstream OStr;
     OStr << *(Self->_in_Handle);
     string Str = OStr.str();
-
-    //½«Ô­Ê¼Êä³ö×ªÎªUnicode
-    return str2PyStr(Str);
+    return str2PyStr(Str);  // Convert the string to unicode wide char.
 }
 
-static PyObject* C_MPCT_Str(C_MpegClient* Self) { //ÖØÔØ¡¤µ÷ÓÃstr/printÊ±×Ô¶¯µ÷ÓÃ´Ëº¯Êý.
+static PyObject* C_MPCT_Str(C_MpegClient* Self) {  // The __str__ (print) operator.
     ostringstream OStr;
     OStr << *(Self->_in_Handle);
     string Str = OStr.str();
-
-    //½«Ô­Ê¼Êä³ö×ªÎªUnicode
-    return str2PyStr(Str);
+    return str2PyStr(Str);  // Convert the string to unicode wide char.
 }
 
-static PyObject* C_MPDC_Repr(C_MpegDecoder* Self) { //ÖØÔØ¡¤µ÷ÓÃreprÄÚÖÃº¯ÊýÊ±×Ô¶¯µ÷ÓÃ.
+static PyObject* C_MPSV_Str(C_MpegServer* Self) {  // The __str__ (print) operator.
+    ostringstream OStr;
+    OStr << *(Self->_in_Handle);
+    string Str = OStr.str();
+    return str2PyStr(Str);  // Convert the string to unicode wide char.
+}
+
+static PyObject* C_MPDC_Repr(C_MpegDecoder* Self) {  // The __repr__ operator.
     return C_MPDC_Str(Self);
 }
 
-static PyObject* C_MPEC_Repr(C_MpegEncoder* Self) { //ÖØÔØ¡¤µ÷ÓÃreprÄÚÖÃº¯ÊýÊ±×Ô¶¯µ÷ÓÃ.
+static PyObject* C_MPEC_Repr(C_MpegEncoder* Self) {  // The __repr__ operator.
     return C_MPEC_Str(Self);
 }
 
-static PyObject* C_MPCT_Repr(C_MpegClient* Self) { //ÖØÔØ¡¤µ÷ÓÃreprÄÚÖÃº¯ÊýÊ±×Ô¶¯µ÷ÓÃ.
+static PyObject* C_MPCT_Repr(C_MpegClient* Self) {  // The __repr__ operator.
     return C_MPCT_Str(Self);
 }
 
+static PyObject* C_MPSV_Repr(C_MpegServer* Self) {  // The __repr__ operator.
+    return C_MPSV_Str(Self);
+}
+
 /*****************************************************************************
-* ¶¨ÒåC_MpegDecoderÀàµÄÃæÏòPython½Ó¿Ú¡£
-* C_MPDC_Setup:             °´Â·¾¶È¡ÓÃÊÓÆµ£¬²¢½øÐÐ½âÂëÆ÷ÉèÖÃ
-* C_MPDC_ExtractFrame       ÌáÈ¡Ö¸¶¨Î»ÖÃµÄÖ¸¶¨ÊýÄ¿µÄÁ¬ÐøÖ¡
+* Define the Python-C-APIs for .
+* C_MPDC_Setup:             Configure the decoder by the video.
+* C_MPDC_ExtractFrame       Extract serveral frames.
 *****************************************************************************/
 static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPDC_Setupº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   videoPath [byte->buffer]: ´ý¶ÁÈ¡ÊÓÆµÂ·¾¶
+    /* Wrapped (bool)C_MPDC_Setup method, the inputs are:
+    *   videoPath [byte->buffer]: the video path to be decoded.
     */
     Py_buffer vpath = { 0 };
     static char *kwlist[] = { "videoPath", nullptr };
@@ -342,8 +370,8 @@ static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwa
 }
 
 static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPEC_Setupº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   videoPath [byte->buffer]: ´ý¶ÁÈ¡ÊÓÆµÂ·¾¶
+    /* Wrapped (bool)C_MPEC_Setup method, the inputs are:
+    *   videoPath [byte->buffer]: the video path to be encoded.
     */
     Py_buffer vpath = { 0 };
     static char *kwlist[] = { "videoPath", nullptr };
@@ -371,8 +399,8 @@ static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwa
 }
 
 static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPCT_Setupº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   videoAddress [byte->buffer]: ´ý¶ÁÈ¡ÊÓÆµÂ·¾¶
+    /* Wrapped (bool)C_MPCT_Setup method, the inputs are:
+    *   videoAddress [byte->buffer]: the video path to be demuxed.
     */
     Py_buffer vpath = { 0 };
     static char *kwlist[] = { "videoAddress", nullptr };
@@ -399,9 +427,38 @@ static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject *args, PyObject *kwar
         Py_RETURN_FALSE;
 }
 
+static PyObject* C_MPSV_Setup(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)C_MPSV_Setup method, the inputs are:
+    *   videoAddress [byte->buffer]: the video address to be served.
+    */
+    Py_buffer vpath = { 0 };
+    static char* kwlist[] = { "videoAddress", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(string)'");
+        return nullptr;
+    }
+    string in_vpath;
+    if (vpath.buf)
+        in_vpath.assign(reinterpret_cast<char*>(vpath.buf));
+    else
+        in_vpath.clear();
+    bool res;
+    if (!in_vpath.empty())
+        res = Self->_in_Handle->FFmpegSetup(in_vpath);
+    else
+        res = Self->_in_Handle->FFmpegSetup();
+
+    in_vpath.clear();
+    PyBuffer_Release(&vpath);
+    if (res)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
+}
+
 static PyObject* C_MPDC_resetPath(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPDC_resetPathº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   videoPath [byte->buffer]: ´ý¶ÁÈ¡ÊÓÆµÂ·¾¶
+    /* Wrapped (bool)C_MPDC_resetPath method, the inputs are:
+    *   videoPath [byte->buffer]: the video path to be decoded.
     */
     Py_buffer vpath = { 0 };
     static char *kwlist[] = { "videoPath", nullptr };
@@ -421,9 +478,31 @@ static PyObject* C_MPDC_resetPath(C_MpegDecoder* Self, PyObject *args, PyObject 
     Py_RETURN_NONE;
 }
 
+static PyObject* C_MPEC_resetPath(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)C_MPEC_resetPath method, the inputs are:
+    *   videoPath [byte->buffer]: the video path to be encoded.
+    */
+    Py_buffer vpath = { 0 };
+    static char* kwlist[] = { "videoPath", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(string)'");
+        return nullptr;
+    }
+    string in_vpath;
+    if (vpath.buf)
+        in_vpath.assign(reinterpret_cast<char*>(vpath.buf));
+    else
+        in_vpath.clear();
+    Self->_in_Handle->resetPath(in_vpath);
+
+    in_vpath.clear();
+    PyBuffer_Release(&vpath);
+    Py_RETURN_NONE;
+}
+
 static PyObject* C_MPCT_resetPath(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPCT_resetPathº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   videoAddress [byte->buffer]: ´ý¶ÁÈ¡ÊÓÆµÂ·¾¶
+    /* Wrapped (bool)C_MPCT_resetPath method, the inputs are:
+    *   videoAddress [byte->buffer]: the video path to be demuxed.
     */
     Py_buffer vpath = { 0 };
     static char *kwlist[] = { "videoAddress", nullptr };
@@ -443,8 +522,30 @@ static PyObject* C_MPCT_resetPath(C_MpegClient* Self, PyObject *args, PyObject *
     Py_RETURN_NONE;
 }
 
+static PyObject* C_MPSV_resetPath(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)C_MPSV_resetPath method, the inputs are:
+    *   videoAddress [byte->buffer]: the video address to be served.
+    */
+    Py_buffer vpath = { 0 };
+    static char* kwlist[] = { "videoAddress", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(string)'");
+        return nullptr;
+    }
+    string in_vpath;
+    if (vpath.buf)
+        in_vpath.assign(reinterpret_cast<char*>(vpath.buf));
+    else
+        in_vpath.clear();
+    Self->_in_Handle->resetPath(in_vpath);
+
+    in_vpath.clear();
+    PyBuffer_Release(&vpath);
+    Py_RETURN_NONE;
+}
+
 static PyObject* C_MPCT_Start(C_MpegClient* Self) {
-    /* ·â×°(void)Startº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)Start method, the input is required to be empty. */
     auto success = Self->_in_Handle->start();
     if (!success) {
         PyErr_SetString(PyExc_ConnectionError, "Error.Start: before call this method, need to call FFmpegSetup() successfully, and also you should not call it when the decoding thread is running.'");
@@ -454,17 +555,16 @@ static PyObject* C_MPCT_Start(C_MpegClient* Self) {
 }
 
 static PyObject* C_MPCT_Terminate(C_MpegClient* Self) {
-    /* ·â×°(void)Terminateº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)Terminate method, the input is required to be empty. */
     Self->_in_Handle->terminate();
     Py_RETURN_NONE;
 }
 
-//×¢ÒâÏÂÃæÕâÁ©º¯Êý£¬ÎªÊ²Ã´ËüÃÇ²»ÐèÒªPy_IN/DECREFÄØ£¿ÒòÎªÎ´´´½¨ÁÙÊ±±äÁ¿£¬Ò²Ã»ÓÐ
-//Ê¹ÓÃÐÎÈçNoneÕâÑùµÄÏÖ³É·µ»Ø¶ÔÏó£¡
+/* Pay attention to the following two methods :
+ * Why do we remove the Py_IN/DECREF?
+ * Because no temp variables are created, so we do not need to manage them, 
+ * but just use None as the returned value. */
 static PyObject* FreePyArray(PyArrayObject *PyArray) {
-    if (PyArray_API == nullptr) {
-        import_array();
-    }
     uint8_t * out_dataptr = (uint8_t *)PyArray_DATA(PyArray);
     delete [] out_dataptr;
     return nullptr;
@@ -476,16 +576,14 @@ void FreePyList(PyObject *PyList) {
         FreePyArray((PyArrayObject*)Item);
     }
     Py_DECREF(PyList);
-    PyList_ClearFreeList();
+    PyGC_Collect();
 }
 
 static PyObject* C_MPDC_ExtractFrame(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(int)ExtractFrameº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   framePos [int->int64_t]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
+    /* Wrapped (int)ExtractFrame method, the inputs are:
+    *   framePos [int->int64_t]: the start position of the extracted frames.
+    *   frameNum [int->int64_t]: the number of extracted frames.
     */
-    if (PyArray_API == nullptr) {
-        import_array();
-    }
     int64_t framePos = 0, frameNum = 1;
     static char *kwlist[] = { "framePos", "frameNum", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|LL", kwlist, &framePos, &frameNum)) {
@@ -504,18 +602,16 @@ static PyObject* C_MPDC_ExtractFrame(C_MpegDecoder* Self, PyObject *args, PyObje
     }
     else {
         Py_DECREF(PyFrameList);
-        PyList_ClearFreeList();
+        PyGC_Collect();
         Py_RETURN_NONE;
     }
 }
 
 static PyObject* C_MPDC_ExtractFrame_Time(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(int)ExtractFrameº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   timePos [float->double]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
+    /* Wrapped (int)ExtractFrame method, the inputs are:
+    *   timePos [float->double]: the start position (time unit) of the extracted frames.
+    *   frameNum [int->int64_t]: the number of extracted frames.
     */
-    if (PyArray_API == nullptr) {
-        import_array();
-    }
     double timePos = 0;
     int64_t frameNum = 1;
     static char *kwlist[] = { "timePos", "frameNum", nullptr };
@@ -535,18 +631,15 @@ static PyObject* C_MPDC_ExtractFrame_Time(C_MpegDecoder* Self, PyObject *args, P
     }
     else {
         Py_DECREF(PyFrameList);
-        PyList_ClearFreeList();
+        PyGC_Collect();
         Py_RETURN_NONE;
     }
 }
 
 static PyObject* C_MPEC_EncodeFrame(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)EncodeFrameº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   PyArrayFrame [ndarray->PyArrayObject]: ´ý´¦ÀíµÄÖ¡
+    /* Wrapped (bool)EncodeFrame method, the inputs are:
+    *   PyArrayFrame [ndarray->PyArrayObject]: the frame to be encoded.
     */
-    if (PyArray_API == nullptr) {
-        import_array();
-    }
     PyObject *PyArrayFrame = nullptr;
     static char *kwlist[] = { "PyArrayFrame", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &PyArrayFrame)) {
@@ -560,9 +653,44 @@ static PyObject* C_MPEC_EncodeFrame(C_MpegEncoder* Self, PyObject *args, PyObjec
         Py_RETURN_FALSE;
 }
 
+static PyObject* C_MPSV_ServeFrame(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)ServeFrame method, the inputs are:
+    *   PyArrayFrame [ndarray->PyArrayObject]: the frame to be encoded and served.
+    */
+    PyObject* PyArrayFrame = nullptr;
+    static char* kwlist[] = { "PyArrayFrame", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &PyArrayFrame)) {
+        PyErr_SetString(PyExc_TypeError, "Error.EncodeFrame: need 'PyArrayFrame(ndarray)'");
+        return nullptr;
+    }
+    int res = Self->_in_Handle->ServeFrame(reinterpret_cast<PyArrayObject*>(PyArrayFrame));
+    if (res >= 0)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
+}
+
+static PyObject* C_MPSV_ServeFrameBlock(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)ServeFrameBlock method, the inputs are:
+    *   PyArrayFrame [ndarray->PyArrayObject]: the frame to be encoded and served.
+    */
+    PyObject* PyArrayFrame = nullptr;
+    static char* kwlist[] = { "PyArrayFrame", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &PyArrayFrame)) {
+        PyErr_SetString(PyExc_TypeError, "Error.EncodeFrame: need 'PyArrayFrame(ndarray)'");
+        return nullptr;
+    }
+    int res = Self->_in_Handle->ServeFrameBlock(reinterpret_cast<PyArrayObject*>(PyArrayFrame));
+    if (res >= 0)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
+}
+
 static PyObject* C_MPCT_ExtractFrame(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(int)ExtractFrameº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   framePos [int->int64_t]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
+    /* Wrapped (int)ExtractFrame method, the inputs are:
+    *   readSize [int->int64_t]: the number of frames to be readed. This value could not
+    *       exceeded the size of the frame buffer.
     */
     int64_t readSize = 0;
     static char *kwlist[] = { "readSize", nullptr };
@@ -584,12 +712,9 @@ static PyObject* C_MPCT_ExtractFrame(C_MpegClient* Self, PyObject *args, PyObjec
 }
 
 static PyObject* C_MPDC_ExtractGOP(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(int)ExtractGOPº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   framePos [int->int64_t]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
+    /* Wrapped (int)ExtractGOP method, the inputs are:
+    *   framePos [int->int64_t]: the start position of the GOP to be extracted.
     */
-    if(PyArray_API == nullptr) {
-        import_array();
-    }
     int64_t framePos = -1;
     static char *kwlist[] = { "framePos", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|L", kwlist, &framePos)) {
@@ -610,18 +735,15 @@ static PyObject* C_MPDC_ExtractGOP(C_MpegDecoder* Self, PyObject *args, PyObject
     }
     else {
         Py_DECREF(PyFrameList);
-        PyList_ClearFreeList();
+        PyGC_Collect();
         Py_RETURN_NONE;
     }
 }
 
 static PyObject* C_MPDC_ExtractGOP_Time(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(int)ExtractGOP_Timeº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   timePos [float->double]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
+    /* Wrapped (int)ExtractGOP_Time method, the inputs are:
+    *   timePos [float->double]: the start position (time unit) of the GOP to be extracted.
     */
-    if (PyArray_API == nullptr) {
-        import_array();
-    }
     double timePos = -1;
     static char *kwlist[] = { "timePos", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|d", kwlist, &timePos)) {
@@ -642,15 +764,15 @@ static PyObject* C_MPDC_ExtractGOP_Time(C_MpegDecoder* Self, PyObject *args, PyO
     }
     else {
         Py_DECREF(PyFrameList);
-        PyList_ClearFreeList();
+        PyGC_Collect();
         Py_RETURN_NONE;
     }
 }
 
 static PyObject* C_MPDC_setGOPPosition(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(void)setGOPPositionº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   framePos [int->int64_t]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
-    *   timePos [float->double]: ´ý´¦ÀíµÄÖ¡Î»ÖÃ
+    /* Wrapped (void)setGOPPosition method, the inputs are:
+    *   framePos [int->int64_t]: the start position of the GOP to be extracted.
+    *   timePos [float->double]: the start position (time unit) of the GOP to be extracted.
     */
     int64_t framePos = -1;
     double timePos = -1;
@@ -667,20 +789,20 @@ static PyObject* C_MPDC_setGOPPosition(C_MpegDecoder* Self, PyObject *args, PyOb
 }
 
 static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPDC_getParamº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   parameter [byte->buffer]: ÐèÒªÌáÈ¡µÄ²ÎÊý
-    *       videoPath:    [byte]  µ±Ç°ÊÓÆµÂ·¾¶
-    *       width/height: [int]   Ö¡¿í/¸ß
-    *       frameCount:   [int]   ±¾´Î½âÂëµÄÖ¡Êý¼ÆÊý
-    *       coderName:    [byte]  ½âÂëÆ÷Ãû³Æ
-    *       duration:     [float] ÊÓÆµ³¤¶È(s)
-    *       estFrameNum:  [int]   Ô¤¹ÀµÄ×ÜÖ¡Êý
-    *       avgFrameRate  [float] Æ½¾ùÖ¡ÂÊ
+    /* Wrapped (bool)C_MPDC_getParam function, the inputs are:
+    *   paramName [byte->buffer]: The name of the parameter to be gotten, could be.
+    *       videoPath:    [byte]  Path of the current video.
+    *       width/height: [int]   The width / height of the frame.
+    *       frameCount:   [int]   The count of frames of the current decoding work.
+    *       coderName:    [byte]  The name of the decoder.
+    *       duration:     [float] The duration of the video.
+    *       estFrameNum:  [int]   The estimated total frame number.
+    *       avgFrameRate  [float] The average frame rate.
     */
     Py_buffer param = { 0 };
     static char *kwlist[] = { "paramName", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'paramName(string)'" );
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'" );
         return nullptr;
     }
     string in_param;
@@ -688,27 +810,68 @@ static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject *args, PyObject *
         in_param.assign(reinterpret_cast<char *>(param.buf));
     else
         in_param.clear();
-    PyObject * res = Self->_in_Handle->getParameter(in_param);
+    PyObject* res = nullptr;
+    if (in_param.empty()) {
+        res = Self->_in_Handle->getParameter();
+    }
+    else {
+        res = Self->_in_Handle->getParameter(in_param);
+    }
+    in_param.clear();
+    PyBuffer_Release(&param);
+    return res;
+}
+
+static PyObject* C_MPEC_getParam(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)C_MPEC_getParam function, the inputs are:
+    *   paramName [byte->buffer]: The name of the parameter to be gotten, could be.
+    *       videoPath:          [byte]  Path of the current video.
+    *       codecName:          [byte]  The name of the codec.
+    *       bitRate:            [int]   The target bit rate.
+    *       width/height:       [int]   The width / height of the encoded frame.
+    *       widthSrc/heightSrc: [int]   The width / height of the input frame.
+    *       GOPSize:            [int]   The size of one GOP.
+    *       maxBframe:          [int]   The maximal number of continuous B frames.
+    *       frameRate:          [float] The target frame rate.
+    */
+    Py_buffer param = { 0 };
+    static char* kwlist[] = { "paramName", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'");
+        return nullptr;
+    }
+    string in_param;
+    if (param.buf)
+        in_param.assign(reinterpret_cast<char*>(param.buf));
+    else
+        in_param.clear();
+    PyObject* res = nullptr;
+    if (in_param.empty()) {
+        res = Self->_in_Handle->getParameter();
+    }
+    else {
+        res = Self->_in_Handle->getParameter(in_param);
+    }
     in_param.clear();
     PyBuffer_Release(&param);
     return res;
 }
 
 static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPCT_getParamº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   parameter [byte->buffer]: ÐèÒªÌáÈ¡µÄ²ÎÊý
-    *       videoPath:    [byte]  µ±Ç°ÊÓÆµÂ·¾¶
-    *       width/height: [int]   Ö¡¿í/¸ß
-    *       frameCount:   [int]   ±¾´Î½âÂëµÄÖ¡Êý¼ÆÊý
-    *       coderName:    [byte]  ½âÂëÆ÷Ãû³Æ
-    *       duration:     [float] ÊÓÆµ³¤¶È(s)
-    *       estFrameNum:  [int]   Ô¤¹ÀµÄ×ÜÖ¡Êý
-    *       avgFrameRate  [float] Æ½¾ùÖ¡ÂÊ
+    /* Wrapped (bool)C_MPCT_getParam method, the inputs are:
+    *   parameter [byte->buffer]: The name of the parameter to be gotten, could be.
+    *       videoAddress: [byte]  The address of the current video.
+    *       width/height: [int]   The width / height of the received frame.
+    *       frameCount:   [int]   The count of frames of the current decoding work.
+    *       coderName:    [byte]  The name of the decoder.
+    *       duration:     [float] The duration of the video.
+    *       estFrameNum:  [int]   The estimated total frame number.
+    *       avgFrameRate  [float] The average frame rate.
     */
     Py_buffer param = { 0 };
     static char *kwlist[] = { "paramName", nullptr };
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'paramName(string)'");
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'");
         return nullptr;
     }
     string in_param;
@@ -716,16 +879,59 @@ static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject *args, PyObject *k
         in_param.assign(reinterpret_cast<char *>(param.buf));
     else
         in_param.clear();
-    PyObject * res = Self->_in_Handle->getParameter(in_param);
+    PyObject* res = nullptr;
+    if (in_param.empty()) {
+        res = Self->_in_Handle->getParameter();
+    }
+    else {
+        res = Self->_in_Handle->getParameter(in_param);
+    }
+    in_param.clear();
+    PyBuffer_Release(&param);
+    return res;
+}
+
+static PyObject* C_MPSV_getParam(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)C_MPSV_getParam function, the inputs are:
+    *   paramName [byte->buffer]: The name of the parameter to be gotten, could be.
+    *       videoAddress:       [byte]  The address of the current video.
+    *       codecName:          [byte]  The name of the codec.
+    *       formatName:         [byte]  The name of the stream format.
+    *       bitRate:            [int]   The target bit rate.
+    *       width/height:       [int]   The width / height of the encoded frame.
+    *       widthSrc/heightSrc: [int]   The width / height of the input frame.
+    *       GOPSize:            [int]   The size of one GOP.
+    *       maxBframe:          [int]   The maximal number of continuous B frames.
+    *       frameRate:          [float] The target frame rate.
+    *       waitRef             [float] The reference used for sync. waiting.
+    *       ptsAhead            [int]   The ahead time duration in the uit of time stamp.
+    */
+    Py_buffer param = { 0 };
+    static char* kwlist[] = { "paramName", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'");
+        return nullptr;
+    }
+    string in_param;
+    if (param.buf)
+        in_param.assign(reinterpret_cast<char*>(param.buf));
+    else
+        in_param.clear();
+    PyObject* res = nullptr;
+    if (in_param.empty()) {
+        res = Self->_in_Handle->getParameter();
+    }
+    else {
+        res = Self->_in_Handle->getParameter(in_param);
+    }
     in_param.clear();
     PyBuffer_Release(&param);
     return res;
 }
 
 static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(void)C_MPDC_setParamº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   parameter [byte->buffer]: ÐèÒªÌáÈ¡µÄ²ÎÊý
-    *       widthDst/heightDst: [int]   Ä¿±êÖ¡¿í/¸ß
+    /* Wrapped (void)C_MPDC_setParam method, the inputs are:
+    *   widthDst/heightDst: [int] The width / height of the decoded frames.
     */
     int widthDst = 0;
     int heightDst = 0;
@@ -744,18 +950,21 @@ static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *
 }
 
 static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(bool)C_MPEC_setParamº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   parameter [byte->buffer]: ÐèÒªÌáÈ¡µÄ²ÎÊý
-    *       decode:    [Decoder]  ½âÂëÆ÷µÄPyObject
-    *       videoPath:    [byte]  µ±Ç°ÊÓÆµÂ·¾¶
-    *       codecName:    [byte]  ±àÂëÆ÷Ãû³Æ
-    *       bitRate:      [int]   ÂëÂÊ
-    *       width/height: [int]   Ö¡¿í/¸ß
-    *       GOPSize:      [int]   GOP´óÐ¡
-    *       timeBase:     [tuple] Ê±»ù
-    *       frameRate:    [tuple] Ö¡ÂÊ
+    /* Wrapped (bool)C_MPEC_setParam method, the inputs are:
+    *   decoder:            [MpegDecoder / MpegClient]: The parameters to be configured.
+    *   configDict:         [dict]  A collection of key params.
+    *   videoPath:          [byte]  Path of the current video.
+    *   codecName:          [byte]  The name of the codec.
+    *   formatName:         [byte]  The name of the stream format.
+    *   bitRate:            [int]   The target bit rate.
+    *   width/height:       [int]   The width / height of the encoded frame.
+    *   widthSrc/heightSrc: [int]   The width / height of the input frame.
+    *   GOPSize:            [int]   The size of one GOP.
+    *   maxBframe:          [int]   The maximal number of continuous B frames.
+    *   frameRate:          [tuple] The target frame rate.
     */
-    PyObject *decoder = nullptr;
+    PyObject* decoder = nullptr;
+    PyObject* configDict = nullptr;
     Py_buffer videoPath = { 0 };
     Py_buffer codecName = { 0 };
     double bitRate = -1;
@@ -766,20 +975,31 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
     int GOPSize = 0;
     int MaxBframe = -1;
     PyObject *frameRate = nullptr;
-    static char *kwlist[] = { "decoder", "videoPath", "codecName", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Oy*y*diiiiiiO", kwlist, &decoder, &videoPath, &codecName, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'params'");
+    static char *kwlist[] = { "decoder", "configDict", "videoPath", "codecName", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", nullptr };
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOy*y*diiiiiiO", kwlist, &decoder, &configDict, &videoPath, &codecName, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate)) {
+        PyErr_SetString(PyExc_TypeError, "Error.setParameter: need 'params'");
         return nullptr;
     }
     string temp_str;
     if (decoder) {
         temp_str.assign(decoder->ob_type->tp_name);
         if (temp_str.compare("mpegCoder.MpegDecoder") == 0) {
-            auto decoderPtr = reinterpret_cast<C_MpegEncoder *>(decoder);
+            auto decoderPtr = reinterpret_cast<C_MpegDecoder*>(decoder);
             Self->_in_Handle->setParameter("decoder", decoderPtr->_in_Handle);
+        } else if (temp_str.compare("mpegCoder.MpegClient") == 0) {
+            auto decoderPtr = reinterpret_cast<C_MpegClient*>(decoder);
+            Self->_in_Handle->setParameter("client", decoderPtr->_in_Handle);
         }
         else {
             cerr << "Warning.setParameter: Not intended decoder type, no valid update in this step." << endl;
+        }
+    }
+    else if (configDict) {
+        if (PyDict_Check(configDict)) {
+            Self->_in_Handle->setParameter("configDict", configDict);
+        }
+        else {
+            cerr << "Warning.setParameter: Not intended configDict type (require to be a dict), no valid update in this step." << endl;
         }
     }
     if (videoPath.buf) {
@@ -791,8 +1011,7 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
         Self->_in_Handle->setParameter("codecName", &temp_str);
     }
     if (bitRate>0) {
-        auto p = static_cast<int64_t>(bitRate * 1024);
-        Self->_in_Handle->setParameter("bitRate", &p);
+        Self->_in_Handle->setParameter("bitRate", &bitRate);
     }
     if (width>0) {
         Self->_in_Handle->setParameter("width", &width);
@@ -827,11 +1046,10 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
 }
 
 static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
-    /* ·â×°(void)C_MPCT_setParamº¯Êý£¬ÊäÈëÒÀ´ÎÎª:
-    *   parameter [byte->buffer]: ÐèÒªÌáÈ¡µÄ²ÎÊý
-    *       widthDst/heightDst: [int]   Ä¿±êÖ¡¿í/¸ß
-    *       cacheSize/readSize: [int]   »º´æ/¶ÁÈ¡¹æÄ£
-    *       dstFrameRate:       [tuple] Ö¡ÂÊ
+    /* Wrapped (void)C_MPCT_setParam method, the inputs are:
+    *   widthDst/heightDst: [int] The width / height of the decoded frames.
+    *   cacheSize/readSize: [int] The size of the cache, and the reading size.
+    *   dstFrameRate:       [tuple] The target frame rate of the client.
     */
     int widthDst = 0;
     int heightDst = 0;
@@ -866,52 +1084,172 @@ static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject *args, PyObject *k
     Py_RETURN_NONE;
 }
 
+static PyObject* C_MPSV_setParam(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
+    /* Wrapped (bool)C_MPSV_setParam method, the inputs are:
+    *   decoder             [MpegDecoder / MpegClient]: The parameters to be configured.
+    *   videoAddress:       [byte]  The address of the current video.
+    *   codecName:          [byte]  The name of the codec.
+    *   formatName:         [byte]  The name of the stream format.
+    *   bitRate:            [int]   The target bit rate.
+    *   width/height:       [int]   The width / height of the encoded frame.
+    *   widthSrc/heightSrc: [int]   The width / height of the input frame.
+    *   GOPSize:            [int]   The size of one GOP.
+    *   maxBframe:          [int]   The maximal number of continuous B frames.
+    *   frameRate:          [tuple] The target frame rate.
+    *   frameAhead          [int]   The number of ahead frames. This value is suggested
+    *                               to be larger than the GOPSize.
+    */
+    PyObject* decoder = nullptr;
+    PyObject* configDict = nullptr;
+    Py_buffer videoAddress = { 0 };
+    Py_buffer codecName = { 0 };
+    double bitRate = -1;
+    int width = 0;
+    int height = 0;
+    int widthSrc = 0;
+    int heightSrc = 0;
+    int GOPSize = 0;
+    int MaxBframe = -1;
+    int frameAhead = 0;
+    PyObject* frameRate = nullptr;
+    static char* kwlist[] = { "decoder", "configDict", "videoAddress", "codecName", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", "frameAhead", nullptr};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOy*y*diiiiiiOi", kwlist, &decoder, &configDict, &videoAddress, &codecName, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate, &frameAhead)) {
+        PyErr_SetString(PyExc_TypeError, "Error.setParameter: need 'params'");
+        return nullptr;
+    }
+    string temp_str;
+    if (decoder) {
+        temp_str.assign(decoder->ob_type->tp_name);
+        if (temp_str.compare("mpegCoder.MpegDecoder") == 0) {
+            auto decoderPtr = reinterpret_cast<C_MpegDecoder*>(decoder);
+            Self->_in_Handle->setParameter("decoder", decoderPtr->_in_Handle);
+        }
+        else if (temp_str.compare("mpegCoder.MpegClient") == 0) {
+            auto decoderPtr = reinterpret_cast<C_MpegClient*>(decoder);
+            Self->_in_Handle->setParameter("client", decoderPtr->_in_Handle);
+        }
+        else {
+            cerr << "Warning.setParameter: Not intended decoder type, no valid update in this step." << endl;
+        }
+    }
+    else if (configDict) {
+        if (PyDict_Check(configDict)) {
+            Self->_in_Handle->setParameter("configDict", configDict);
+        }
+        else {
+            cerr << "Warning.setParameter: Not intended configDict type (require to be a dict), no valid update in this step." << endl;
+        }
+    }
+    if (videoAddress.buf) {
+        temp_str.assign(reinterpret_cast<char*>(videoAddress.buf));
+        Self->_in_Handle->setParameter("videoAddress", &temp_str);
+    }
+    if (codecName.buf) {
+        temp_str.assign(reinterpret_cast<char*>(codecName.buf));
+        Self->_in_Handle->setParameter("codecName", &temp_str);
+    }
+    if (bitRate > 0) {
+        Self->_in_Handle->setParameter("bitRate", &bitRate);
+    }
+    if (width > 0) {
+        Self->_in_Handle->setParameter("width", &width);
+    }
+    if (height > 0) {
+        Self->_in_Handle->setParameter("height", &height);
+    }
+    if (widthSrc > 0) {
+        Self->_in_Handle->setParameter("widthSrc", &widthSrc);
+    }
+    if (heightSrc > 0) {
+        Self->_in_Handle->setParameter("heightSrc", &heightSrc);
+    }
+    if (GOPSize > 0) {
+        Self->_in_Handle->setParameter("GOPSize", &GOPSize);
+    }
+    if (MaxBframe >= 0) {
+        Self->_in_Handle->setParameter("maxBframe", &MaxBframe);
+    }
+    if (frameRate) {
+        if (PyTuple_Check(frameRate) && PyTuple_Size(frameRate) == 2) {
+            Self->_in_Handle->setParameter("frameRate", frameRate);
+        }
+        else {
+            cerr << "Warning.setParameter: {frameRate} must be a 2-dim tuple, so there is no valid update in this step." << endl;
+        }
+    }
+    if (frameAhead > 0) {
+        Self->_in_Handle->setParameter("frameAhead", &frameAhead);
+    }
+    temp_str.clear();
+    PyBuffer_Release(&videoAddress);
+    PyBuffer_Release(&codecName);
+    Py_RETURN_NONE;
+}
+
 static PyObject* C_MPDC_DumpFile(C_MpegDecoder* Self) {
-    /* ·â×°(void)dumpFormatº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)dumpFormat method, the input is required to be empty. */
     Self->_in_Handle->dumpFormat();
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPEC_DumpFile(C_MpegEncoder* Self) {
-    /* ·â×°(void)dumpFormatº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)dumpFormat method, the input is required to be empty. */
     Self->_in_Handle->dumpFormat();
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPCT_DumpFile(C_MpegClient* Self) {
-    /* ·â×°(void)dumpFormatº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)dumpFormat method, the input is required to be empty. */
+    Self->_in_Handle->dumpFormat();
+    Py_RETURN_NONE;
+}
+
+static PyObject* C_MPSV_DumpFile(C_MpegServer* Self) {
+    /* Wrapped (void)dumpFormat method, the input is required to be empty. */
     Self->_in_Handle->dumpFormat();
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPDC_Clear(C_MpegDecoder* Self) {
-    /* ·â×°(void)clearº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)clear method, the input is required to be empty. */
     Self->_in_Handle->clear();
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPEC_Clear(C_MpegEncoder* Self) {
-    /* ·â×°(void)clearº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)clear method, the input is required to be empty. */
     Self->_in_Handle->clear();
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPCT_Clear(C_MpegClient* Self) {
-    /* ·â×°(void)clearº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)clear method, the input is required to be empty. */
+    Self->_in_Handle->clear();
+    Py_RETURN_NONE;
+}
+
+static PyObject* C_MPSV_Clear(C_MpegServer* Self) {
+    /* Wrapped (void)clear method, the input is required to be empty. */
     Self->_in_Handle->clear();
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPEC_Close(C_MpegEncoder* Self) {
-    /* ·â×°(void)closeº¯Êý£¬ÊäÈë±ØÐë¿ÕÖÃ */
+    /* Wrapped (void)close method, the input is required to be empty. */
+    Self->_in_Handle->FFmpegClose();
+    Py_RETURN_NONE;
+}
+
+static PyObject* C_MPSV_Close(C_MpegServer* Self) {
+    /* Wrapped (void)close method, the input is required to be empty. */
     Self->_in_Handle->FFmpegClose();
     Py_RETURN_NONE;
 }
 
 /*****************************************************************************
-* º¯ÊýÄ£¿éµÇÂ¼Óë×¢²á
+* Register the methods of each class.
 *****************************************************************************/
-static PyMethodDef C_MPC_MethodMembers[] =      //×¢²áÈ«¾Öº¯ÊýÁÐ±í
+static PyMethodDef C_MPC_MethodMembers[] =      // Register the global method list.
 {
     { "setGlobal",       (PyCFunction)C_MPC_Global,             METH_VARARGS | METH_KEYWORDS, \
     "Set global setting parameters.\n - dumpLevel: [int] the level of dumped log.\n   -|- 0: silent executing.\n   -|- 1: [default] dump basic informations.\n   -|- 2: dump all informations." },
@@ -920,12 +1258,12 @@ static PyMethodDef C_MPC_MethodMembers[] =      //×¢²áÈ«¾Öº¯ÊýÁÐ±í
     { nullptr, nullptr, 0, nullptr }
 };
 
-static PyMethodDef C_MPDC_MethodMembers[] =      //×¢²áÀàµÄËùÓÐ³ÉÔ±º¯Êý½á¹¹ÁÐ±í.
-{ //¸Ã²½µÄÒâÒå¼´Îª½øÒ»²½·â×°CMISS_Handle£¬ÎªÆäÌá¹©ÃæÏòPythonµÄ½Ó¿Ú
-    { "ResetPath",          (PyCFunction)C_MPDC_resetPath,         METH_VARARGS | METH_KEYWORDS, \
-    "Reset the path of decoded video.\n - videoPath: [bytes] the path of decoded video file." },
+static PyMethodDef C_MPDC_MethodMembers[] =      // Register the member methods of Decoder.
+{  // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPDC_Setup,             METH_VARARGS | METH_KEYWORDS, \
     "Reset the decoder and the video format.\n - videoPath: [bytes] the path of decoded video file." },
+    { "resetPath",          (PyCFunction)C_MPDC_resetPath,         METH_VARARGS | METH_KEYWORDS, \
+    "Reset the path of decoded video.\n - videoPath: [bytes] the path of decoded video file." },
     { "ExtractFrame",       (PyCFunction)C_MPDC_ExtractFrame,      METH_VARARGS | METH_KEYWORDS, \
     "Extract a series of continius frames at the specific position.\n - framePos: [int] the start position of the decoder.\n - frameNum: [int] the expected number of extracted frames." },
     { "ExtractFrameByTime", (PyCFunction)C_MPDC_ExtractFrame_Time, METH_VARARGS | METH_KEYWORDS, \
@@ -943,18 +1281,22 @@ static PyMethodDef C_MPDC_MethodMembers[] =      //×¢²áÀàµÄËùÓÐ³ÉÔ±º¯Êý½á¹¹ÁÐ±í.
     { "setParameter",       (PyCFunction)C_MPDC_setParam,          METH_VARARGS | METH_KEYWORDS, \
     "Set the optional parameters of 'Setup' & 'Extract' functions via different methods.\n - widthDst: [int] the width of destination (frame), if <=0 (default), it would take no effect.\n - heightDst: [int] the height of destination (frame), if <=0 (default), it would take no effect." },
     { "getParameter",       (PyCFunction)C_MPDC_getParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter.\n   -|- videoPath: [bytes] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [bytes] the name of the decoder.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- avgFrameRate: [double] the average of FPS." },
+    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoPath: [bytes] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [bytes] the name of the decoder.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- avgFrameRate: [double] the average of FPS." },
     { nullptr, nullptr, 0, nullptr }
 };
 
-static PyMethodDef C_MPEC_MethodMembers[] =      //×¢²áÀàµÄËùÓÐ³ÉÔ±º¯Êý½á¹¹ÁÐ±í.
-{ //¸Ã²½µÄÒâÒå¼´Îª½øÒ»²½·â×°CMISS_Handle£¬ÎªÆäÌá¹©ÃæÏòPythonµÄ½Ó¿Ú
+static PyMethodDef C_MPEC_MethodMembers[] =      // Register the member methods of Encoder.
+{ // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPEC_Setup,             METH_VARARGS | METH_KEYWORDS, \
     "Open the encoded video and reset the encoder.\n - videoPath: [bytes] the path of encoded(written) video file." },
+    { "resetPath",          (PyCFunction)C_MPEC_resetPath,         METH_VARARGS | METH_KEYWORDS, \
+    "Reset the output path of encoded video.\n - videoPath: [bytes] the path of encoded video file." },
     { "EncodeFrame",        (PyCFunction)C_MPEC_EncodeFrame,       METH_VARARGS | METH_KEYWORDS, \
     "Encode one frame.\n - PyArrayFrame: [ndarray] the frame that needs to be encoded." },
     { "setParameter",       (PyCFunction)C_MPEC_setParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Set the necessary parameters of 'Setup' & 'Encode' functions via different methods.\n - decoder: [MpegDecoder] copy metadata from a known decoder.\n - videoPath: [bytes] the current path of the encoded video.\n - codecName: [bytes] the name of the encoder.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
+    "Set the necessary parameters of 'Setup' & 'Encode' functions via different methods.\n - decoder: [MpegDecoder / MpegClient] copy metadata from a known decoder.\n - configDict: [dict] a config dict returned by getParameter().\n - videoPath: [bytes] the current path of the encoded video.\n - codecName: [bytes] the name of the encoder.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one encoded (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
+    { "getParameter",       (PyCFunction)C_MPEC_getParam,          METH_VARARGS | METH_KEYWORDS, \
+    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoPath: [bytes] the current path of the encoded video.\n   -|- codecName: [bytes] the name of the encoder.\n   -|- bitRate: [float] the indended bit rate (Kb/s).\n   -|- width/height: [int] the size of one encoded (scaled) frame.\n   -|- widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n   -|- GOPSize: [int] the number of frames in a GOP.\n   -|- maxBframe: [int] the maximal number of B frames in a GOP.\n   -|- frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
     { "clear",              (PyCFunction)C_MPEC_Clear,             METH_NOARGS, \
     "Clear all states." },
     { "dumpFile",           (PyCFunction)C_MPEC_DumpFile,          METH_NOARGS, \
@@ -964,12 +1306,12 @@ static PyMethodDef C_MPEC_MethodMembers[] =      //×¢²áÀàµÄËùÓÐ³ÉÔ±º¯Êý½á¹¹ÁÐ±í.
     { nullptr, nullptr, 0, nullptr }
 };
 
-static PyMethodDef C_MPCT_MethodMembers[] =      //×¢²áÀàµÄËùÓÐ³ÉÔ±º¯Êý½á¹¹ÁÐ±í.
-{ //¸Ã²½µÄÒâÒå¼´Îª½øÒ»²½·â×°CMISS_Handle£¬ÎªÆäÌá¹©ÃæÏòPythonµÄ½Ó¿Ú
-    { "ResetPath",          (PyCFunction)C_MPCT_resetPath,         METH_VARARGS | METH_KEYWORDS, \
-    "Reset the address of decoded video.\n - videoAddress: [bytes] the path of decoded video file." },
+static PyMethodDef C_MPCT_MethodMembers[] =      //æ³¨å†Œç±»çš„æ‰€æœ‰æˆå‘˜å‡½æ•°ç»“æž„åˆ—è¡¨.
+{ // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPCT_Setup,             METH_VARARGS | METH_KEYWORDS, \
     "Reset the decoder and the video format.\n - videoAddress: [bytes] the path of decoded video file." },
+    { "resetPath",          (PyCFunction)C_MPCT_resetPath,         METH_VARARGS | METH_KEYWORDS, \
+    "Reset the address of decoded video.\n - videoAddress: [bytes] the path of decoded video file." },
     { "start",              (PyCFunction)C_MPCT_Start,             METH_NOARGS, \
     "Start the demuxing thread, must be called after FFmpegSetup()." },
     { "terminate",           (PyCFunction)C_MPCT_Terminate,        METH_NOARGS, \
@@ -983,144 +1325,206 @@ static PyMethodDef C_MPCT_MethodMembers[] =      //×¢²áÀàµÄËùÓÐ³ÉÔ±º¯Êý½á¹¹ÁÐ±í.
     { "setParameter",       (PyCFunction)C_MPCT_setParam,          METH_VARARGS | METH_KEYWORDS, \
     "Set the optional parameters of 'Setup' & 'Extract' functions and the demuxing thread via different methods.\n - widthDst: [int] the width of destination (frame), if <=0 (default), it would take no effect.\n - heightDst: [int] the height of destination (frame), if <=0 (default), it would take no effect.\n - cacheSize: [int] the number of allocated avaliable frames in the cache.\n - readSize: [int] the default value of ExtractFrame().\n - dstFrameRate: [tuple] a 2-dim tuple indicating the destination FPS(num, den) of the stream." },
     { "getParameter",       (PyCFunction)C_MPCT_getParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter.\n   -|- videoPath: [bytes] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [bytes] the name of the decoder.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- srcFrameRate: [double] the average of FPS of the source video." },
+    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoAddress: [bytes] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [bytes] the name of the decoder.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- srcFrameRate: [double] the average of FPS of the source video." },
     { nullptr, nullptr, 0, nullptr }
 };
 
+static PyMethodDef C_MPSV_MethodMembers[] =      // Register the member methods of Server.
+{ // This step add the methods to the C-API of the class.
+    { "FFmpegSetup",        (PyCFunction)C_MPSV_Setup,             METH_VARARGS | METH_KEYWORDS, \
+    "Open the encoded video and reset the encoder.\n - videoAddress: [bytes] the path of encoded(written) video file." },
+    { "resetPath",          (PyCFunction)C_MPSV_resetPath,         METH_VARARGS | METH_KEYWORDS, \
+    "Reset the output path of encoded video.\n - videoAddress: [bytes] the path of encoded video file." },
+    { "ServeFrame",         (PyCFunction)C_MPSV_ServeFrame,        METH_VARARGS | METH_KEYWORDS, \
+    "Encode one frame and send the frame non-blockly.\n - PyArrayFrame: [ndarray] the frame that needs to be encoded." },
+    { "ServeFrameBlock",    (PyCFunction)C_MPSV_ServeFrameBlock,   METH_VARARGS | METH_KEYWORDS, \
+    "Encode one frame and send the frame blockly. This method is suggested to be used in sub-processes.\n - PyArrayFrame: [ndarray] the frame that needs to be encoded." },
+    { "setParameter",       (PyCFunction)C_MPSV_setParam,          METH_VARARGS | METH_KEYWORDS, \
+    "Set the necessary parameters of 'Setup' & 'Serve' functions via different methods.\n - decoder: [MpegDecoder / MpegClient] copy metadata from a known decoder.\n - configDict: [dict] a config dict returned by getParameter().\n - videoAddress: [bytes] the current path of the encoded video.\n - codecName: [bytes] the name of the encoder.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one encoded (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream.\n - frameAhead: [int] The number of ahead frames. This value is suggested to be larger than the GOPSize." },
+    { "getParameter",       (PyCFunction)C_MPSV_getParam,          METH_VARARGS | METH_KEYWORDS, \
+    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoAddress: [bytes] the current path of the encoded video.\n   -|- codecName: [bytes] the name of the encoder.\n  -|- formatName: [bytes] the format name of the stream.\n   -|- bitRate: [float] the indended bit rate (Kb/s).\n   -|- width/height: [int] the size of one encoded (scaled) frame.\n   -|- widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n   -|- GOPSize: [int] the number of frames in a GOP.\n   -|- maxBframe: [int] the maximal number of B frames in a GOP.\n   -|- frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream.\n   -|- waitRef: [float] The reference used for sync. waiting.\n   -|- ptsAhead: [int] The ahead time duration in the uit of time stamp." },
+    { "clear",              (PyCFunction)C_MPSV_Clear,             METH_NOARGS, \
+    "Clear all states." },
+    { "dumpFile",           (PyCFunction)C_MPSV_DumpFile,          METH_NOARGS, \
+    "Show current state of formatContex." },
+    { "FFmpegClose",        (PyCFunction)C_MPSV_Close,             METH_NOARGS, \
+    "Close currently encoded video and write the end code of a MPEG file." },
+    { nullptr, nullptr, 0, nullptr }
+};
 
 /*****************************************************************************
-* Àà/½á¹¹µÄËùÓÐ³ÉÔ±¡¢ÄÚÖÃÊôÐÔµÄËµÃ÷ÐÅÏ¢..
-* ÎªPythonÀàÌá¹©¶¥²ãµÄ·â×°
+* Declaration of the class, including the name, information and the members.
+* This is the top-level packing of the class APIs.
 *****************************************************************************/
 static PyTypeObject C_MPDC_ClassInfo =
 {
-    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegDecoder",  //¿ÉÒÔÍ¨¹ý__class__»ñµÃÕâ¸ö×Ö·û´®. CPP¿ÉÒÔÓÃÀà.__name__»ñÈ¡.
-    sizeof(C_MpegDecoder),                 //Àà/½á¹¹µÄ³¤¶È.µ÷ÓÃPyObject_NewÊ±ÐèÒªÖªµÀÆä´óÐ¡.
+    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegDecoder",  // The implementation of the __class__.__name__.
+    sizeof(C_MpegDecoder),          // The memory length of the class. This value is required for PyObject_New.
     0,
-    (destructor)C_MPDC_Destruct,    //ÀàµÄÎö¹¹º¯Êý.
-    0,
-    0,
-    0,
-    0,
-    (reprfunc)C_MPDC_Repr,
+    (destructor)C_MPDC_Destruct,    // Destructor.
     0,
     0,
     0,
     0,
-    0,
-    (reprfunc)C_MPDC_Str,         //Str/printÄÚÖÃº¯Êýµ÷ÓÃ.
-    0,
-    0,
-    0,
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     //Èç¹ûÃ»ÓÐÌá¹©·½·¨µÄ»°£¬ÎªPy_TPFLAGS_DEFAULE
-    "This class has wrapped the C-API of FFmpeg decoder so that users could call its methods\n to decode the frame data in python quickly.",   //__doc__,Àà/½á¹¹µÄDocString.
+    (reprfunc)C_MPDC_Repr,          // __repr__ method.
     0,
     0,
     0,
     0,
     0,
+    (reprfunc)C_MPDC_Str,           // __str__ method.
     0,
-    C_MPDC_MethodMembers,       //ÀàµÄËùÓÐ·½·¨¼¯ºÏ.
-    C_MPDC_DataMembers,         //ÀàµÄËùÓÐÊý¾Ý³ÉÔ±¼¯ºÏ.
+    0,
+    0,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     // If no methods are provided, this value is Py_TPFLAGS_DEFAULE.
+    "This class has wrapped the C-API of FFmpeg decoder so that users could call its methods\n to decode the frame data in python quickly.",   // __doc__, the docstring of the class.
     0,
     0,
     0,
     0,
     0,
     0,
-    (initproc)C_MPDC_init,      //ÀàµÄ¹¹Ôìº¯Êý.
+    C_MPDC_MethodMembers,       // The collection of all method members.
+    C_MPDC_DataMembers,         // THe collection of all data members.
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    (initproc)C_MPDC_init,      // Constructor.
     0,
 };
 
 static PyTypeObject C_MPEC_ClassInfo =
 {
-    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegEncoder",  //¿ÉÒÔÍ¨¹ý__class__»ñµÃÕâ¸ö×Ö·û´®. CPP¿ÉÒÔÓÃÀà.__name__»ñÈ¡.
-    sizeof(C_MpegEncoder),                 //Àà/½á¹¹µÄ³¤¶È.µ÷ÓÃPyObject_NewÊ±ÐèÒªÖªµÀÆä´óÐ¡.
+    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegEncoder",  // The implementation of the __class__.__name__.
+    sizeof(C_MpegEncoder),          // The memory length of the class. This value is required for PyObject_New.
     0,
-    (destructor)C_MPEC_Destruct,    //ÀàµÄÎö¹¹º¯Êý.
-    0,
-    0,
-    0,
-    0,
-    (reprfunc)C_MPEC_Repr,
+    (destructor)C_MPEC_Destruct,    // Destructor.
     0,
     0,
     0,
     0,
-    0,
-    (reprfunc)C_MPEC_Str,         //Str/printÄÚÖÃº¯Êýµ÷ÓÃ.
-    0,
-    0,
-    0,
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     //Èç¹ûÃ»ÓÐÌá¹©·½·¨µÄ»°£¬ÎªPy_TPFLAGS_DEFAULE
-    "This class has wrapped the C-API of FFmpeg encoder so that users could call its methods\n to encode frames by using numpy-data quickly.",   //__doc__,Àà/½á¹¹µÄDocString.
+    (reprfunc)C_MPEC_Repr,          // __repr__ method.
     0,
     0,
     0,
     0,
     0,
+    (reprfunc)C_MPEC_Str,           // __str__ method.
     0,
-    C_MPEC_MethodMembers,       //ÀàµÄËùÓÐ·½·¨¼¯ºÏ.
-    C_MPEC_DataMembers,         //ÀàµÄËùÓÐÊý¾Ý³ÉÔ±¼¯ºÏ.
+    0,
+    0,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     // If no methods are provided, this value is Py_TPFLAGS_DEFAULE.
+    "This class has wrapped the C-API of FFmpeg encoder so that users could call its methods\n to encode frames by using numpy-data quickly.",   // __doc__, the docstring of the class.
     0,
     0,
     0,
     0,
     0,
     0,
-    (initproc)C_MPEC_init,      //ÀàµÄ¹¹Ôìº¯Êý.
+    C_MPEC_MethodMembers,       // The collection of all method members.
+    C_MPEC_DataMembers,         // THe collection of all data members.
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    (initproc)C_MPEC_init,      // Constructor.
     0,
 };
 
 static PyTypeObject C_MPCT_ClassInfo =
 {
-    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegClient",  //¿ÉÒÔÍ¨¹ý__class__»ñµÃÕâ¸ö×Ö·û´®. CPP¿ÉÒÔÓÃÀà.__name__»ñÈ¡.
-    sizeof(C_MpegClient),                 //Àà/½á¹¹µÄ³¤¶È.µ÷ÓÃPyObject_NewÊ±ÐèÒªÖªµÀÆä´óÐ¡.
+    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegClient",  // The implementation of the __class__.__name__.
+    sizeof(C_MpegClient),           // The memory length of the class. This value is required for PyObject_New.
     0,
-    (destructor)C_MPCT_Destruct,    //ÀàµÄÎö¹¹º¯Êý.
-    0,
-    0,
-    0,
-    0,
-    (reprfunc)C_MPCT_Repr,
+    (destructor)C_MPCT_Destruct,    // Destructor.
     0,
     0,
     0,
     0,
-    0,
-    (reprfunc)C_MPCT_Str,         //Str/printÄÚÖÃº¯Êýµ÷ÓÃ.
-    0,
-    0,
-    0,
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     //Èç¹ûÃ»ÓÐÌá¹©·½·¨µÄ»°£¬ÎªPy_TPFLAGS_DEFAULE
-    "This class has wrapped the C-API of FFmpeg demuxer so that users could call its methods\n to demux the network stream in python quickly.",   //__doc__,Àà/½á¹¹µÄDocString.
+    (reprfunc)C_MPCT_Repr,          // __repr__ method.
     0,
     0,
     0,
     0,
     0,
+    (reprfunc)C_MPCT_Str,           // __str__ method.
     0,
-    C_MPCT_MethodMembers,       //ÀàµÄËùÓÐ·½·¨¼¯ºÏ.
-    C_MPCT_DataMembers,         //ÀàµÄËùÓÐÊý¾Ý³ÉÔ±¼¯ºÏ.
+    0,
+    0,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     // If no methods are provided, this value is Py_TPFLAGS_DEFAULE.
+    "This class has wrapped the C-API of FFmpeg demuxer so that users could call its methods\n to demux the network stream in python quickly.",   // __doc__, the docstring of the class.
     0,
     0,
     0,
     0,
     0,
     0,
-    (initproc)C_MPCT_init,      //ÀàµÄ¹¹Ôìº¯Êý.
+    C_MPCT_MethodMembers,       // The collection of all method members.
+    C_MPCT_DataMembers,         // THe collection of all data members.
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    (initproc)C_MPCT_init,      // Constructor.
+    0,
+};
+
+static PyTypeObject C_MPSV_ClassInfo =
+{
+    PyVarObject_HEAD_INIT(nullptr, 0)"mpegCoder.MpegServer",  // The implementation of the __class__.__name__.
+    sizeof(C_MpegServer),          // The memory length of the class. This value is required for PyObject_New.
+    0,
+    (destructor)C_MPSV_Destruct,    // Destructor.
+    0,
+    0,
+    0,
+    0,
+    (reprfunc)C_MPSV_Repr,          // __repr__ method.
+    0,
+    0,
+    0,
+    0,
+    0,
+    (reprfunc)C_MPSV_Str,           // __str__ method.
+    0,
+    0,
+    0,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     // If no methods are provided, this value is Py_TPFLAGS_DEFAULE.
+    "This class has wrapped the C-API of FFmpeg stream server so that users could call its methods\n to server streamed frames by using numpy-data quickly.",   // __doc__, the docstring of the class.
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    C_MPSV_MethodMembers,       // The collection of all method members.
+    C_MPSV_DataMembers,         // THe collection of all data members.
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    (initproc)C_MPSV_init,      // Constructor.
     0,
 };
 
 /*****************************************************************************
-* ´ËÄ£¿éËµÃ÷ÐÅÏ¢..
-* ÎªPythonÄ£¿éÌá¹©¶¥²ãµÄ·â×°
+* Decleartion of the module.
+* This is the top-level packing of the module APIs.
 *****************************************************************************/
 static PyModuleDef ModuleInfo =
 {
     PyModuleDef_HEAD_INIT,
-    "mpegCoder",               //Ä£¿éµÄÄÚÖÃÃû--__name__.
-    "A FFmpeg module which could provide a class for encode/decode a video in any format.",  //Ä£¿éµÄDocString.__doc__
+    "mpegCoder",               // The __name__ of the module.
+    "A FFmpeg module which could provide a class for encode/decode a video in any format.",  // __doc__; The docstring of the module.
     -1,
     nullptr, nullptr, nullptr, nullptr, nullptr
 };
