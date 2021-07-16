@@ -167,7 +167,7 @@ cd vmaf-2.1.1/libvmaf/build || fail
 meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$BUILD_PATH" --bindir="$BUILD_PATH/bin" --libdir="$BUILD_PATH/lib" || fail
 ninja -j $(nproc) || fail
 sudo ninja install || fail
-sudo cp $BUILD_PATH/bin/SvtAv1* $BIN_PATH || fail
+sudo cp $BUILD_PATH/bin/vmaf $BIN_PATH || fail
 
 # Install dependencies for GPU: ffnvcodec
 msg "Install the newest ffnvcodec."
@@ -176,13 +176,14 @@ git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git || fail
 cd nv-codec-headers || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install
-sudo cp $BUILD_PATH/bin/vmaf $BIN_PATH || fail
 
 # Install ffmpeg
 msg "Install ffmpeg 4.4."
 cd $SOURCE_PATH || fail
 wget -O- http://ffmpeg.org/releases/ffmpeg-4.4.tar.xz | tar xJ -C . || fail
 cd ffmpeg-4.4 || fail
+# Fix the bug caused by NVCC.
+wget -O- https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/patch-ffmpeg_4_4.tar.xz | tar xJ -C . || fail
 PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PATH" ./configure \
   --prefix="$BUILD_PATH" \
   --pkg-config-flags="--static" \
@@ -193,7 +194,9 @@ PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PA
   --bindir="$BIN_PATH" \
   --enable-gpl \
   --enable-gnutls \
-  --enable-cuda-sdk \
+  --enable-cuda \
+  --enable-cuda-nvcc \
+  --enable-nvenc \
   --enable-libnpp \
   --enable-libaom \
   --enable-libass \
