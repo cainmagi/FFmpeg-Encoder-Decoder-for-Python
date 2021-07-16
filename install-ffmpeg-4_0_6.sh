@@ -43,9 +43,11 @@ sudo apt-get -y autoclean || fail
 SOURCE_PATH="/apps/source/ffmpeg"
 BUILD_PATH="/apps/build/ffmpeg-4.0.6"
 BIN_PATH="/usr/local/bin"
-mkdir -p $SOURCE_PATH $BIN_PATH $BUILD_PATH || fail
+mkdir -p $SOURCE_PATH $BUILD_PATH || fail
+sudo mkdir -p $BIN_PATH || fail
 
 # Install dependencies: CMake
+cd $SOURCE_PATH || fail
 wget -O- https://cmake.org/files/v3.20/cmake-3.20.5.tar.gz | tar xz -C . || fail
 cd cmake-3.20.5 || fail
 ./bootstrap || fail
@@ -53,7 +55,7 @@ make -j$(nproc) || fail
 sudo make install || fail
 
 # Install dependencies: NASM
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 wget -O- https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 | tar xj -C . || fail
 cd nasm-2.15.05 || fail
 ./autogen.sh || fail
@@ -62,7 +64,7 @@ PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
 # Install dependencies: libx264
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git
 cd x264 || fail
 git checkout ae03d92b || fail
@@ -71,7 +73,7 @@ PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
 # Install dependencies: libx265
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git
 cd x265_git || fail
 git checkout 82786fc || fail
@@ -82,7 +84,7 @@ make install || fail
 sudo cp $BUILD_PATH/bin/x265 $BIN_PATH || fail
 
 # Install dependencies: libvpx
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
 cd libvpx || fail
 git checkout 76ad30b || fail
@@ -91,7 +93,7 @@ PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 make install || fail
 
 # Install dependencies: libfdk-aac
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git -C fdk-aac pull 2> /dev/null || git clone --branch v0.1.6 --depth 1 https://github.com/mstorsjo/fdk-aac
 cd fdk-aac || fail
 autoreconf -fiv || fail
@@ -100,7 +102,7 @@ PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 make install || fail
 
 # Install dependencies: libmp3lame
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 wget -O- https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz | tar xz -C . || fail
 cd lame-3.100 || fail
 PATH="$BIN_PATH:$PATH" ./configure --prefix="$BUILD_PATH" --bindir="$BIN_PATH" --enable-shared --enable-nasm || fail
@@ -108,7 +110,7 @@ PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
 # Install dependencies: libopus
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git
 cd opus || fail
 git checkout 6b6035a || fail
@@ -118,7 +120,7 @@ PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 make install || fail
 
 # Install dependencies: libaom
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom
 mkdir -p aom_build || fail
 cd aom || fail
@@ -130,14 +132,14 @@ make install || fail
 sudo cp $BUILD_PATH/bin/aom* $BIN_PATH || fail
 
 # Install dependencies for GPU: ffnvcodec
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git || fail
 cd nv-codec-headers || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 make install
 
 # Install ffmpeg
-cd SOURCE_PATH || fail
+cd $SOURCE_PATH || fail
 wget -O- http://ffmpeg.org/releases/ffmpeg-4.0.6.tar.xz | tar xJ -C . || fail
 cd ffmpeg-4.0.6 || fail
 PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PATH" ./configure \
