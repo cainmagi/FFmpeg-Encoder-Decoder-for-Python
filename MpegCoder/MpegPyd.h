@@ -3,6 +3,7 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL MPEGARRAY_API
 
+#include <cstdint>
 #include <iostream>
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -176,13 +177,17 @@ Yuchen's Mpeg Coder - Readme
 ================================================================================
 V3.0.0 update report:
     1. Fix a severe memory leaking bugs when using AVPacket.
-    2. Support the MpegServer. This class is used for serving the online video
+    2. Fix a bug caused by using `MpegClient.terminate()` when a video is closed
+       by the server.
+    3. Support the MpegServer. This class is used for serving the online video
        streams.
-    3. Refactor the implementation of the loggings.
-    4. Add getParameter() and setParameter(configDict) APIs to MpegEncoder and
+    4. Refactor the implementation of the loggings.
+    5. Add getParameter() and setParameter(configDict) APIs to MpegEncoder and
        MpegServer.
-    5. Move FFMpeg depedencies and the OutputStream class to the cmpc space.
-    6. Upgrade to FFMpeg 4.4 Version.
+    6. Move FFMpeg depedencies and the OutputStream class to the cmpc space.
+    7. Fix dependency issues and cpp standard issues.
+    8. Upgrade to `FFMpeg 4.4` Version.
+    9. Add a quick script for fetching the `FFMpeg` dependencies.
 V2.05 update report:
     1. Fix a severe bug that causes the memory leak when using MpegClient.
     This bug also exists in MpegDecoder, but it seems that the bug would not cause
@@ -1306,7 +1311,7 @@ static PyMethodDef C_MPEC_MethodMembers[] =      // Register the member methods 
     { nullptr, nullptr, 0, nullptr }
 };
 
-static PyMethodDef C_MPCT_MethodMembers[] =      //注册类的所有成员函数结构列表.
+static PyMethodDef C_MPCT_MethodMembers[] =      // Register the member methods of Encoder.
 { // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPCT_Setup,             METH_VARARGS | METH_KEYWORDS, \
     "Reset the decoder and the video format.\n - videoAddress: [bytes] the path of decoded video file." },

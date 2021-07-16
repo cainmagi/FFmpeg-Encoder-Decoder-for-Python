@@ -12,6 +12,30 @@
 #define FFMPG4_0
 #define FFMPG4_4
 
+#define MPEGCODER_CURRENT_VERSION "3.0.0"
+
+#define STREAM_PIX_FMT AVPixelFormat::AV_PIX_FMT_YUV420P /* default pix_fmt */
+
+#define SCALE_FLAGS SWS_BICUBIC
+//SWS_BILINEAR
+
+#include <cstdint>
+#include <iostream>
+//#include <memory>
+#include <string>
+#include <functional>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
+#include <thread>
+#include <mutex>
+#include <Python.h>
+using std::string;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::ostream;
+
 namespace cmpc {
     extern "C"
     {
@@ -29,29 +53,6 @@ namespace cmpc {
         #include "libswresample/swresample.h"
     }
 }
-
-#define MPEGCODER_CURRENT_VERSION "3.0.0"
-
-#define STREAM_PIX_FMT AVPixelFormat::AV_PIX_FMT_YUV420P /* default pix_fmt */
-
-#define SCALE_FLAGS SWS_BICUBIC
-//SWS_BILINEAR
-
-#include <iostream>
-//#include <memory>
-#include <string>
-#include <functional>
-#include <iomanip>
-#include <sstream>
-#include <fstream>
-#include <thread>
-#include <mutex>
-#include <Python.h>
-using std::string;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ostream;
 
 #ifdef  __cplusplus
 namespace cmpc {

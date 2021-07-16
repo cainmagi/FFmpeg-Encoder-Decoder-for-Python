@@ -23,7 +23,13 @@ The following instructions are used for building the project on Windows with Vis
     git clone --single-branch -b master https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python.git
     ```
 
-2. Download the FFMpeg dependencies, including `include` and `lib`.
+2. Download the FFMpeg dependencies, including `include` and `lib`. Users could download dependencies manually by checking [the release page :link:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/deps-3.0.0). However, we recommend users to use the following script to get the dependencies quickly:
+
+    ```bash
+    python webtools.py
+    ```
+
+    This script requires users to install `urllib3`. The `tqdm` is also recommended to be installed.
 
 3. The following configurations should be set for `All` (both debug and release) and `x64`. Open the project by `MpegCoder.sln`. Then configure the following paths of the include directories and the library directories. In both configurations, the first item is required to be modified according to your python path, the second item is required to be modified according to your numpy path.
     |  Path  |  Screenshot  |
@@ -51,15 +57,21 @@ The following instructions are used for building the project on Windows with Vis
 
 1. Fix a severe memory leaking bugs when using `AVPacket`.
 
-2. Support the `MpegServer`. This class is used for serving the online video streams.
+2. Fix a bug caused by using `MpegClient.terminate()` when a video is closed by the server.
 
-3. Refactor the implementation of the loggings.
+3. Support the `MpegServer`. This class is used for serving the online video streams.
 
-4. Add `getParameter()` and `setParameter(configDict)` APIs to `MpegEncoder` and `MpegServer`.
+4. Refactor the implementation of the loggings.
 
-5. Move `FFMpeg` depedencies and the `OutputStream` class to the `cmpc` space.
+5. Add `getParameter()` and `setParameter(configDict)` APIs to `MpegEncoder` and `MpegServer`.
 
-6. Upgrade to `FFMpeg 4.4` Version.
+6. Move `FFMpeg` depedencies and the `OutputStream` class to the `cmpc` space.
+
+7. Fix dependency issues and cpp standard issues.
+
+8. Upgrade to `FFMpeg 4.4` Version.
+
+9. Add a quick script for fetching the `FFMpeg` dependencies.
 
 ### V2.05 update report:
 

@@ -104,7 +104,7 @@ namespace cmpc {
         int refcount;                       // Reference count of the video frame.
         bool __setup_check() const;
         int _open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, AVFormatContext *PFormatCtx, enum AVMediaType type);
-        bool __client_holder();
+        void __client_holder();
         AVRational _setAVRational(int num, int den);
         int __save_frame(AVFrame *&frame, AVPacket *&pkt, bool &got_frame, int cached);
         int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
@@ -167,5 +167,8 @@ namespace cmpc {
         int __avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AVPacket* pkt);
         void __copyMetaData(const CMpegServer& ref);
     };
+
+    ostream& operator<<(ostream& out, CMpegClient& self_class);
+    ostream& operator<<(ostream& out, CMpegServer& self_class);
 }
 #endif

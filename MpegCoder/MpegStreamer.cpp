@@ -85,6 +85,9 @@ void cmpc::CMpegClient::clear(void) {
         //std::terminate();
         read_handle = std::move(std::thread());
     }
+    else {
+        read_handle = std::move(std::thread());
+    }
     width = height = 0;
     widthDst = heightDst = 0;
     PPixelFormat = AVPixelFormat::AV_PIX_FMT_NONE;
@@ -259,7 +262,9 @@ bool cmpc::CMpegClient::FFmpegSetup() {
         return false;
     }
 
+    read_check.lock();
     reading = true;
+    read_check.unlock();
     return true;
 }
 
@@ -339,18 +344,19 @@ int cmpc::CMpegClient::__save_frame(AVFrame *&frame, AVPacket *&pkt, bool &got_f
     return decoded;
 }
 
-bool cmpc::CMpegClient::__client_holder() {
+void cmpc::CMpegClient::__client_holder() {
     int ret;
     bool got_frame;
     if (frame) {
         cerr << "Current frame is occupied, could not start a new client." << endl;
+        return;
     }
     frame = av_frame_alloc();
     auto pkt = av_packet_alloc();
     if (!frame) {
         cerr << "Could not allocate frame" << endl;
         ret = AVERROR(ENOMEM);
-        return false;
+        return;
     }
     /* initialize packet, set data to NULL, let the demuxer fill it */
     if (PVideoStream && (__dumpControl > 0)) {
@@ -385,14 +391,13 @@ bool cmpc::CMpegClient::__client_holder() {
         /* flush cached frames */
         av_packet_unref(pkt);
         av_packet_unref(temp_pkt);
-        if (read_check.try_lock()) {
-            if (!reading) {
-                read_check.unlock();
-                break;
-            }
-            else {
-                read_check.unlock();
-            }
+        read_check.lock();
+        if (!reading) {
+            read_check.unlock();
+            break;
+        }
+        else {
+            read_check.unlock();
         }
     }
     av_packet_free(&temp_pkt);
@@ -417,7 +422,10 @@ bool cmpc::CMpegClient::__client_holder() {
     if (pkt) {
         av_packet_free(&pkt);
     }
-    return true;
+
+    read_check.lock();
+    reading = false;
+    read_check.unlock();
 }
 
 int cmpc::CMpegClient::__avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt) {
@@ -520,6 +528,9 @@ PyObject * cmpc::CMpegClient::getParameter(string keyword) {
         return Py_BuildValue("L", _predictFrameNum);
     }
     else if (keyword.compare("srcFrameRate") == 0) {
+        if (!PVideoStream) {
+            return Py_BuildValue("d", 0.0);
+        }
         auto frame_base = PVideoStream->avg_frame_rate;
         double srcFrameRate = static_cast<double>(frame_base.num) / static_cast<double>(frame_base.den);
         return Py_BuildValue("d", srcFrameRate);
@@ -587,14 +598,16 @@ PyObject* cmpc::CMpegClient::getParameter() {
 }
 
 bool cmpc::CMpegClient::start() {
-    if (reading || (frame!=nullptr)) {
+    if (reading && (frame == nullptr)) {
         read_handle = std::move(std::thread(std::mem_fn(&CMpegClient::__client_holder), std::ref(*this)));
         return true;
     }
     return false;
 }
 void cmpc::CMpegClient::terminate() {
-    auto protectReading = true;
+    read_check.lock();
+    auto protectReading = reading;
+    read_check.unlock();
     if (read_handle.joinable()) {
         read_check.lock();
         reading = false;
@@ -603,11 +616,14 @@ void cmpc::CMpegClient::terminate() {
         //std::terminate();
         read_handle = std::move(std::thread());
     }
-    read_check.lock();
-    read_check.unlock();
+    else {
+        read_handle = std::move(std::thread());
+    }
     info_lock.lock();
     info_lock.unlock();
+    read_check.lock();
     reading = protectReading;
+    read_check.unlock();
     if (frame) {
         av_frame_free(&frame);
     }
@@ -1426,9 +1442,9 @@ int cmpc::CMpegServer::__avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AV
 
 int cmpc::CMpegServer::ServeFrameBlock(PyArrayObject* PyFrame) {
     if (__start_time > 0) {
-        auto cur_time = av_gettime() - __start_time;
+        auto cur_time = static_cast<int64_t>(av_gettime() - __start_time);
         if (cur_time < __cur_time) {
-            av_usleep((__cur_time - cur_time) / 2);
+            av_usleep(static_cast<unsigned int>((__cur_time - cur_time) / 2));
         }
         ServeFrame(PyFrame);
     }

@@ -126,5 +126,8 @@ namespace cmpc {
         int __avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt);
         void __copyMetaData(const CMpegEncoder &ref);
     };
+
+    ostream& operator<<(ostream& out, CMpegDecoder& self_class);
+    ostream& operator<<(ostream& out, CMpegEncoder& self_class);
 }
 #endif

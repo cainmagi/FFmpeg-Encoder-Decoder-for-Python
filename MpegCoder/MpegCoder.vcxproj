@@ -181,6 +181,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.gitattributes" />
+    <None Include="..\.gitignore" />
     <None Include="..\LICENSE" />
     <None Include="..\README.md" />
   </ItemGroup>
