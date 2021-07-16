@@ -20,6 +20,7 @@ This branch is used for archiving the dependencies used for building the project
 |     Branch      |  Description  |
 | :-------------: | :-----------: |
 | `install-ffmpeg-4_0_6.sh` | Scripts for installing `ffmpeg 4.0.6` on Ubuntu. |
+| `install-ffmpeg-4_4.sh` | Scripts for installing `ffmpeg 4.4` on Ubuntu. |
 
 [this-rel]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/deps-3.0.0 "Release of dependencies"
 [master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "Windows source files"
