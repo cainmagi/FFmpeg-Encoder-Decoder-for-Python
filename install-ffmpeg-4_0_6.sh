@@ -67,17 +67,14 @@ sudo make install || fail
 cd $SOURCE_PATH || fail
 git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git
 cd x264 || fail
-git checkout ae03d92b || fail
 PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PATH" ./configure --prefix="$BUILD_PATH" --bindir="$BIN_PATH" --enable-shared --enable-static --enable-pic || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
 # Install dependencies: libx265
 cd $SOURCE_PATH || fail
-git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git
-cd x265_git || fail
-git checkout 82786fc || fail
-cd build/linux || fail
+git -C x265_git pull 2> /dev/null || git clone --depth 1 -b 3.5 https://bitbucket.org/multicoreware/x265_git
+cd x265_git/build/linux || fail
 PATH="$BIN_PATH:$PATH" CXXFLAGS="$CXXFLAGS -fpermissive"  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DENABLE_SHARED=on ../../source || fail
 PATH="$BIN_PATH:$PATH" CXXFLAGS="$CXXFLAGS -fpermissive"  make -j$(nproc) || fail
 sudo make install || fail
@@ -85,16 +82,15 @@ sudo cp $BUILD_PATH/bin/x265 $BIN_PATH || fail
 
 # Install dependencies: libvpx
 cd $SOURCE_PATH || fail
-git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
+git -C libvpx pull 2> /dev/null || git clone --depth 1 -b v1.10.0 https://chromium.googlesource.com/webm/libvpx.git
 cd libvpx || fail
-git checkout 76ad30b || fail
 PATH="$BIN_PATH:$PATH" ./configure --prefix="$BUILD_PATH" --enable-pic --enable-shared --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
 # Install dependencies: libfdk-aac
 cd $SOURCE_PATH || fail
-git -C fdk-aac pull 2> /dev/null || git clone --branch v0.1.6 --depth 1 https://github.com/mstorsjo/fdk-aac
+git -C fdk-aac pull 2> /dev/null || git clone --depth 1 --branch v0.1.6 https://github.com/mstorsjo/fdk-aac
 cd fdk-aac || fail
 autoreconf -fiv || fail
 ./configure --prefix="$BUILD_PATH" --enable-shared || fail
@@ -113,7 +109,6 @@ sudo make install || fail
 cd $SOURCE_PATH || fail
 git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git
 cd opus || fail
-git checkout 6b6035a || fail
 ./autogen.sh || fail
 ./configure --prefix="$BUILD_PATH" --enable-shared || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
@@ -124,7 +119,6 @@ cd $SOURCE_PATH || fail
 git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom
 mkdir -p aom_build || fail
 cd aom || fail
-git checkout 94ab973 || fail
 cd ../aom_build || fail
 PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DENABLE_SHARED=on -DCONFIG_PIC=1 -DENABLE_NASM=on ../aom || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
