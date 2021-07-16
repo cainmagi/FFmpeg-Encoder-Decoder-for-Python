@@ -46,11 +46,11 @@ BIN_PATH="/usr/local/bin"
 mkdir -p $SOURCE_PATH $BIN_PATH $BUILD_PATH || fail
 
 # Install dependencies: CMake
-wget -O- https://cmake.org/files/v3.20/cmake-3.20.5.tar.gz | tar xz -C .
-cd cmake-3.20.5
-./bootstrap
-make -j$(nproc)
-sudo make install
+wget -O- https://cmake.org/files/v3.20/cmake-3.20.5.tar.gz | tar xz -C . || fail
+cd cmake-3.20.5 || fail
+./bootstrap || fail
+make -j$(nproc) || fail
+sudo make install || fail
 
 # Install dependencies: NASM
 cd SOURCE_PATH || fail
