@@ -59,7 +59,7 @@ cd $SOURCE_PATH || fail
 wget -O- https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2 | tar xj -C . || fail
 cd nasm-2.15.05 || fail
 ./autogen.sh || fail
-PATH="$BIN_PATH:$PATH" ./configure --prefix="$BUILD_PATH" --bindir="$HBIN_PATH" || fail
+PATH="$BIN_PATH:$PATH" ./configure --prefix="$BUILD_PATH" --bindir="$BIN_PATH" || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
@@ -80,7 +80,7 @@ git checkout 82786fc || fail
 cd build/linux || fail
 PATH="$BIN_PATH:$PATH" CXXFLAGS="$CXXFLAGS -fpermissive"  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DENABLE_SHARED=on ../../source || fail
 PATH="$BIN_PATH:$PATH" CXXFLAGS="$CXXFLAGS -fpermissive"  make -j$(nproc) || fail
-make install || fail
+sudo make install || fail
 sudo cp $BUILD_PATH/bin/x265 $BIN_PATH || fail
 
 # Install dependencies: libvpx
@@ -90,7 +90,7 @@ cd libvpx || fail
 git checkout 76ad30b || fail
 PATH="$BIN_PATH:$PATH" ./configure --prefix="$BUILD_PATH" --enable-pic --enable-shared --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
-make install || fail
+sudo make install || fail
 
 # Install dependencies: libfdk-aac
 cd $SOURCE_PATH || fail
@@ -99,7 +99,7 @@ cd fdk-aac || fail
 autoreconf -fiv || fail
 ./configure --prefix="$BUILD_PATH" --enable-shared || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
-make install || fail
+sudo make install || fail
 
 # Install dependencies: libmp3lame
 cd $SOURCE_PATH || fail
@@ -117,7 +117,7 @@ git checkout 6b6035a || fail
 ./autogen.sh || fail
 ./configure --prefix="$BUILD_PATH" --enable-shared || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
-make install || fail
+sudo make install || fail
 
 # Install dependencies: libaom
 cd $SOURCE_PATH || fail
@@ -128,7 +128,7 @@ git checkout 94ab973 || fail
 cd ../aom_build || fail
 PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DENABLE_SHARED=on -DCONFIG_PIC=1 -DENABLE_NASM=on ../aom || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
-make install || fail
+sudo make install || fail
 sudo cp $BUILD_PATH/bin/aom* $BIN_PATH || fail
 
 # Install dependencies for GPU: ffnvcodec
@@ -136,7 +136,7 @@ cd $SOURCE_PATH || fail
 git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git || fail
 cd nv-codec-headers || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
-make install
+sudo make install
 
 # Install ffmpeg
 cd $SOURCE_PATH || fail
