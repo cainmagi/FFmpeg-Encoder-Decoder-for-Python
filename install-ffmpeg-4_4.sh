@@ -25,7 +25,8 @@ function mcd {
 }
 
 msg "Install apt packages."
-sudo apt-get update -qq && sudo apt-get -y install \
+sudo apt-get update -qq || fail
+sudo apt-get -y install \
   autoconf automake build-essential cmake \
   git-core libass-dev libfreetype6-dev \
   libgnutls28-dev libsdl2-dev libtool \
@@ -33,8 +34,16 @@ sudo apt-get update -qq && sudo apt-get -y install \
   libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev \
   meson ninja-build pkg-config texinfo wget yasm \
   zlib1g-dev libunistring-dev libssl-dev \
-  libc6 libc6-dev unzip libnuma1 libnuma-dev || fail
+  libc6 libc6-dev unzip libnuma1 libnuma-dev \
+  perl clang || fail
 
+msg "Install rustc and cargo 1.53.0."
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh || fail
+source $HOME/.cargo/env || fail
+rustup toolchain install 1.53.0 || fail
+cargo install cargo-c || fail
+
+msg "Install the newest meson."
 sudo pip3 install --user meson || fail
 
 sudo apt-get -y upgrade || fail
@@ -169,10 +178,21 @@ ninja -j $(nproc) || fail
 sudo ninja install || fail
 sudo cp $BUILD_PATH/bin/vmaf $BIN_PATH || fail
 
+# Install dependencies: librav1e
+msg "Install rav1e p20210713."
+cd $SOURCE_PATH || fail
+git -C rav1e pull 2> /dev/null || git clone --depth 1 -b p20210713 --single-branch https://github.com/xiph/rav1e.git
+cd rav1e || fail
+cargo cbuild --release || fail
+sudo cp target/x86_64-unknown-linux-gnu/release/rav1e.h $BUILD_PATH/include/
+sudo cp -r target/x86_64-unknown-linux-gnu/release/rav1e $BUILD_PATH/include/
+sudo cp target/x86_64-unknown-linux-gnu/release/rav1e.pc $BUILD_PATH/lib/pkgconfig/
+sudo cp target/x86_64-unknown-linux-gnu/release/librav1e.* $BUILD_PATH/lib/
+
 # Install dependencies for GPU: ffnvcodec
 msg "Install the newest ffnvcodec."
 cd $SOURCE_PATH || fail
-git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git || fail
+git -C nv-codec-headers pull 2> /dev/null || git clone --depth 1 https://git.videolan.org/git/ffmpeg/nv-codec-headers.git || fail
 cd nv-codec-headers || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install
