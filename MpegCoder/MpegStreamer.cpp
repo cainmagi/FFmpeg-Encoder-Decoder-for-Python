@@ -11,7 +11,7 @@ cmpc::CMpegClient::CMpegClient(void) :
     PVideoFrameCount(0), cache_size(0), read_size(0), frameRate({ 0,0 }), reading(false),
     _duration(0), _predictFrameNum(0), refcount(0), PFormatCtx(nullptr), PCodecCtx(nullptr),
     PVideoStream(nullptr), frame(nullptr), PswsCtx(nullptr), buffer(), read_handle(), read_check(),
-    info_lock(){
+    info_lock(), nthread(0) {
 }
 cmpc::CMpegClient::~CMpegClient(void) {
     clear();
@@ -22,7 +22,7 @@ cmpc::CMpegClient::CMpegClient(CMpegClient &&ref) noexcept:
     cache_size(ref.cache_size), read_size(ref.read_size), frameRate(ref.frameRate), reading(ref.reading),
     _duration(ref._duration), _predictFrameNum(ref._predictFrameNum), refcount(ref.refcount), 
     PFormatCtx(ref.PFormatCtx), PCodecCtx(ref.PCodecCtx), PVideoStream(ref.PVideoStream), frame(ref.frame), 
-    PswsCtx(ref.PswsCtx), buffer(std::move(ref.buffer)), read_check(),
+    PswsCtx(ref.PswsCtx), buffer(std::move(ref.buffer)), nthread(ref.nthread), read_check(),
     info_lock(){
     read_handle = std::move(ref.read_handle);
     ref.PFormatCtx = nullptr;
@@ -54,6 +54,7 @@ cmpc::CMpegClient& cmpc::CMpegClient::operator=(CMpegClient &&ref) noexcept {
         PswsCtx = ref.PswsCtx; 
         buffer = std::move(ref.buffer);
         read_handle = std::move(ref.read_handle);
+        nthread = ref.nthread;
         ref.PFormatCtx = nullptr;
         ref.PCodecCtx = nullptr;
         ref.PVideoStream = nullptr;
@@ -68,12 +69,14 @@ void cmpc::CMpegClient::meta_protected_clear(void) {
     auto protectCacheSize = cache_size;
     auto protectReadSize = read_size;
     auto protectFrameRate = frameRate;
+    auto protectNthread = nthread;
     clear();
     widthDst = protectWidth;
     heightDst = protectHeight;
     cache_size = protectCacheSize;
     read_size = protectReadSize;
     frameRate = protectFrameRate;
+    nthread = protectNthread;
 }
 
 void cmpc::CMpegClient::clear(void) {
@@ -105,6 +108,7 @@ void cmpc::CMpegClient::clear(void) {
     read_check.unlock();
     info_lock.lock();
     info_lock.unlock();
+    nthread = 0;
     PVideoStream = nullptr;
     if (frame) {
         av_frame_free(&frame);
@@ -153,6 +157,10 @@ int cmpc::CMpegClient::_open_codec_context(int &stream_idx, AVCodecContext *&dec
         if (!dec_ctx_) {
             cerr << "Failed to allocate the " << av_get_media_type_string(type) << " codec context" << endl;
             return AVERROR(ENOMEM);
+        }
+
+        if (nthread > 0) {
+            dec_ctx_->thread_count = nthread;
         }
 
         /* Copy codec parameters from input stream to output codec context */
@@ -500,11 +508,18 @@ void cmpc::CMpegClient::setParameter(string keyword, void *ptr) {
         int den = static_cast<int>(PyLong_AsLong(refObj));
         frameRate = _setAVRational(num, den);
     }
+    else if (keyword.compare("nthread") == 0) {
+        auto ref = reinterpret_cast<int*>(ptr);
+        if (PCodecCtx) {
+            PCodecCtx->thread_count = *ref;
+        }
+        nthread = *ref;
+    }
 }
 
 PyObject * cmpc::CMpegClient::getParameter(string keyword) {
     if (keyword.compare("videoAddress") == 0) {
-        return Py_BuildValue("y", videoPath.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(videoPath.c_str(), static_cast<Py_ssize_t>(videoPath.size()));
     }
     else if (keyword.compare("width") == 0) {
         return Py_BuildValue("i", width);
@@ -519,7 +534,7 @@ PyObject * cmpc::CMpegClient::getParameter(string keyword) {
         return value;
     }
     else if (keyword.compare("coderName") == 0) {
-        return Py_BuildValue("y", _str_codec.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(_str_codec.c_str(), static_cast<Py_ssize_t>(_str_codec.size()));
     }
     else if (keyword.compare("duration") == 0) {
         return Py_BuildValue("d", _duration);
@@ -534,6 +549,14 @@ PyObject * cmpc::CMpegClient::getParameter(string keyword) {
         auto frame_base = PVideoStream->avg_frame_rate;
         double srcFrameRate = static_cast<double>(frame_base.num) / static_cast<double>(frame_base.den);
         return Py_BuildValue("d", srcFrameRate);
+    }
+    else if (keyword.compare("nthread") == 0) {
+        if (PCodecCtx) {
+            return Py_BuildValue("i", PCodecCtx->thread_count);
+        }
+        else {
+            return Py_BuildValue("i", nthread);
+        }
     }
     else {
         Py_RETURN_NONE;
@@ -564,6 +587,16 @@ PyObject* cmpc::CMpegClient::getParameter() {
         Py_DECREF(val);
         key.assign("maxBframe");
         val = Py_BuildValue("i", PCodecCtx->max_b_frames);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+        key.assign("nthread");
+        val = Py_BuildValue("i", PCodecCtx->thread_count);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    else {
+        key.assign("nthread");
+        val = Py_BuildValue("i", nthread);
         PyDict_SetItemString(res, key.c_str(), val);
         Py_DECREF(val);
     }
@@ -644,6 +677,14 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegClient & self_class) {
     }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Deccoder: " \
         << self_class._str_codec << endl;
+    if (self_class.PCodecCtx) {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number: " \
+            << self_class.PCodecCtx->thread_count << endl;
+    }
+    else {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number (P): " \
+            << self_class.nthread << endl;
+    }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Duration: " \
         << self_class._duration << " [s]" << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Predicted FrameNum: " \
@@ -672,7 +713,7 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegClient & self_class) {
         out << std::setiosflags(std::ios::left) << std::setw(25) << " * Src. frame rate: " \
             << std::setprecision(3) << dstFrameRate << std::setprecision(6) << endl;
     }
-    out << std::setw(1) << "*/";
+    out << std::setw(1) << " */";
     return out;
 }
 
@@ -905,7 +946,7 @@ cmpc::CMpegServer::CMpegServer(void) :
     bitRate(1024), width(100), height(100), timeBase(_setAVRational(1, 25)), frameRate(_setAVRational(25, 1)), \
     GOPSize(10), MaxBFrame(1), PStreamContex({ 0 }), PFormatCtx(nullptr), PswsCtx(nullptr), RGBbuffer(nullptr), \
     Ppacket(nullptr), __have_video(false), __enable_header(false), widthSrc(0), heightSrc(0), __frameRGB(nullptr), \
-    __start_time(0), __cur_time(0), time_base_q(_setAVRational(1, AV_TIME_BASE)) {
+    __start_time(0), __cur_time(0), time_base_q(_setAVRational(1, AV_TIME_BASE)), nthread(nthread) {
     videoPath.clear();
     __formatName.clear();
     codecName.clear();
@@ -926,6 +967,7 @@ void cmpc::CMpegServer::meta_protected_clear(void) {
     auto protectCodecName(codecName);
     auto protectTimeBase(timeBase);
     auto protectFrameRate(frameRate);
+    auto protectNthread = nthread;
     clear();
     width = protectWidth;
     height = protectHeight;
@@ -939,6 +981,7 @@ void cmpc::CMpegServer::meta_protected_clear(void) {
     videoPath.assign(protectVideoPath);
     __formatName.assign(protectFormatName);
     codecName.assign(protectCodecName);
+    nthread = protectNthread;
 }
 
 void cmpc::CMpegServer::clear(void) {
@@ -955,6 +998,7 @@ void cmpc::CMpegServer::clear(void) {
     frameRate = _setAVRational(25, 1);
     GOPSize = 10;
     MaxBFrame = 1;
+    nthread = 0;
     PStreamContex = { 0 };
     __have_video = false;
     __enable_header = false;
@@ -977,6 +1021,7 @@ void cmpc::CMpegServer::__copyMetaData(const CMpegServer& ref) {
     GOPSize = ref.GOPSize;
     MaxBFrame = ref.MaxBFrame;
     __pts_ahead = ref.__pts_ahead;
+    nthread = ref.nthread;
     __start_time = 0;
     __cur_time = 0;
     time_base_q = _setAVRational(1, AV_TIME_BASE);
@@ -1007,16 +1052,17 @@ cmpc::CMpegServer::CMpegServer(CMpegServer&& ref) noexcept :
     GOPSize(ref.GOPSize), MaxBFrame(ref.MaxBFrame), PStreamContex(ref.PStreamContex), PswsCtx(ref.PswsCtx), \
     RGBbuffer(ref.RGBbuffer), Ppacket(ref.Ppacket), PFormatCtx(ref.PFormatCtx), __have_video(ref.__have_video), \
     __enable_header(ref.__enable_header), widthSrc(ref.widthSrc), heightSrc(ref.heightSrc), __frameRGB(ref.__frameRGB), \
-    __formatName(ref.__formatName), __pts_ahead(ref.__pts_ahead), __start_time(ref.__start_time), __cur_time(ref.__cur_time), \
+    __pts_ahead(ref.__pts_ahead), __start_time(ref.__start_time), nthread(ref.nthread), __cur_time(ref.__cur_time), \
    time_base_q(ref.time_base_q) {
-    videoPath.assign(ref.videoPath);
-    codecName.assign(ref.codecName);
+    videoPath.assign(std::move(ref.videoPath));
+    codecName.assign(std::move(ref.codecName));
+    __formatName.assign(std::move(ref.__formatName));
 }
 
 cmpc::CMpegServer& cmpc::CMpegServer::operator=(CMpegServer&& ref) noexcept {
-    videoPath.assign(ref.videoPath);
-    __formatName.assign(ref.__formatName);
-    codecName.assign(ref.codecName);
+    videoPath.assign(std::move(ref.videoPath));
+    __formatName.assign(std::move(ref.__formatName));
+    codecName.assign(std::move(ref.codecName));
     bitRate = ref.bitRate;
     width = ref.width;
     height = ref.height;
@@ -1035,6 +1081,7 @@ cmpc::CMpegServer& cmpc::CMpegServer::operator=(CMpegServer&& ref) noexcept {
     PswsCtx = ref.PswsCtx;
     RGBbuffer = ref.RGBbuffer;
     Ppacket = ref.Ppacket;
+    nthread = ref.nthread;
     __frameRGB = ref.__frameRGB;
     __have_video = ref.__have_video;
     __enable_header = ref.__enable_header;
@@ -1054,6 +1101,15 @@ void cmpc::CMpegServer::resetPath(string inVideoPath) {
     }
     else if (videoPath.compare(0, 7, "rtmp://") == 0) {
         __formatName.assign("rtmp");
+    }
+    else if (videoPath.compare(0, 7, "http://") == 0) {
+        __formatName.assign("http");
+    }
+    else if (videoPath.compare(0, 6, "ftp://") == 0) {
+        __formatName.assign("ftp");
+    }
+    else if (videoPath.compare(0, 7, "sftp://") == 0) {
+        __formatName.assign("sftp");
     }
     else {
         __formatName.clear();
@@ -1147,6 +1203,9 @@ bool cmpc::CMpegServer::__add_stream(AVCodec** codec) {
     if (!c) {
         cerr << "Could not alloc an encoding context" << endl;
         return false;
+    }
+    if (nthread > 0) {
+        c->thread_count = nthread;
     }
     PStreamContex.enc = c;
 
@@ -1447,9 +1506,10 @@ int cmpc::CMpegServer::ServeFrameBlock(PyArrayObject* PyFrame) {
             av_usleep(static_cast<unsigned int>((__cur_time - cur_time) / 2));
         }
         ServeFrame(PyFrame);
+        return 0;
     }
     else {
-        return 1;
+        return -1;
     }
 }
 
@@ -1485,6 +1545,16 @@ void cmpc::CMpegServer::setParameter(string keyword, void* ptr) {
             bitRate = ref->PCodecCtx->bit_rate;
             GOPSize = ref->PCodecCtx->gop_size;
             MaxBFrame = ref->PCodecCtx->max_b_frames;
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->PCodecCtx->thread_count;
+            }
+            nthread = ref->PCodecCtx->thread_count;
+        }
+        else {
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->nthread;
+            }
+            nthread = ref->nthread;
         }
         if (ref->widthDst > 0 && ref->heightDst > 0) {
             width = ref->widthDst;
@@ -1514,6 +1584,16 @@ void cmpc::CMpegServer::setParameter(string keyword, void* ptr) {
             bitRate = ref->PCodecCtx->bit_rate;
             GOPSize = ref->PCodecCtx->gop_size;
             MaxBFrame = ref->PCodecCtx->max_b_frames;
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->PCodecCtx->thread_count;
+            }
+            nthread = ref->PCodecCtx->thread_count;
+        }
+        else {
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->nthread;
+            }
+            nthread = ref->nthread;
         }
         if (ref->widthDst > 0 && ref->heightDst > 0) {
             width = ref->widthDst;
@@ -1657,6 +1737,17 @@ void cmpc::CMpegServer::setParameter(string keyword, void* ptr) {
                     }
                 }
             }
+            key.assign("nthread");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int>(PyLong_AsLong(val));
+                    if (PStreamContex.enc) {
+                        PStreamContex.enc->thread_count = val_num;
+                    }
+                    nthread = val_num;
+                }
+            }
         }
     }
     else if (keyword.compare("videoAddress") == 0) {
@@ -1714,17 +1805,24 @@ void cmpc::CMpegServer::setParameter(string keyword, void* ptr) {
             __pts_ahead = __FrameToPts(static_cast<int64_t>(frame_ahead));
         }
     }
+    else if (keyword.compare("nthread") == 0) {
+        auto ref = reinterpret_cast<int*>(ptr);
+        if (PStreamContex.enc) {
+            PStreamContex.enc->thread_count = *ref;
+        }
+        nthread = *ref;
+    }
 }
 
 PyObject* cmpc::CMpegServer::getParameter(string keyword) {
     if (keyword.compare("videoAddress") == 0) {
-        return Py_BuildValue("y", videoPath.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(videoPath.c_str(), static_cast<Py_ssize_t>(videoPath.size()));
     }
     else if (keyword.compare("codecName") == 0) {
-        return Py_BuildValue("y", codecName.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(codecName.c_str(), static_cast<Py_ssize_t>(codecName.size()));
     }
     else if (keyword.compare("formatName") == 0) {
-        return Py_BuildValue("y", __formatName.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(__formatName.c_str(), static_cast<Py_ssize_t>(__formatName.size()));
     }
     else if (keyword.compare("bitRate") == 0) {
         auto bit_rate = static_cast<double>(bitRate) / 1024;
@@ -1770,6 +1868,14 @@ PyObject* cmpc::CMpegServer::getParameter(string keyword) {
         auto frame_base = frameRate;
         auto frame_rate = static_cast<double>(frame_base.num) / static_cast<double>(frame_base.den);
         return Py_BuildValue("d", frame_rate);
+    }
+    else if (keyword.compare("nthread") == 0) {
+        if (PStreamContex.enc) {
+            return Py_BuildValue("i", PStreamContex.enc->thread_count);
+        }
+        else {
+            return Py_BuildValue("i", nthread);
+        }
     }
     else {
         Py_RETURN_NONE;
@@ -1833,6 +1939,18 @@ PyObject* cmpc::CMpegServer::getParameter() {
     val = Py_BuildValue("(ii)", frameRate.num, frameRate.den);
     PyDict_SetItemString(res, key.c_str(), val);
     Py_DECREF(val);
+    if (PStreamContex.enc) {
+        key.assign("nthread");
+        val = Py_BuildValue("i", PStreamContex.enc->thread_count);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    else {
+        key.assign("nthread");
+        val = Py_BuildValue("i", nthread);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
     return res;
 }
 
@@ -1857,16 +1975,23 @@ bool cmpc::CMpegServer::FFmpegSetup() {
     /* allocate the output media context */
     //auto getFormat = av_guess_format(codecName.c_str(), nullptr, nullptr);
     string format_name;
-    bool require_io = false;
     if (__formatName.compare("rtsp") == 0) {
         format_name.assign("rtsp");
     }
     else if(__formatName.compare("rtmp") == 0) {
         format_name.assign("flv");
-        require_io = true;
+    }
+    else if (__formatName.compare("http") == 0) {
+        format_name.assign("flv");
+    }
+    else if (__formatName.compare("ftp") == 0) {
+        format_name.assign("flv");
+    }
+    else if (__formatName.compare("sftp") == 0) {
+        format_name.assign("flv");
     }
     else {
-        cout << "The format name " << __formatName << " is not supported. Now we only support \"rtsp\", \"rtmp\"." << endl;
+        cout << "The format name " << __formatName << " is not supported. Now we only support \"rtsp\", \"rtmp\", \"http\"." << endl;
         return false;
     }
     avformat_alloc_output_context2(&PFormatCtx, nullptr, format_name.c_str(), videoPath.c_str());
@@ -1906,11 +2031,23 @@ bool cmpc::CMpegServer::FFmpegSetup() {
 
     /* open the output file, if needed */
     if (!(fmt->flags & AVFMT_NOFILE)) {
-        ret = avio_open2(&PFormatCtx->pb, videoPath.c_str(), AVIO_FLAG_WRITE, nullptr, nullptr);
+        AVDictionary* opt_io = nullptr;
+        /*if (__formatName.compare("http") == 0) {
+            ret = av_dict_set(&opt_io, "listen", "1", 0);
+            if (ret < 0) {
+                cerr << "Could not set the options for the file: " << av_err2str(ret) << endl;
+                FFmpegClose();
+                return false;
+            }
+        }*/
+        ret = avio_open2(&PFormatCtx->pb, videoPath.c_str(), AVIO_FLAG_WRITE, nullptr, &opt_io);
         if (ret < 0) {
             cerr << "Could not open '" << videoPath << "': " << av_err2str(ret) << endl;
             FFmpegClose();
             return false;
+        }
+        if (opt_io) {
+            av_dict_free(&opt_io);
         }
     }
 
@@ -2030,6 +2167,14 @@ ostream& cmpc::operator<<(ostream& out, cmpc::CMpegServer& self_class) {
         << self_class.codecName << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Stream format: " \
         << self_class.__formatName << endl;
+    if (self_class.PStreamContex.enc) {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number: " \
+            << self_class.PStreamContex.enc->thread_count << endl;
+    }
+    else {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number (P): " \
+            << self_class.nthread << endl;
+    }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Bit Rate: " \
         << (self_class.bitRate >> 10) << " [Kbit/s]" << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Frame Rate: " \
@@ -2040,6 +2185,6 @@ ostream& cmpc::operator<<(ostream& out, cmpc::CMpegServer& self_class) {
         << self_class.GOPSize << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Maxmal Bframe Density: " \
         << self_class.MaxBFrame << " [/GOP]" << endl;
-    out << std::setw(1) << "*/";
+    out << std::setw(1) << " */";
     return out;
 }

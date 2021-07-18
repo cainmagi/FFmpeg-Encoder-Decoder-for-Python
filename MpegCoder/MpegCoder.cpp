@@ -18,7 +18,7 @@ int8_t cmpc::__dumpControl = 1;
 cmpc::CMpegDecoder::CMpegDecoder(void)
     : PFormatCtx(nullptr), PCodecCtx(nullptr), width(0), height(0), PVideoStream(nullptr), \
     PVideoStreamIDX(-1), PVideoFrameCount(0), _duration(0), _predictFrameNum(0), RGBbuffer(nullptr), \
-    PswsCtx(nullptr), currentGOPTSM(0), EndofGOP(false), widthDst(0), heightDst(0), \
+    PswsCtx(nullptr), currentGOPTSM(0), nthread(0), EndofGOP(false), widthDst(0), heightDst(0), \
     PPixelFormat(STREAM_PIX_FMT) {
     videoPath.clear();
     _str_codec.clear();
@@ -33,9 +33,11 @@ cmpc::CMpegDecoder::CMpegDecoder(void)
 void cmpc::CMpegDecoder::meta_protected_clear(void) {
     auto protectWidth = widthDst;
     auto protectHeight = heightDst;
+    auto protectNthread = nthread;
     clear();
     widthDst = protectWidth;
     heightDst = protectHeight;
+    nthread = protectNthread;
 }
 
 void cmpc::CMpegDecoder::clear(void) {
@@ -43,6 +45,7 @@ void cmpc::CMpegDecoder::clear(void) {
     widthDst = heightDst = 0;
     PVideoStreamIDX = -1;
     PVideoFrameCount = 0;
+    nthread = 0;
     _duration = 0;
     _predictFrameNum = 0;
     currentGOPTSM = 0;
@@ -96,7 +99,7 @@ cmpc::CMpegDecoder::CMpegDecoder(CMpegDecoder &&ref) noexcept
     PVideoFrameCount(ref.PVideoFrameCount), _str_codec(ref._str_codec), _duration(ref._duration), \
     _predictFrameNum(ref._predictFrameNum), RGBbuffer(ref.RGBbuffer), PPixelFormat(ref.PPixelFormat) \
     , PswsCtx(ref.PswsCtx), currentGOPTSM(ref.currentGOPTSM), EndofGOP(ref.EndofGOP), \
-    widthDst(ref.widthDst), heightDst(ref.heightDst){
+    widthDst(ref.widthDst), heightDst(ref.heightDst), nthread(ref.nthread) {
     ref.PFormatCtx = nullptr;
     ref.PCodecCtx = nullptr;
     ref.PVideoStream = nullptr;
@@ -124,6 +127,7 @@ cmpc::CMpegDecoder& cmpc::CMpegDecoder::operator=(CMpegDecoder &&ref) noexcept {
         RGBbuffer = ref.RGBbuffer;
         PPixelFormat = ref.PPixelFormat;
         PswsCtx = ref.PswsCtx;
+        nthread = ref.nthread;
         ref.PFormatCtx = nullptr;
         ref.PCodecCtx = nullptr;
         ref.PVideoStream = nullptr;
@@ -174,6 +178,10 @@ int cmpc::CMpegDecoder::_open_codec_context(int &stream_idx, AVCodecContext *&de
         if (!dec_ctx_) {
             cerr << "Failed to allocate the " << av_get_media_type_string(type) << " codec context" << endl;
             return AVERROR(ENOMEM);
+        }
+
+        if (nthread > 0) {
+            dec_ctx_->thread_count = nthread;
         }
 
         /* Copy codec parameters from input stream to output codec context */
@@ -267,12 +275,19 @@ void cmpc::CMpegDecoder::dumpFormat() {
 
 void cmpc::CMpegDecoder::setParameter(string keyword, void *ptr) {
     if (keyword.compare("widthDst") == 0) {
-        int *ref = reinterpret_cast<int *>(ptr);
+        auto ref = reinterpret_cast<int *>(ptr);
         widthDst = *ref;
     }
     else if (keyword.compare("heightDst") == 0) {
-        int *ref = reinterpret_cast<int *>(ptr);
+        auto ref = reinterpret_cast<int *>(ptr);
         heightDst = *ref;
+    }
+    else if (keyword.compare("nthread") == 0) {
+        auto ref = reinterpret_cast<int*>(ptr);
+        if (PCodecCtx) {
+            PCodecCtx->thread_count = *ref;
+        }
+        nthread = *ref;
     }
 }
 
@@ -300,6 +315,16 @@ PyObject* cmpc::CMpegDecoder::getParameter() {
         Py_DECREF(val);
         key.assign("maxBframe");
         val = Py_BuildValue("i", PCodecCtx->max_b_frames);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+        key.assign("nthread");
+        val = Py_BuildValue("i", PCodecCtx->thread_count);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    else {
+        key.assign("nthread");
+        val = Py_BuildValue("i", nthread);
         PyDict_SetItemString(res, key.c_str(), val);
         Py_DECREF(val);
     }
@@ -335,7 +360,7 @@ PyObject* cmpc::CMpegDecoder::getParameter() {
 
 PyObject * cmpc::CMpegDecoder::getParameter(string keyword) {
     if (keyword.compare("videoPath") == 0) {
-        return Py_BuildValue("y", videoPath.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(videoPath.c_str(), static_cast<Py_ssize_t>(videoPath.size()));
     }
     else if (keyword.compare("width") == 0) {
         return Py_BuildValue("i", width);
@@ -347,7 +372,7 @@ PyObject * cmpc::CMpegDecoder::getParameter(string keyword) {
         return Py_BuildValue("i", PVideoFrameCount);
     }
     else if (keyword.compare("coderName") == 0) {
-        return Py_BuildValue("y", _str_codec.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(_str_codec.c_str(), static_cast<Py_ssize_t>(_str_codec.size()));
     }
     else if (keyword.compare("duration") == 0) {
         return Py_BuildValue("d", _duration);
@@ -359,6 +384,14 @@ PyObject * cmpc::CMpegDecoder::getParameter(string keyword) {
         auto frame_base = PVideoStream->avg_frame_rate;
         double frameRate = static_cast<double>(frame_base.num) / static_cast<double>(frame_base.den);
         return Py_BuildValue("d", frameRate);
+    }
+    else if (keyword.compare("nthread") == 0) {
+        if (PCodecCtx) {
+            return Py_BuildValue("i", PCodecCtx->thread_count);
+        }
+        else {
+            return Py_BuildValue("i", nthread);
+        }
     }
     else {
         Py_RETURN_NONE;
@@ -850,11 +883,19 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegDecoder & self_class) {
     }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Deccoder: " \
         << self_class._str_codec << endl;
+    if (self_class.PCodecCtx) {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number: " \
+            << self_class.PCodecCtx->thread_count << endl;
+    }
+    else {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number (P): " \
+            << self_class.nthread << endl;
+    }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Duration: " \
         << self_class._duration << " [s]" << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Predicted FrameNum: " \
         << self_class._predictFrameNum << endl;
-    out << std::setw(1) << "*/";
+    out << std::setw(1) << " */";
     return out;
 }
 
@@ -867,7 +908,8 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegDecoder & self_class) {
 cmpc::CMpegEncoder::CMpegEncoder(void):
     bitRate(1024), width(100), height(100), timeBase(_setAVRational(1, 25)), frameRate(_setAVRational(25, 1)),\
     GOPSize(10), MaxBFrame(1), PStreamContex({ 0 }), PFormatCtx(nullptr), PswsCtx(nullptr), RGBbuffer(nullptr), \
-    Ppacket(nullptr), __have_video(false), __enable_header(false), widthSrc(0), heightSrc(0), __frameRGB(nullptr){
+    Ppacket(nullptr), __have_video(false), __enable_header(false), widthSrc(0), heightSrc(0), __frameRGB(nullptr), \
+    nthread(0) {
     videoPath.clear();
     codecName.clear();
 }
@@ -885,6 +927,7 @@ void cmpc::CMpegEncoder::clear(void) {
     frameRate = _setAVRational(25, 1);
     GOPSize = 10;
     MaxBFrame = 1;
+    nthread = 0;
     PStreamContex = { 0 };
     __have_video = false;
     __enable_header = false;
@@ -902,6 +945,7 @@ void cmpc::CMpegEncoder::__copyMetaData(const CMpegEncoder &ref) {
     frameRate = ref.frameRate;
     GOPSize = ref.GOPSize;
     MaxBFrame = ref.MaxBFrame;
+    nthread = ref.nthread;
 }
 
 cmpc::CMpegEncoder::~CMpegEncoder(void) {
@@ -928,7 +972,8 @@ cmpc::CMpegEncoder::CMpegEncoder(CMpegEncoder &&ref) noexcept:
     bitRate(ref.bitRate), width(ref.width), height(ref.height), timeBase(ref.timeBase), frameRate(ref.frameRate), \
     GOPSize(ref.GOPSize), MaxBFrame(ref.MaxBFrame), PStreamContex(ref.PStreamContex), PswsCtx(ref.PswsCtx), \
     RGBbuffer(ref.RGBbuffer), Ppacket(ref.Ppacket), PFormatCtx(ref.PFormatCtx), __have_video(ref.__have_video), \
-    __enable_header(ref.__enable_header), widthSrc(ref.widthSrc), heightSrc(ref.heightSrc), __frameRGB(ref.__frameRGB){
+    __enable_header(ref.__enable_header), widthSrc(ref.widthSrc), heightSrc(ref.heightSrc), __frameRGB(ref.__frameRGB), \
+    nthread(ref.nthread) {
     videoPath.assign(ref.videoPath);
     codecName.assign(ref.codecName);
 }
@@ -944,6 +989,7 @@ cmpc::CMpegEncoder& cmpc::CMpegEncoder::operator=(CMpegEncoder &&ref) noexcept {
     timeBase = ref.timeBase;
     frameRate = ref.frameRate;
     GOPSize = ref.GOPSize;
+    nthread = ref.nthread;
     MaxBFrame = ref.MaxBFrame;
     PFormatCtx = ref.PFormatCtx;
     PStreamContex = ref.PStreamContex;
@@ -1036,6 +1082,9 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec **codec){
     if (!c) {
         cerr << "Could not alloc an encoding context" << endl;
         return false;
+    }
+    if (nthread > 0) {
+        c->thread_count = nthread;
     }
     PStreamContex.enc = c;
 
@@ -1360,6 +1409,16 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
             bitRate = ref->PCodecCtx->bit_rate;
             GOPSize = ref->PCodecCtx->gop_size;
             MaxBFrame = ref->PCodecCtx->max_b_frames;
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->PCodecCtx->thread_count;
+            }
+            nthread = ref->PCodecCtx->thread_count;
+        }
+        else {
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->nthread;
+            }
+            nthread = ref->nthread;
         }
         if (ref->widthDst > 0 && ref->heightDst > 0) {
             width = ref->widthDst;
@@ -1385,6 +1444,16 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
             bitRate = ref->PCodecCtx->bit_rate;
             GOPSize = ref->PCodecCtx->gop_size;
             MaxBFrame = ref->PCodecCtx->max_b_frames;
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->PCodecCtx->thread_count;
+            }
+            nthread = ref->PCodecCtx->thread_count;
+        }
+        else {
+            if (PStreamContex.enc) {
+                PStreamContex.enc->thread_count = ref->nthread;
+            }
+            nthread = ref->nthread;
         }
         if (ref->widthDst > 0 && ref->heightDst > 0) {
             width = ref->widthDst;
@@ -1520,6 +1589,17 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
                     timeBase = _setAVRational(den, num);
                 }
             }
+            key.assign("nthread");
+            val = PyDict_GetItemString(ref, key.c_str());
+            if (val) {
+                if (PyLong_Check(val)) {
+                    auto val_num = static_cast<int>(PyLong_AsLong(val));
+                    if (PStreamContex.enc) {
+                        PStreamContex.enc->thread_count = val_num;
+                    }
+                    nthread = val_num;
+                }
+            }
         }
     }
     else if (keyword.compare("videoPath") == 0) {
@@ -1568,14 +1648,21 @@ void cmpc::CMpegEncoder::setParameter(string keyword, void *ptr) {
         frameRate = _setAVRational(num, den);
         timeBase = _setAVRational(den, num);
     }
+    else if (keyword.compare("nthread") == 0) {
+        auto ref = reinterpret_cast<int*>(ptr);
+        if (PStreamContex.enc) {
+            PStreamContex.enc->thread_count = *ref;
+        }
+        nthread = *ref;
+    }
 }
 
 PyObject* cmpc::CMpegEncoder::getParameter(string keyword) {
     if (keyword.compare("videoPath") == 0) {
-        return Py_BuildValue("y", videoPath.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(videoPath.c_str(), static_cast<Py_ssize_t>(videoPath.size()));
     }
     else if (keyword.compare("codecName") == 0) {
-        return Py_BuildValue("y", codecName.c_str());
+        return PyUnicode_DecodeFSDefaultAndSize(codecName.c_str(), static_cast<Py_ssize_t>(codecName.size()));
     }
     else if (keyword.compare("bitRate") == 0) {
         auto bit_rate = static_cast<double>(bitRate) / 1024;
@@ -1603,6 +1690,14 @@ PyObject* cmpc::CMpegEncoder::getParameter(string keyword) {
         auto frame_base = frameRate;
         double frameRate = static_cast<double>(frame_base.num) / static_cast<double>(frame_base.den);
         return Py_BuildValue("d", frameRate);
+    }
+    else if (keyword.compare("nthread") == 0) {
+        if (PStreamContex.enc) {
+            return Py_BuildValue("i", PStreamContex.enc->thread_count);
+        }
+        else {
+            return Py_BuildValue("i", nthread);
+        }
     }
     else {
         Py_RETURN_NONE;
@@ -1658,6 +1753,18 @@ PyObject* cmpc::CMpegEncoder::getParameter() {
     val = Py_BuildValue("(ii)", frameRate.num, frameRate.den);
     PyDict_SetItemString(res, key.c_str(), val);
     Py_DECREF(val);
+    if (PStreamContex.enc) {
+        key.assign("nthread");
+        val = Py_BuildValue("i", PStreamContex.enc->thread_count);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
+    else {
+        key.assign("nthread");
+        val = Py_BuildValue("i", nthread);
+        PyDict_SetItemString(res, key.c_str(), val);
+        Py_DECREF(val);
+    }
     return res;
 }
 
@@ -1834,6 +1941,14 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegEncoder & self_class) {
     }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Enccoder: " \
         << self_class.codecName << endl;
+    if (self_class.PStreamContex.enc) {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number: " \
+            << self_class.PStreamContex.enc->thread_count << endl;
+    }
+    else {
+        out << std::setiosflags(std::ios::left) << std::setw(25) << " * Thread number (P): " \
+            << self_class.nthread << endl;
+    }
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Bit Rate: " \
         << (self_class.bitRate >> 10) << " [Kbit/s]" << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Frame Rate: " \
@@ -1842,6 +1957,6 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegEncoder & self_class) {
         << self_class.GOPSize << endl;
     out << std::setiosflags(std::ios::left) << std::setw(25) << " * Maxmal Bframe Density: " \
         << self_class.MaxBFrame << " [/GOP]" << endl;
-    out << std::setw(1) << "*/";
+    out << std::setw(1) << " */";
     return out;
 }

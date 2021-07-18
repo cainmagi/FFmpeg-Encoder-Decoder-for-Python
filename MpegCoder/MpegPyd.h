@@ -26,6 +26,41 @@ PyObject *str2PyStr(string Str) {  // Convert the output string to the widechar 
     return res;
 }
 
+bool PyStr2str(PyObject* py_str, string &s_str) {  // Convert a python str to std::string.
+    if (!py_str) {
+        return false;
+    }
+    if (PyUnicode_Check(py_str)) {
+        auto py_bytes = PyUnicode_EncodeFSDefault(py_str);
+        if (!py_bytes) {
+            PyErr_SetString(PyExc_TypeError, "Error.PyStr2str: fail to encode the unicode str.'");
+            return false;
+        }
+        auto c_str = PyBytes_AsString(py_bytes);
+        if (!c_str) {
+            PyErr_SetString(PyExc_TypeError, "Error.PyStr2str: fail to parse data from the encoded str.'");
+            return false;
+        }
+        s_str.assign(c_str);
+        Py_DECREF(py_bytes);
+    }
+    else {
+        if (PyBytes_Check(py_str)) {
+            auto c_str = PyBytes_AsString(py_str);
+            if (!c_str) {
+                PyErr_SetString(PyExc_TypeError, "Error.PyStr2str: fail to parse data from the bytes object.'");
+                return false;
+            }
+            s_str.assign(c_str);
+        }
+        else {
+            PyErr_SetString(PyExc_TypeError, "Error.PyStr2str: fail to convert the object to string, maybe the object is not str or bytes.'");
+            return false;
+        }
+    }
+    return true;
+}
+
 /*****************************************************************************
 * C style definition of Python classes.
 * Each class would ref the C implemented class directly.
@@ -153,8 +188,9 @@ Yuchen's Mpeg Coder - Readme
         ...     p = True
         ...     while p:
         ...         p = d.ExtractGOP() # Extract current GOP.
-        ...         for i in p: # Select every frame.
-        ...             e.EncodeFrame(i) # Encode current frame.
+        ...         if p is not None:
+        ...             for i in p: # Select every frame.
+        ...                 e.EncodeFrame(i) # Encode current frame.
         ...     e.FFmpegClose() # End encoding, and flush all frames in cache.
         >>> d.clear() # Close the input video.
     An example of demuxing the video streamer from a server:
@@ -175,6 +211,12 @@ Yuchen's Mpeg Coder - Readme
         >>> d.clear() # Disconnect with the stream.
     For more instructions, you could tap help(mpegCoder). 
 ================================================================================
+V3.1.0 update report:
+    1. Support str() type for all string arguments.
+	2. Support http, ftp, sftp streams for MpegServer.
+    3. Support "nthread" option for MpegDecoder, MpegEncoder, MpegClient and
+       MpegServer.
+    4. Fix typos in docstrings.
 V3.0.0 update report:
     1. Fix a severe memory leaking bugs when using AVPacket.
     2. Fix a bug caused by using `MpegClient.terminate()` when a video is closed
@@ -232,23 +274,25 @@ V1.0 update report:
 * Declare the core methods of the classes.
 *****************************************************************************/
 static int C_MPDC_init(C_MpegDecoder* Self, PyObject* args, PyObject *kwargs) {  // Construct
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char *kwlist[] = { "videoPath", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.Initialize: need 'videoPath(string)'" );
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.Initialize: need 'videoPath(str)'" );
         return -1;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char *>(vpath.buf));
-    else
+    if (!vpath) {
         in_vpath.clear();
+    }
+    else if (!PyStr2str(vpath, in_vpath)) {
+        return -1;
+    }
     Self->_in_Handle = new cmpc::CMpegDecoder;
-    if (!in_vpath.empty())
+    if (!in_vpath.empty()) {
         Self->_in_Handle->FFmpegSetup(in_vpath);
+    }
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     //cout << sizeof(Self->_in_Handle) << " - " << sizeof(unsigned long long) << endl;
     return 0;
 }
@@ -347,19 +391,21 @@ static PyObject* C_MPSV_Repr(C_MpegServer* Self) {  // The __repr__ operator.
 *****************************************************************************/
 static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPDC_Setup method, the inputs are:
-    *   videoPath [byte->buffer]: the video path to be decoded.
+    *   videoPath [str/bytes->str]: the video path to be decoded.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char *kwlist[] = { "videoPath", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char *>(vpath.buf));
-    else
+    if (!vpath) {
         in_vpath.clear();
+    }
+    else if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     bool res;
     if (!in_vpath.empty())
         res = Self->_in_Handle->FFmpegSetup(in_vpath);
@@ -367,7 +413,6 @@ static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwa
         res = Self->_in_Handle->FFmpegSetup();
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     if (res)
         Py_RETURN_TRUE;
     else
@@ -376,19 +421,21 @@ static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwa
 
 static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPEC_Setup method, the inputs are:
-    *   videoPath [byte->buffer]: the video path to be encoded.
+    *   videoPath [str/bytes->str]: the video path to be encoded.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char *kwlist[] = { "videoPath", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char *>(vpath.buf));
-    else
+    if (!vpath) {
         in_vpath.clear();
+    }
+    else if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     bool res;
     if (!in_vpath.empty())
         res = Self->_in_Handle->FFmpegSetup(in_vpath);
@@ -396,7 +443,6 @@ static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwa
         res = Self->_in_Handle->FFmpegSetup();
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     if (res)
         Py_RETURN_TRUE;
     else
@@ -405,19 +451,21 @@ static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwa
 
 static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPCT_Setup method, the inputs are:
-    *   videoAddress [byte->buffer]: the video path to be demuxed.
+    *   videoAddress [str/bytes->str]: the video path to be demuxed.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char *kwlist[] = { "videoAddress", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char *>(vpath.buf));
-    else
+    if (!vpath) {
         in_vpath.clear();
+    }
+    else if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     bool res;
     if (!in_vpath.empty())
         res = Self->_in_Handle->FFmpegSetup(in_vpath);
@@ -425,7 +473,6 @@ static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject *args, PyObject *kwar
         res = Self->_in_Handle->FFmpegSetup();
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     if (res)
         Py_RETURN_TRUE;
     else
@@ -434,19 +481,21 @@ static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject *args, PyObject *kwar
 
 static PyObject* C_MPSV_Setup(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPSV_Setup method, the inputs are:
-    *   videoAddress [byte->buffer]: the video address to be served.
+    *   videoAddress [str/bytes->str]: the video address to be served.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char* kwlist[] = { "videoAddress", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char*>(vpath.buf));
-    else
+    if (!vpath) {
         in_vpath.clear();
+    }
+    else if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     bool res;
     if (!in_vpath.empty())
         res = Self->_in_Handle->FFmpegSetup(in_vpath);
@@ -454,7 +503,6 @@ static PyObject* C_MPSV_Setup(C_MpegServer* Self, PyObject* args, PyObject* kwar
         res = Self->_in_Handle->FFmpegSetup();
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     if (res)
         Py_RETURN_TRUE;
     else
@@ -463,89 +511,81 @@ static PyObject* C_MPSV_Setup(C_MpegServer* Self, PyObject* args, PyObject* kwar
 
 static PyObject* C_MPDC_resetPath(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPDC_resetPath method, the inputs are:
-    *   videoPath [byte->buffer]: the video path to be decoded.
+    *   videoPath [str/bytes->str]: the video path to be decoded.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char *kwlist[] = { "videoPath", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char *>(vpath.buf));
-    else
-        in_vpath.clear();
+    if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     Self->_in_Handle->resetPath(in_vpath);
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPEC_resetPath(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPEC_resetPath method, the inputs are:
-    *   videoPath [byte->buffer]: the video path to be encoded.
+    *   videoPath [str/bytes->str]: the video path to be encoded.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char* kwlist[] = { "videoPath", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char*>(vpath.buf));
-    else
-        in_vpath.clear();
+    if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     Self->_in_Handle->resetPath(in_vpath);
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPCT_resetPath(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPCT_resetPath method, the inputs are:
-    *   videoAddress [byte->buffer]: the video path to be demuxed.
+    *   videoAddress [str/bytes->str]: the video path to be demuxed.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char *kwlist[] = { "videoAddress", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char *>(vpath.buf));
-    else
-        in_vpath.clear();
+    if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     Self->_in_Handle->resetPath(in_vpath);
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPSV_resetPath(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPSV_resetPath method, the inputs are:
-    *   videoAddress [byte->buffer]: the video address to be served.
+    *   videoAddress [str/bytes->str]: the video address to be served.
     */
-    Py_buffer vpath = { 0 };
+    PyObject* vpath = nullptr;
     static char* kwlist[] = { "videoAddress", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
     }
     string in_vpath;
-    if (vpath.buf)
-        in_vpath.assign(reinterpret_cast<char*>(vpath.buf));
-    else
-        in_vpath.clear();
+    if (!PyStr2str(vpath, in_vpath)) {
+        return nullptr;
+    }
     Self->_in_Handle->resetPath(in_vpath);
 
     in_vpath.clear();
-    PyBuffer_Release(&vpath);
     Py_RETURN_NONE;
 }
 
@@ -795,26 +835,29 @@ static PyObject* C_MPDC_setGOPPosition(C_MpegDecoder* Self, PyObject *args, PyOb
 
 static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPDC_getParam function, the inputs are:
-    *   paramName [byte->buffer]: The name of the parameter to be gotten, could be.
-    *       videoPath:    [byte]  Path of the current video.
+    *   paramName [str/bytes->str]: The name of the parameter to be gotten, could be.
+    *       videoPath:    [str]   Path of the current video.
     *       width/height: [int]   The width / height of the frame.
     *       frameCount:   [int]   The count of frames of the current decoding work.
-    *       coderName:    [byte]  The name of the decoder.
+    *       coderName:    [str]   The name of the decoder.
+    *       nthread:      [int]   The number of decoder threads.
     *       duration:     [float] The duration of the video.
     *       estFrameNum:  [int]   The estimated total frame number.
     *       avgFrameRate  [float] The average frame rate.
     */
-    Py_buffer param = { 0 };
+    PyObject* param = nullptr;
     static char *kwlist[] = { "paramName", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'" );
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'" );
         return nullptr;
     }
     string in_param;
-    if (param.buf)
-        in_param.assign(reinterpret_cast<char *>(param.buf));
-    else
+    if (!param) {
         in_param.clear();
+    }
+    else if (!PyStr2str(param, in_param)) {
+        return nullptr;
+    }
     PyObject* res = nullptr;
     if (in_param.empty()) {
         res = Self->_in_Handle->getParameter();
@@ -823,15 +866,15 @@ static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject *args, PyObject *
         res = Self->_in_Handle->getParameter(in_param);
     }
     in_param.clear();
-    PyBuffer_Release(&param);
     return res;
 }
 
 static PyObject* C_MPEC_getParam(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPEC_getParam function, the inputs are:
-    *   paramName [byte->buffer]: The name of the parameter to be gotten, could be.
-    *       videoPath:          [byte]  Path of the current video.
-    *       codecName:          [byte]  The name of the codec.
+    *   paramName [str/bytes->str]: The name of the parameter to be gotten, could be.
+    *       videoPath:          [str]   Path of the current video.
+    *       codecName:          [str]   The name of the codec.
+    *       nthread:            [int]   The number of encoder threads.
     *       bitRate:            [int]   The target bit rate.
     *       width/height:       [int]   The width / height of the encoded frame.
     *       widthSrc/heightSrc: [int]   The width / height of the input frame.
@@ -839,17 +882,19 @@ static PyObject* C_MPEC_getParam(C_MpegEncoder* Self, PyObject* args, PyObject* 
     *       maxBframe:          [int]   The maximal number of continuous B frames.
     *       frameRate:          [float] The target frame rate.
     */
-    Py_buffer param = { 0 };
+    PyObject* param = nullptr;
     static char* kwlist[] = { "paramName", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
     }
     string in_param;
-    if (param.buf)
-        in_param.assign(reinterpret_cast<char*>(param.buf));
-    else
+    if (!param) {
         in_param.clear();
+    }
+    else if (!PyStr2str(param, in_param)) {
+        return nullptr;
+    }
     PyObject* res = nullptr;
     if (in_param.empty()) {
         res = Self->_in_Handle->getParameter();
@@ -858,32 +903,34 @@ static PyObject* C_MPEC_getParam(C_MpegEncoder* Self, PyObject* args, PyObject* 
         res = Self->_in_Handle->getParameter(in_param);
     }
     in_param.clear();
-    PyBuffer_Release(&param);
     return res;
 }
 
 static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPCT_getParam method, the inputs are:
-    *   parameter [byte->buffer]: The name of the parameter to be gotten, could be.
-    *       videoAddress: [byte]  The address of the current video.
+    *   parameter [str/bytes->str]: The name of the parameter to be gotten, could be.
+    *       videoAddress: [str]   The address of the current video.
     *       width/height: [int]   The width / height of the received frame.
     *       frameCount:   [int]   The count of frames of the current decoding work.
-    *       coderName:    [byte]  The name of the decoder.
+    *       coderName:    [str]   The name of the decoder.
+    *       nthread:      [int]   The number of decoder threads.
     *       duration:     [float] The duration of the video.
     *       estFrameNum:  [int]   The estimated total frame number.
     *       avgFrameRate  [float] The average frame rate.
     */
-    Py_buffer param = { 0 };
+    PyObject* param = nullptr;
     static char *kwlist[] = { "paramName", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
     }
     string in_param;
-    if (param.buf)
-        in_param.assign(reinterpret_cast<char *>(param.buf));
-    else
+    if (!param) {
         in_param.clear();
+    }
+    else if (!PyStr2str(param, in_param)) {
+        return nullptr;
+    }
     PyObject* res = nullptr;
     if (in_param.empty()) {
         res = Self->_in_Handle->getParameter();
@@ -892,16 +939,16 @@ static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject *args, PyObject *k
         res = Self->_in_Handle->getParameter(in_param);
     }
     in_param.clear();
-    PyBuffer_Release(&param);
     return res;
 }
 
 static PyObject* C_MPSV_getParam(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPSV_getParam function, the inputs are:
-    *   paramName [byte->buffer]: The name of the parameter to be gotten, could be.
-    *       videoAddress:       [byte]  The address of the current video.
-    *       codecName:          [byte]  The name of the codec.
-    *       formatName:         [byte]  The name of the stream format.
+    *   paramName [str/bytes->str]: The name of the parameter to be gotten, could be.
+    *       videoAddress:       [str]   The address of the current video.
+    *       codecName:          [str]   The name of the codec.
+    *       formatName:         [str]   The name of the stream format.
+    *       nthread:            [int]   The number of encoder threads.
     *       bitRate:            [int]   The target bit rate.
     *       width/height:       [int]   The width / height of the encoded frame.
     *       widthSrc/heightSrc: [int]   The width / height of the input frame.
@@ -911,17 +958,19 @@ static PyObject* C_MPSV_getParam(C_MpegServer* Self, PyObject* args, PyObject* k
     *       waitRef             [float] The reference used for sync. waiting.
     *       ptsAhead            [int]   The ahead time duration in the uit of time stamp.
     */
-    Py_buffer param = { 0 };
+    PyObject* param = nullptr;
     static char* kwlist[] = { "paramName", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|y*", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(string)'");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
     }
     string in_param;
-    if (param.buf)
-        in_param.assign(reinterpret_cast<char*>(param.buf));
-    else
+    if (!param) {
         in_param.clear();
+    }
+    else if (!PyStr2str(param, in_param)) {
+        return nullptr;
+    }
     PyObject* res = nullptr;
     if (in_param.empty()) {
         res = Self->_in_Handle->getParameter();
@@ -930,26 +979,30 @@ static PyObject* C_MPSV_getParam(C_MpegServer* Self, PyObject* args, PyObject* k
         res = Self->_in_Handle->getParameter(in_param);
     }
     in_param.clear();
-    PyBuffer_Release(&param);
     return res;
 }
 
 static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (void)C_MPDC_setParam method, the inputs are:
     *   widthDst/heightDst: [int] The width / height of the decoded frames.
+    *   nthread:      [int]   The number of decoder threads.
     */
     int widthDst = 0;
     int heightDst = 0;
-    static char *kwlist[] = { "widthDst", "heightDst", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ii", kwlist, &widthDst, &heightDst)) {
+    int nthread = 0;
+    static char *kwlist[] = { "widthDst", "heightDst", "nthread", nullptr};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iii", kwlist, &widthDst, &heightDst, &nthread)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'params'" );
         return nullptr;
     }
-    if (widthDst>0) {
+    if (widthDst > 0) {
         Self->_in_Handle->setParameter("widthDst", &widthDst);
     }
-    if (heightDst>0) {
+    if (heightDst > 0) {
         Self->_in_Handle->setParameter("heightDst", &heightDst);
+    }
+    if (nthread > 0) {
+        Self->_in_Handle->setParameter("nthread", &nthread);
     }
     Py_RETURN_NONE;
 }
@@ -957,22 +1010,23 @@ static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *
 static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
     /* Wrapped (bool)C_MPEC_setParam method, the inputs are:
     *   decoder:            [MpegDecoder / MpegClient]: The parameters to be configured.
-    *   configDict:         [dict]  A collection of key params.
-    *   videoPath:          [byte]  Path of the current video.
-    *   codecName:          [byte]  The name of the codec.
-    *   formatName:         [byte]  The name of the stream format.
-    *   bitRate:            [int]   The target bit rate.
-    *   width/height:       [int]   The width / height of the encoded frame.
-    *   widthSrc/heightSrc: [int]   The width / height of the input frame.
-    *   GOPSize:            [int]   The size of one GOP.
-    *   maxBframe:          [int]   The maximal number of continuous B frames.
-    *   frameRate:          [tuple] The target frame rate.
+    *   configDict:         [dict]       A collection of key params.
+    *   videoPath:          [str/bytes]  Path of the current video.
+    *   codecName:          [str/bytes]  The name of the codec.
+    *   nthread:            [int]        The number of encoder threads.
+    *   bitRate:            [double]     The target bit rate.
+    *   width/height:       [int]        The width / height of the encoded frame.
+    *   widthSrc/heightSrc: [int]        The width / height of the input frame.
+    *   GOPSize:            [int]        The size of one GOP.
+    *   maxBframe:          [int]        The maximal number of continuous B frames.
+    *   frameRate:          [tuple]      The target frame rate.
     */
     PyObject* decoder = nullptr;
     PyObject* configDict = nullptr;
-    Py_buffer videoPath = { 0 };
-    Py_buffer codecName = { 0 };
+    PyObject* videoPath = nullptr;
+    PyObject* codecName = nullptr;
     double bitRate = -1;
+    int nthread = 0;
     int width = 0;
     int height = 0;
     int widthSrc = 0;
@@ -980,8 +1034,8 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
     int GOPSize = 0;
     int MaxBframe = -1;
     PyObject *frameRate = nullptr;
-    static char *kwlist[] = { "decoder", "configDict", "videoPath", "codecName", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOy*y*diiiiiiO", kwlist, &decoder, &configDict, &videoPath, &codecName, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate)) {
+    static char *kwlist[] = { "decoder", "configDict", "videoPath", "codecName", "nthread", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", nullptr};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOOOidiiiiiiO", kwlist, &decoder, &configDict, &videoPath, &codecName, &nthread, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate)) {
         PyErr_SetString(PyExc_TypeError, "Error.setParameter: need 'params'");
         return nullptr;
     }
@@ -1007,13 +1061,24 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
             cerr << "Warning.setParameter: Not intended configDict type (require to be a dict), no valid update in this step." << endl;
         }
     }
-    if (videoPath.buf) {
-        temp_str.assign(reinterpret_cast<char *>(videoPath.buf));
-        Self->_in_Handle->setParameter("videoPath", &temp_str);
+    if (videoPath) {
+        if (PyStr2str(videoPath, temp_str)) {
+            Self->_in_Handle->setParameter("videoPath", &temp_str);
+        }
+        else {
+            return nullptr;
+        }
     }
-    if (codecName.buf) {
-        temp_str.assign(reinterpret_cast<char *>(codecName.buf));
-        Self->_in_Handle->setParameter("codecName", &temp_str);
+    if (codecName) {
+        if (PyStr2str(codecName, temp_str)) {
+            Self->_in_Handle->setParameter("codecName", &temp_str);
+        }
+        else {
+            return nullptr;
+        }
+    }
+    if (nthread > 0) {
+        Self->_in_Handle->setParameter("nthread", &nthread);
     }
     if (bitRate>0) {
         Self->_in_Handle->setParameter("bitRate", &bitRate);
@@ -1045,8 +1110,6 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
         }
     }
     temp_str.clear();
-    PyBuffer_Release(&videoPath);
-    PyBuffer_Release(&codecName);
     Py_RETURN_NONE;
 }
 
@@ -1055,14 +1118,16 @@ static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject *args, PyObject *k
     *   widthDst/heightDst: [int] The width / height of the decoded frames.
     *   cacheSize/readSize: [int] The size of the cache, and the reading size.
     *   dstFrameRate:       [tuple] The target frame rate of the client.
+    *   nthread:            [int]   The number of decoder threads.
     */
     int widthDst = 0;
     int heightDst = 0;
+    int nthread = 0;
     int64_t cacheSize = 0;
     int64_t readSize = 0;
     PyObject *frameRate = nullptr;
-    static char *kwlist[] = { "widthDst", "heightDst", "cacheSize", "readSize", "dstFrameRate", nullptr };
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iiLLO", kwlist, &widthDst, &heightDst, &cacheSize, &readSize, &frameRate)) {
+    static char *kwlist[] = { "widthDst", "heightDst", "cacheSize", "readSize", "dstFrameRate", "nthread", nullptr};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iiLLOi", kwlist, &widthDst, &heightDst, &cacheSize, &readSize, &frameRate, &nthread)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'params'");
         return nullptr;
     }
@@ -1086,29 +1151,33 @@ static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject *args, PyObject *k
             cerr << "Warning.setParameter: {dstFrameRate} must be a 2-dim tuple, so there is no valid update in this step." << endl;
         }
     }
+    if (nthread > 0) {
+        Self->_in_Handle->setParameter("nthread", &nthread);
+    }
     Py_RETURN_NONE;
 }
 
 static PyObject* C_MPSV_setParam(C_MpegServer* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPSV_setParam method, the inputs are:
     *   decoder             [MpegDecoder / MpegClient]: The parameters to be configured.
-    *   videoAddress:       [byte]  The address of the current video.
-    *   codecName:          [byte]  The name of the codec.
-    *   formatName:         [byte]  The name of the stream format.
-    *   bitRate:            [int]   The target bit rate.
-    *   width/height:       [int]   The width / height of the encoded frame.
-    *   widthSrc/heightSrc: [int]   The width / height of the input frame.
-    *   GOPSize:            [int]   The size of one GOP.
-    *   maxBframe:          [int]   The maximal number of continuous B frames.
-    *   frameRate:          [tuple] The target frame rate.
-    *   frameAhead          [int]   The number of ahead frames. This value is suggested
-    *                               to be larger than the GOPSize.
+    *   videoAddress:       [str/bytes]  The address of the current video.
+    *   codecName:          [str/bytes]  The name of the codec.
+    *   nthread:            [int]        The number of encoder threads.
+    *   bitRate:            [double]     The target bit rate.
+    *   width/height:       [int]        The width / height of the encoded frame.
+    *   widthSrc/heightSrc: [int]        The width / height of the input frame.
+    *   GOPSize:            [int]        The size of one GOP.
+    *   maxBframe:          [int]        The maximal number of continuous B frames.
+    *   frameRate:          [tuple]      The target frame rate.
+    *   frameAhead          [int]        The number of ahead frames. This value is suggested
+    *                                    to be larger than the GOPSize.
     */
     PyObject* decoder = nullptr;
     PyObject* configDict = nullptr;
-    Py_buffer videoAddress = { 0 };
-    Py_buffer codecName = { 0 };
+    PyObject* videoAddress = nullptr;
+    PyObject* codecName = nullptr;
     double bitRate = -1;
+    int nthread = 0;
     int width = 0;
     int height = 0;
     int widthSrc = 0;
@@ -1117,8 +1186,8 @@ static PyObject* C_MPSV_setParam(C_MpegServer* Self, PyObject* args, PyObject* k
     int MaxBframe = -1;
     int frameAhead = 0;
     PyObject* frameRate = nullptr;
-    static char* kwlist[] = { "decoder", "configDict", "videoAddress", "codecName", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", "frameAhead", nullptr};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOy*y*diiiiiiOi", kwlist, &decoder, &configDict, &videoAddress, &codecName, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate, &frameAhead)) {
+    static char* kwlist[] = { "decoder", "configDict", "videoAddress", "codecName", "nthread", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", "frameAhead", nullptr};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOOOidiiiiiiOi", kwlist, &decoder, &configDict, &videoAddress, &codecName, &nthread, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate, &frameAhead)) {
         PyErr_SetString(PyExc_TypeError, "Error.setParameter: need 'params'");
         return nullptr;
     }
@@ -1145,13 +1214,24 @@ static PyObject* C_MPSV_setParam(C_MpegServer* Self, PyObject* args, PyObject* k
             cerr << "Warning.setParameter: Not intended configDict type (require to be a dict), no valid update in this step." << endl;
         }
     }
-    if (videoAddress.buf) {
-        temp_str.assign(reinterpret_cast<char*>(videoAddress.buf));
-        Self->_in_Handle->setParameter("videoAddress", &temp_str);
+    if (videoAddress) {
+        if (PyStr2str(videoAddress, temp_str)) {
+            Self->_in_Handle->setParameter("videoAddress", &temp_str);
+        }
+        else {
+            return nullptr;
+        }
     }
-    if (codecName.buf) {
-        temp_str.assign(reinterpret_cast<char*>(codecName.buf));
-        Self->_in_Handle->setParameter("codecName", &temp_str);
+    if (codecName) {
+        if (PyStr2str(codecName, temp_str)) {
+            Self->_in_Handle->setParameter("codecName", &temp_str);
+        }
+        else {
+            return nullptr;
+        }
+    }
+    if (nthread > 0) {
+        Self->_in_Handle->setParameter("nthread", &nthread);
     }
     if (bitRate > 0) {
         Self->_in_Handle->setParameter("bitRate", &bitRate);
@@ -1186,8 +1266,6 @@ static PyObject* C_MPSV_setParam(C_MpegServer* Self, PyObject* args, PyObject* k
         Self->_in_Handle->setParameter("frameAhead", &frameAhead);
     }
     temp_str.clear();
-    PyBuffer_Release(&videoAddress);
-    PyBuffer_Release(&codecName);
     Py_RETURN_NONE;
 }
 
@@ -1266,9 +1344,9 @@ static PyMethodDef C_MPC_MethodMembers[] =      // Register the global method li
 static PyMethodDef C_MPDC_MethodMembers[] =      // Register the member methods of Decoder.
 {  // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPDC_Setup,             METH_VARARGS | METH_KEYWORDS, \
-    "Reset the decoder and the video format.\n - videoPath: [bytes] the path of decoded video file." },
+    "Reset the decoder and the video format.\n - videoPath: [str/bytes] the path of decoded video file." },
     { "resetPath",          (PyCFunction)C_MPDC_resetPath,         METH_VARARGS | METH_KEYWORDS, \
-    "Reset the path of decoded video.\n - videoPath: [bytes] the path of decoded video file." },
+    "Reset the path of decoded video.\n - videoPath: [str/bytes] the path of decoded video file." },
     { "ExtractFrame",       (PyCFunction)C_MPDC_ExtractFrame,      METH_VARARGS | METH_KEYWORDS, \
     "Extract a series of continius frames at the specific position.\n - framePos: [int] the start position of the decoder.\n - frameNum: [int] the expected number of extracted frames." },
     { "ExtractFrameByTime", (PyCFunction)C_MPDC_ExtractFrame_Time, METH_VARARGS | METH_KEYWORDS, \
@@ -1284,24 +1362,24 @@ static PyMethodDef C_MPDC_MethodMembers[] =      // Register the member methods 
     { "dumpFile",           (PyCFunction)C_MPDC_DumpFile,          METH_NOARGS, \
     "Show current state of formatContex." },
     { "setParameter",       (PyCFunction)C_MPDC_setParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Set the optional parameters of 'Setup' & 'Extract' functions via different methods.\n - widthDst: [int] the width of destination (frame), if <=0 (default), it would take no effect.\n - heightDst: [int] the height of destination (frame), if <=0 (default), it would take no effect." },
+    "Set the optional parameters of 'Setup' & 'Extract' functions via different methods.\n - widthDst: [int] the width of destination (frame), if <=0 (default), it would take no effect.\n - heightDst: [int] the height of destination (frame), if <=0 (default), it would take no effect.\n - nthread: [int] number of decoder threads." },
     { "getParameter",       (PyCFunction)C_MPDC_getParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoPath: [bytes] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [bytes] the name of the decoder.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- avgFrameRate: [double] the average of FPS." },
+    "Input a parameter's name to get it.\n - paramName: [str/bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoPath: [str] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [str] the name of the decoder.\n   -|- nthread: [int] number of decoder threads.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- avgFrameRate: [double] the average of FPS." },
     { nullptr, nullptr, 0, nullptr }
 };
 
 static PyMethodDef C_MPEC_MethodMembers[] =      // Register the member methods of Encoder.
 { // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPEC_Setup,             METH_VARARGS | METH_KEYWORDS, \
-    "Open the encoded video and reset the encoder.\n - videoPath: [bytes] the path of encoded(written) video file." },
+    "Open the encoded video and reset the encoder.\n - videoPath: [str/bytes] the path of encoded(written) video file." },
     { "resetPath",          (PyCFunction)C_MPEC_resetPath,         METH_VARARGS | METH_KEYWORDS, \
-    "Reset the output path of encoded video.\n - videoPath: [bytes] the path of encoded video file." },
+    "Reset the output path of encoded video.\n - videoPath: [str/bytes] the path of encoded video file." },
     { "EncodeFrame",        (PyCFunction)C_MPEC_EncodeFrame,       METH_VARARGS | METH_KEYWORDS, \
     "Encode one frame.\n - PyArrayFrame: [ndarray] the frame that needs to be encoded." },
     { "setParameter",       (PyCFunction)C_MPEC_setParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Set the necessary parameters of 'Setup' & 'Encode' functions via different methods.\n - decoder: [MpegDecoder / MpegClient] copy metadata from a known decoder.\n - configDict: [dict] a config dict returned by getParameter().\n - videoPath: [bytes] the current path of the encoded video.\n - codecName: [bytes] the name of the encoder.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one encoded (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
+    "Set the necessary parameters of 'Setup' & 'Encode' functions via different methods.\n - decoder: [MpegDecoder / MpegClient] copy metadata from a known decoder.\n - configDict: [dict] a config dict returned by getParameter().\n - videoPath: [str/bytes] the current path of the encoded video.\n - codecName: [str/bytes] the name of the encoder.\n - nthread: [int] number of encoder threads.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one encoded (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
     { "getParameter",       (PyCFunction)C_MPEC_getParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoPath: [bytes] the current path of the encoded video.\n   -|- codecName: [bytes] the name of the encoder.\n   -|- bitRate: [float] the indended bit rate (Kb/s).\n   -|- width/height: [int] the size of one encoded (scaled) frame.\n   -|- widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n   -|- GOPSize: [int] the number of frames in a GOP.\n   -|- maxBframe: [int] the maximal number of B frames in a GOP.\n   -|- frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
+    "Input a parameter's name to get it.\n - paramName: [str/bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoPath: [str] the current path of the encoded video.\n   -|- codecName: [str] the name of the encoder.\n   -|- nthread: [int] number of encoder threads.\n   -|- bitRate: [float] the indended bit rate (Kb/s).\n   -|- width/height: [int] the size of one encoded (scaled) frame.\n   -|- widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n   -|- GOPSize: [int] the number of frames in a GOP.\n   -|- maxBframe: [int] the maximal number of B frames in a GOP.\n   -|- frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream." },
     { "clear",              (PyCFunction)C_MPEC_Clear,             METH_NOARGS, \
     "Clear all states." },
     { "dumpFile",           (PyCFunction)C_MPEC_DumpFile,          METH_NOARGS, \
@@ -1314,9 +1392,9 @@ static PyMethodDef C_MPEC_MethodMembers[] =      // Register the member methods 
 static PyMethodDef C_MPCT_MethodMembers[] =      // Register the member methods of Encoder.
 { // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPCT_Setup,             METH_VARARGS | METH_KEYWORDS, \
-    "Reset the decoder and the video format.\n - videoAddress: [bytes] the path of decoded video file." },
+    "Reset the decoder and the video format.\n - videoAddress: [str/bytes] the path of decoded video file." },
     { "resetPath",          (PyCFunction)C_MPCT_resetPath,         METH_VARARGS | METH_KEYWORDS, \
-    "Reset the address of decoded video.\n - videoAddress: [bytes] the path of decoded video file." },
+    "Reset the address of decoded video.\n - videoAddress: [str/bytes] the path of decoded video file." },
     { "start",              (PyCFunction)C_MPCT_Start,             METH_NOARGS, \
     "Start the demuxing thread, must be called after FFmpegSetup()." },
     { "terminate",           (PyCFunction)C_MPCT_Terminate,        METH_NOARGS, \
@@ -1328,26 +1406,26 @@ static PyMethodDef C_MPCT_MethodMembers[] =      // Register the member methods 
     { "dumpFile",           (PyCFunction)C_MPCT_DumpFile,          METH_NOARGS, \
     "Show current state of formatContex." },
     { "setParameter",       (PyCFunction)C_MPCT_setParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Set the optional parameters of 'Setup' & 'Extract' functions and the demuxing thread via different methods.\n - widthDst: [int] the width of destination (frame), if <=0 (default), it would take no effect.\n - heightDst: [int] the height of destination (frame), if <=0 (default), it would take no effect.\n - cacheSize: [int] the number of allocated avaliable frames in the cache.\n - readSize: [int] the default value of ExtractFrame().\n - dstFrameRate: [tuple] a 2-dim tuple indicating the destination FPS(num, den) of the stream." },
+    "Set the optional parameters of 'Setup' & 'Extract' functions and the demuxing thread via different methods.\n - widthDst: [int] the width of destination (frame), if <=0 (default), it would take no effect.\n - heightDst: [int] the height of destination (frame), if <=0 (default), it would take no effect.\n - cacheSize: [int] the number of allocated avaliable frames in the cache.\n - readSize: [int] the default value of ExtractFrame().\n - dstFrameRate: [tuple] a 2-dim tuple indicating the destination FPS(num, den) of the stream.\n - nthread: [int] number of decoder threads." },
     { "getParameter",       (PyCFunction)C_MPCT_getParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoAddress: [bytes] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [bytes] the name of the decoder.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- srcFrameRate: [double] the average of FPS of the source video." },
+    "Input a parameter's name to get it.\n - paramName: [str/bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoAddress: [str] the current path of the read video.\n   -|- width/height: [int] the size of one frame.\n   -|- frameCount: [int] the number of returned frames in the last ExtractFrame().\n   -|- coderName: [str] the name of the decoder.\n   -|- nthread: [int] number of decoder threads.\n   -|- duration: [double] the total seconds of this video.\n   -|- estFrameNum: [int] the estimated total frame number(may be not accurate).\n   -|- srcFrameRate: [double] the average of FPS of the source video." },
     { nullptr, nullptr, 0, nullptr }
 };
 
 static PyMethodDef C_MPSV_MethodMembers[] =      // Register the member methods of Server.
 { // This step add the methods to the C-API of the class.
     { "FFmpegSetup",        (PyCFunction)C_MPSV_Setup,             METH_VARARGS | METH_KEYWORDS, \
-    "Open the encoded video and reset the encoder.\n - videoAddress: [bytes] the path of encoded(written) video file." },
+    "Open the encoded video and reset the encoder.\n - videoAddress: [str/bytes] the path of encoded(written) video file." },
     { "resetPath",          (PyCFunction)C_MPSV_resetPath,         METH_VARARGS | METH_KEYWORDS, \
-    "Reset the output path of encoded video.\n - videoAddress: [bytes] the path of encoded video file." },
+    "Reset the output path of encoded video.\n - videoAddress: [str/bytes] the path of encoded video file." },
     { "ServeFrame",         (PyCFunction)C_MPSV_ServeFrame,        METH_VARARGS | METH_KEYWORDS, \
     "Encode one frame and send the frame non-blockly.\n - PyArrayFrame: [ndarray] the frame that needs to be encoded." },
     { "ServeFrameBlock",    (PyCFunction)C_MPSV_ServeFrameBlock,   METH_VARARGS | METH_KEYWORDS, \
     "Encode one frame and send the frame blockly. This method is suggested to be used in sub-processes.\n - PyArrayFrame: [ndarray] the frame that needs to be encoded." },
     { "setParameter",       (PyCFunction)C_MPSV_setParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Set the necessary parameters of 'Setup' & 'Serve' functions via different methods.\n - decoder: [MpegDecoder / MpegClient] copy metadata from a known decoder.\n - configDict: [dict] a config dict returned by getParameter().\n - videoAddress: [bytes] the current path of the encoded video.\n - codecName: [bytes] the name of the encoder.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one encoded (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream.\n - frameAhead: [int] The number of ahead frames. This value is suggested to be larger than the GOPSize." },
+    "Set the necessary parameters of 'Setup' & 'Serve' functions via different methods.\n - decoder: [MpegDecoder / MpegClient] copy metadata from a known decoder.\n - configDict: [dict] a config dict returned by getParameter().\n - videoAddress: [str/bytes] the current path of the encoded video.\n - codecName: [str/bytes] the name of the encoder.\n - nthread: [int] number of encoder threads.\n - bitRate: [float] the indended bit rate (Kb/s).\n - width/height: [int] the size of one encoded (scaled) frame.\n - widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n - GOPSize: [int] the number of frames in a GOP.\n - maxBframe: [int] the maximal number of B frames in a GOP.\n - frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream.\n - frameAhead: [int] The number of ahead frames. This value is suggested to be larger than the GOPSize.." },
     { "getParameter",       (PyCFunction)C_MPSV_getParam,          METH_VARARGS | METH_KEYWORDS, \
-    "Input a parameter's name to get it.\n - paramName: [bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoAddress: [bytes] the current path of the encoded video.\n   -|- codecName: [bytes] the name of the encoder.\n  -|- formatName: [bytes] the format name of the stream.\n   -|- bitRate: [float] the indended bit rate (Kb/s).\n   -|- width/height: [int] the size of one encoded (scaled) frame.\n   -|- widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n   -|- GOPSize: [int] the number of frames in a GOP.\n   -|- maxBframe: [int] the maximal number of B frames in a GOP.\n   -|- frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream.\n   -|- waitRef: [float] The reference used for sync. waiting.\n   -|- ptsAhead: [int] The ahead time duration in the uit of time stamp." },
+    "Input a parameter's name to get it.\n - paramName: [str/bytes] the name of needed parameter. If set empty, would return all key params.\n   -|- videoAddress: [str] the current path of the encoded video.\n   -|- codecName: [str] the name of the encoder.\n  -|- formatName: [str] the format name of the stream.\n   -|- nthread: [int] number of encoder threads.\n   -|- bitRate: [float] the indended bit rate (Kb/s).\n   -|- width/height: [int] the size of one encoded (scaled) frame.\n   -|- widthSrc/heightSrc: [int] the size of one input frame, if set <=0, these parameters would not be enabled.\n   -|- GOPSize: [int] the number of frames in a GOP.\n   -|- maxBframe: [int] the maximal number of B frames in a GOP.\n   -|- frameRate: [tuple] a 2-dim tuple indicating the FPS(num, den) of the stream.\n   -|- waitRef: [float] The reference used for sync. waiting.\n   -|- ptsAhead: [int] The ahead time duration in the uit of time stamp." },
     { "clear",              (PyCFunction)C_MPSV_Clear,             METH_NOARGS, \
     "Clear all states." },
     { "dumpFile",           (PyCFunction)C_MPSV_DumpFile,          METH_NOARGS, \

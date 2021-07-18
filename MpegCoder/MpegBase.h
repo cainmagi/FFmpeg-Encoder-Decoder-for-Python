@@ -12,7 +12,7 @@
 #define FFMPG4_0
 #define FFMPG4_4
 
-#define MPEGCODER_CURRENT_VERSION "3.0.0"
+#define MPEGCODER_CURRENT_VERSION "3.1.0"
 
 #define STREAM_PIX_FMT AVPixelFormat::AV_PIX_FMT_YUV420P /* default pix_fmt */
 

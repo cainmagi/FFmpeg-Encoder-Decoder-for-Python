@@ -62,6 +62,7 @@ namespace cmpc {
 
         int64_t currentGOPTSM;              // The timestamp where the GOP cursor is pointinng to.
         bool EndofGOP;                      // A flag of reading GOP. This value need to be reset to be false by the reset methods.
+        int nthread;                        // The number of threads;
 
         /* Enable or disable frame reference counting. You are not supposed to support
         * both paths in your application but pick the one most appropriate to your
@@ -112,6 +113,9 @@ namespace cmpc {
         AVFrame *__frameRGB;                // A temp AV frame object. Used for converting the data format.
         uint8_t *RGBbuffer;                 // Data buffer.
         bool __have_video, __enable_header;
+
+        int nthread;                        // The number of threads;
+
         AVRational _setAVRational(int num, int den);
         int64_t __FrameToPts(int64_t seekFrame) const;
         int64_t __TimeToPts(double seekTime) const;
