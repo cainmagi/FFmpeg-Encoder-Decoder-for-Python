@@ -51,6 +51,7 @@ The following instructions are used for building the project on Windows with Vis
     * The dependencies could be also downloaded by the automatic script, you just need to run
 
         ```shell
+        python -m pip install -r requirements.txt
         python webtools.py
         ```
 
