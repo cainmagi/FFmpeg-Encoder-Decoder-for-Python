@@ -23,7 +23,20 @@ The following instructions are used for building the project on Windows with Vis
     git clone --single-branch -b master-linux https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python.git
     ```
 
-2. Get the shared version of the Linux FFMpeg. We support three different approaches for this step:
+2. Install the pre-requisite packages. The following script could be used by ubuntu or debian. If users are using other Linux distribution, they should install `gcc` and `g++` by themselves.
+
+    ```shell
+    chmod +rwx ./apt-requirements.sh
+    ./apt-requirements.sh
+    ```
+
+    We strongly suggest that users should also install the python dependencies (optional):
+
+    ```shell 
+    python -m pip install -r requirements.txt
+    ```
+
+3. Get the shared version of the Linux FFMpeg. We support three different approaches for this step:
     * Build the shared libs of FFMpeg from the source codes by yourself. We provide [a compiling script :page_with_curl:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/deps/install-ffmpeg-4_4.sh) in the deps branch. You could download and build it by the following commands:
 
         ```shell
@@ -51,26 +64,25 @@ The following instructions are used for building the project on Windows with Vis
     * The dependencies could be also downloaded by the automatic script, you just need to run
 
         ```shell
-        python -m pip install -r requirements.txt
         python webtools.py
         ```
 
         This script requires users to install `urllib3`. The `tqdm` is also recommended to be installed.
 
-3. Building `mpegCoder` requires `GLIBC>=2.29`. This requirement is not satisfied in some cases. However, if you have built FFMpeg by our script, the requirement would be fulfilled (i.e. you could skip this step). If users are using our pre-built dependencies, users may need to solve this problem by
+4. Building `mpegCoder` requires `GLIBC>=2.29`. This requirement is not satisfied in some cases. However, if you have built FFMpeg by our script, the requirement would be fulfilled (i.e. you could skip this step). If users are using our pre-built dependencies, users may need to solve this problem by
 
     ```shell
     cd FFmpeg-Encoder-Decoder-for-Python
     ln -sf ./dependencies/lib-fix/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
     ```
 
-4. Build `mpegCoder` by running the following script. The built file would be stored in `./build`. If you has not fetched the dependencies in the step 2, running the `setup.py` may trigger an event for fetching the online dependencies.
+5. Build `mpegCoder` by running the following script. The built file would be stored in `./build`. If you has not fetched the dependencies in the step 2, running the `setup.py` may trigger an event for fetching the online dependencies.
 
     ```shell
     python setup.py build
     ```
 
-5. Rename the built module as `mpegCoder.so`, then you could import it in the same directory. If you have built FFMpeg by our script, you do not need any other dependencies when importing the libs. However, if not, you may need to download [the lib dependencies :package:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz) and add the `lib` folder to your `LD_LIBRARY_PATH`:
+6. Rename the built module as `mpegCoder.so`, then you could import it in the same directory. If you have built FFMpeg by our script, you do not need any other dependencies when importing the libs. However, if not, you may need to download [the lib dependencies :package:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz) and add the `lib` folder to your `LD_LIBRARY_PATH`:
 
     ```shell
     mkdir -p /apps/ffmpeg-4.4
