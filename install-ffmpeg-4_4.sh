@@ -163,8 +163,8 @@ cd $SOURCE_PATH || fail
 git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git
 mkdir -p dav1d/build || fail
 cd dav1d/build || fail
-meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$BUILD_PATH" --libdir="$BUILD_PATH/lib" || fail
-ninja -j $(nproc) || fail
+PATH="$BIN_PATH:$PATH" meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$BUILD_PATH" --libdir="$BUILD_PATH/lib" || fail
+PATH="$BIN_PATH:$PATH" ninja -j $(nproc) || fail
 sudo ninja install || fail
 
 # Install dependencies: libvmaf
@@ -173,8 +173,8 @@ cd $SOURCE_PATH || fail
 wget -O- https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz | tar xz -C . || fail
 mkdir -p vmaf-2.1.1/libvmaf/build || fail
 cd vmaf-2.1.1/libvmaf/build || fail
-meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$BUILD_PATH" --bindir="$BUILD_PATH/bin" --libdir="$BUILD_PATH/lib" || fail
-ninja -j $(nproc) || fail
+PATH="$BIN_PATH:$PATH" meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$BUILD_PATH" --bindir="$BUILD_PATH/bin" --libdir="$BUILD_PATH/lib" || fail
+PATH="$BIN_PATH:$PATH" ninja -j $(nproc) || fail
 sudo ninja install || fail
 sudo cp $BUILD_PATH/bin/vmaf $BIN_PATH || fail
 
@@ -183,7 +183,7 @@ msg "Install rav1e p20210713."
 cd $SOURCE_PATH || fail
 git -C rav1e pull 2> /dev/null || git clone --depth 1 -b p20210713 --single-branch https://github.com/xiph/rav1e.git
 cd rav1e || fail
-cargo cbuild --release || fail
+PATH="$BIN_PATH:$PATH" cargo cbuild --release || fail
 sudo cp target/x86_64-unknown-linux-gnu/release/rav1e.h $BUILD_PATH/include/
 sudo cp -r target/x86_64-unknown-linux-gnu/release/rav1e $BUILD_PATH/include/
 sudo cp target/x86_64-unknown-linux-gnu/release/rav1e.pc $BUILD_PATH/lib/pkgconfig/
