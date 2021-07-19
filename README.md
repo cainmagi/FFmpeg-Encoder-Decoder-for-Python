@@ -1,5 +1,20 @@
 # FFmpeg-Encoder-Decoder-for-Python
 
+This is a mpegCoder adapted from FFmpeg & Python-c-api. Using it you could get access to processing video easily. Just use it as a common module in python like this.
+
+```python
+import mpegCoder
+```
+
+|     Branch      |  Description  |
+| :-------------: | :-----------: |
+| [`master` :link:][git-master] | The source project of `mpegCoder`, Windows version. |
+| [`master-linux` :link:][git-linux] | The source project of `mpegCoder`, Linux version. |
+| `example-client-check` :link: | A testing project of the online video stream demuxing. |
+| [`example-client-player` :link:][exp2] | A testing project of the simple online video stream player. |
+
+## Video Stream Demuxing Checking Program - Readme
+
 *****
 ```
        __    __       __        ___  __               __      __   __   __   __   __             
@@ -8,8 +23,6 @@
                                                                                                  
 ```
 *****
-
-## Video Stream Demuxing Checking Program - Readme
 
 This is an example of showing the effectiveness of the MpegClient. It would extract the video stream and show you every step where the client write the received data into buffer.
 
@@ -74,3 +87,7 @@ Refer to the master branch.
 [main]:https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/ "main page"
 [release]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases "release page"
 [theory-show]:display/client_show.png
+[git-master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "master (Windows)"
+[git-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/master-linux "master (Linux)"
+[exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
+[exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"
