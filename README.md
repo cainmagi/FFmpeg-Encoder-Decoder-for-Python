@@ -11,7 +11,7 @@ import mpegCoder
 | [`master` :link:][git-master] | The source project of `mpegCoder`, Windows version. |
 | [`master-linux` :link:][git-linux] | The source project of `mpegCoder`, Linux version. |
 | [`example-client-check` :link:][exp1] | A testing project of the online video stream demuxing. |
-| [`example-client-player` :link:][exp2] | A testing project of the simple online video stream player. |
+| `example-client-player` :link: | A testing project of the simple online video stream player. |
 
 
 ## Video Stream Player based on real-time demuxer - Readme
@@ -75,3 +75,7 @@ Refer to the master branch.
 [main]:https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/ "main page"
 [release]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases "release page"
 [gui-show]:display/dispGUI.PNG
+[git-master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "master (Windows)"
+[git-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/master-linux "master (Linux)"
+[exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
+[exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"
