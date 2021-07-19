@@ -1,6 +1,6 @@
 # FFmpeg-Encoder-Decoder-for-Python
 
-This is a mpegcoder adapted from FFmpeg & Python-c-api. Using it you could get access to processing video easily. Just use it as a common module in python like this.
+This is a mpegCoder adapted from FFmpeg & Python-c-api. Using it you could get access to processing video easily. Just use it as a common module in python like this.
 
 ```python
 import mpegCoder
@@ -8,8 +8,8 @@ import mpegCoder
 
 |     Branch      |  Description  |
 | :-------------: | :-----------: |
-| [`master` :link:][master] | The source project of `mpegCoder`, Windows version. |
-| `master-linux` :link: | The source project of `mpegCoder`, Linux version. |
+| [`master` :link:][git-master] | The source project of `mpegCoder`, Windows version. |
+| [`master-linux` :link:][git-linux] | The source project of `mpegCoder`, Linux version. |
 | [`example-client-check` :link:][exp1] | A testing project of the online video stream demuxing. |
 | [`example-client-player` :link:][exp2] | A testing project of the simple online video stream player. |
 
@@ -23,6 +23,7 @@ This branch is used for archiving the dependencies used for building the project
 | `install-ffmpeg-4_4.sh` | Scripts for installing `ffmpeg 4.4` on Ubuntu. |
 
 [this-rel]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/deps-3.0.0 "Release of dependencies"
-[master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "Windows source files"
+[git-master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "master (Windows)"
+[git-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/master-linux "master (Linux)"
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
 [exp2]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player "client with player"
