@@ -56,5 +56,6 @@
     <None Include="..\LICENSE" />
     <None Include="..\.gitignore" />
     <None Include="..\.gitattributes" />
+    <None Include="..\CHANGELOG.md" />
   </ItemGroup>
 </Project>

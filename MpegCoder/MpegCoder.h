@@ -11,7 +11,7 @@
 
 #define MPEGCODER_DEBUG
 
-// 此类导出自 MpegCoder.dll
+// Exported from MpegCoder.dll
 namespace cmpc {
 
     extern int8_t __dumpControl;

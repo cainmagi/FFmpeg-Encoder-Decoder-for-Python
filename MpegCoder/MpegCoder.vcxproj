@@ -183,6 +183,7 @@
   <ItemGroup>
     <None Include="..\.gitattributes" />
     <None Include="..\.gitignore" />
+    <None Include="..\CHANGELOG.md" />
     <None Include="..\LICENSE" />
     <None Include="..\README.md" />
   </ItemGroup>

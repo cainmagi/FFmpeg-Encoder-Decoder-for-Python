@@ -469,7 +469,7 @@ int cmpc::CMpegDecoder::_SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFra
                 str_data << "video_frame" << (cached ? "(cached)" : "") << " n:" << PVideoFrameCount <<
                          " coded_n:" << frame->coded_picture_number << endl;
                 auto str_data_s = str_data.str();
-                av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+                av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
             }
 
             /* copy decoded frame to destination buffer:
@@ -556,7 +556,7 @@ int cmpc::CMpegDecoder::_SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame,
                 str_data << "video_frame" << (cached ? "(cached)" : "") << " n:" << PVideoFrameCount <<
                     " coded_n:" << frame->coded_picture_number << endl;
                 auto str_data_s = str_data.str();
-                av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+                av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
             }
 
             /* copy decoded frame to destination buffer:
@@ -680,7 +680,7 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
         std::ostringstream str_data;
         str_data << "Demuxing video from file '" << videoPath << "' into Python-List" << endl;
         auto str_data_s = str_data.str();
-        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
     }
 
     /* Reset the contex to remove the flushed state. */
@@ -743,7 +743,7 @@ bool cmpc::CMpegDecoder::ExtractGOP(PyObject* PyFrameList) {
         std::ostringstream str_data;
         str_data << "Succeed in convert GOP into Python_List, got " << count << " frames." << endl;
         auto str_data_s = str_data.str();
-        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
     }
 
     //av_free(RGBbuffer);
@@ -792,7 +792,7 @@ bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, i
         std::ostringstream str_data;
         str_data << "Demuxing video from file '" << videoPath << "' into Python-List" << endl;
         auto str_data_s = str_data.str();
-        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
     }
 
     /* Reset the contex to remove the flushed state. */
@@ -852,7 +852,7 @@ bool cmpc::CMpegDecoder::ExtractFrame(PyObject* PyFrameList, int64_t framePos, i
         std::ostringstream str_data;
         str_data << "Succeed in convert frames into Python_List" << endl;
         auto str_data_s = str_data.str();
-        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
     }
 
     if (frameRGB) {
@@ -1037,7 +1037,7 @@ void cmpc::CMpegEncoder::__log_packet(){
     str_data << "pts:" << av_ts2str(Ppacket->pts) << " pts_time:" << av_ts2timestr(Ppacket->pts, time_base)
              << " dts:" << av_ts2str(Ppacket->dts) << " dts_time:" << av_ts2timestr(Ppacket->dts, time_base) << endl;
     auto str_data_s = str_data.str();
-    av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+    av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
 }
 
 int cmpc::CMpegEncoder::__write_frame(){
@@ -1299,7 +1299,7 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacke
             std::ostringstream str_data;
             str_data << "Send frame " << frame->pts << endl;
             auto str_data_s = str_data.str();
-            av_log(nullptr, AV_LOG_DEBUG, str_data_s.c_str());
+            av_log(nullptr, AV_LOG_DEBUG, "%s", str_data_s.c_str());
         }
     }
     else{
@@ -1321,7 +1321,7 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacke
         std::ostringstream str_data;
         str_data << "Write packet " << pkt->pts << " (size=" << pkt->size << "), ";
         auto str_data_s = str_data.str();
-        av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+        av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
     }
 
     if (!ret) {
@@ -1342,7 +1342,7 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2_flush(AVCodecContext *enc_ctx, A
         std::ostringstream str_data;
         str_data << "Flush all packets" << endl;
         auto str_data_s = str_data.str();
-        av_log(nullptr, AV_LOG_DEBUG, str_data_s.c_str());
+        av_log(nullptr, AV_LOG_DEBUG, "%s", str_data_s.c_str());
     }
 
     ret = avcodec_send_frame(enc_ctx, nullptr);
@@ -1361,7 +1361,7 @@ int cmpc::CMpegEncoder::__avcodec_encode_video2_flush(AVCodecContext *enc_ctx, A
             std::ostringstream str_data;
             str_data << "Write packet " << pkt->pts << " (size=" << pkt->size << "), ";
             auto str_data_s = str_data.str();
-            av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+            av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
         }
         if (!ret) {
             wfret = __write_frame();
@@ -1862,7 +1862,7 @@ void cmpc::CMpegEncoder::FFmpegClose(){
             std::ostringstream str_data;
             str_data << "All frames are flushed from cache, the video would be closed." << endl;
             auto str_data_s = str_data.str();
-            av_log(nullptr, AV_LOG_INFO, str_data_s.c_str());
+            av_log(nullptr, AV_LOG_INFO, "%s", str_data_s.c_str());
         }
     }
     if (PFormatCtx) {
