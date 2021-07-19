@@ -26,4 +26,4 @@ function mcd {
 
 msg "Install gcc and g++."
 apt-get update -qq || fail
-apt-get -y install gcc g++ || fail
+apt-get -y install gcc g++ wget tar xz-utils || fail
