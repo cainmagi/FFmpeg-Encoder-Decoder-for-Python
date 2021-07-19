@@ -24,6 +24,6 @@ function mcd {
   cd "$1" || fail
 }
 
-msg "Install gcc and g++."
+msg "Install gcc, g++ and other dependencies."
 apt-get update -qq || fail
 apt-get -y install gcc g++ wget tar xz-utils || fail
