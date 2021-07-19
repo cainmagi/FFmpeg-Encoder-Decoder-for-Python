@@ -1,13 +1,18 @@
 # FFmpeg-Encoder-Decoder-for-Python
 
-*****
+This is a mpegCoder adapted from FFmpeg & Python-c-api. Using it you could get access to processing video easily. Just use it as a common module in python like this.
+
+```python
+import mpegCoder
 ```
-        __   ___  __      __  ___  __   ___                __                 ___  __  
-\  / | |  \ |__  /  \    /__`  |  |__) |__   /\   |\/|    |__) |     /\  \ / |__  |__) 
- \/  | |__/ |___ \__/    .__/  |  |  \ |___ /~~\  |  |    |    |___ /~~\  |  |___ |  \ 
-                                                                                       
-```
-*****
+
+|     Branch      |  Description  |
+| :-------------: | :-----------: |
+| [`master` :link:][git-master] | The source project of `mpegCoder`, Windows version. |
+| [`master-linux` :link:][git-linux] | The source project of `mpegCoder`, Linux version. |
+| [`example-client-check` :link:][exp1] | A testing project of the online video stream demuxing. |
+| [`example-client-player` :link:][exp2] | A testing project of the simple online video stream player. |
+
 
 ## Video Stream Player based on real-time demuxer - Readme
 
@@ -16,6 +21,15 @@ This is an example of a real-time video player for demuxing the video stream fro
 By learning this example, you could learn how to implement this `MpegClient` to your python GUI. This program has been internationalized by supports from Chinese (Simplified) and Chinese (Traditional).
 
 Noted that you need to download the py-library to this project if you want to test it. You could download the compiled libraries in [here][main] or [here][release].
+
+*****
+```
+        __   ___  __      __  ___  __   ___                __                 ___  __  
+\  / | |  \ |__  /  \    /__`  |  |__) |__   /\   |\/|    |__) |     /\  \ / |__  |__) 
+ \/  | |__/ |___ \__/    .__/  |  |  \ |___ /~~\  |  |    |    |___ /~~\  |  |___ |  \ 
+                                                                                       
+```
+*****
 
 ### Display
 
@@ -46,6 +60,10 @@ In short, to see the performance, you need to follow these steps:
 * We must connect with the server when it is playing the source video. Otherwise, i.e. it is stopped or paused, we could not connect with the server successfully.
 
 ## Update Report
+
+### V1.1 update report @ 2021/7/19:
+
+Fix bugs caused by out-of-dated APIs.
  
 ### V1.0 update report @ 2018/3/1:
 

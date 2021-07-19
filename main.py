@@ -18,6 +18,7 @@
 #   structure of this example. 
 ####################################################
 '''
+
 import os, sys
 import time
 import mpegCoder
@@ -27,6 +28,8 @@ from PyQt5.Qt import Qt, QColor, QPen, QFont, QPolygon
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QIntValidator
 os.chdir(sys.path[0])
 mpegCoder.setGlobal(dumpLevel=0) # disable all logs of ffmpeg lib.
+
+__version__ = '1.1'
 
 IMG_SIZE = (720,486)
 
@@ -198,7 +201,7 @@ class VSPlayer_GUI(QWidget):
         self.button_terminate.setEnabled(False)
         self.button_clear.setEnabled(False)
         self.__h.setParameter(widthDst=self.val_widthDst, heightDst=self.val_heightDst, dstFrameRate=(5,1), readSize=1, cacheSize=self.val_cacheSize)
-        self.button_connect_td.setFunc(self.__h.FFmpegSetup, self.address.text().encode('gbk'))
+        self.button_connect_td.setFunc(self.__h.FFmpegSetup, self.address.text())
         self.button_connect_td.start()
         #success = self.__h.FFmpegSetup(self.address.text().encode('gbk'))
         
@@ -224,7 +227,7 @@ class VSPlayer_GUI(QWidget):
     def ffmpeg_start(self):
         try:
             self.__h.start()
-            self.countTime = time.clock()
+            self.countTime = time.perf_counter()
             self.lcd.display(time.strftime("%H:%M:%S",time.gmtime(0)))
             self.timer.start()
         except Exception as e:
@@ -237,12 +240,14 @@ class VSPlayer_GUI(QWidget):
     
     def onTimerOut(self):
         p = self.__h.ExtractFrame()
+        self.lcd.display(time.strftime("%H:%M:%S", time.gmtime(time.perf_counter() - self.countTime)))
         if p is None:
+            print('Fail to receive frame.')
+            self.__h.terminate()
             self.timer.stop()
-            return
-        qimg = QImage(p[0].data, self.val_widthDst, self.val_heightDst, 3*self.val_widthDst, QImage.Format_RGB888)
-        self.Pic_H.setImage(qimg)
-        self.lcd.display(time.strftime("%H:%M:%S",time.gmtime(time.clock() - self.countTime)))
+        else:
+            qimg = QImage(p[0].data, self.val_widthDst, self.val_heightDst, 3*self.val_widthDst, QImage.Format_RGB888)
+            self.Pic_H.setImage(qimg)
     
     @pyqtSlot()	
     def ffmpeg_clear(self):
