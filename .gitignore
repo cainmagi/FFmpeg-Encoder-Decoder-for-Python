@@ -13,6 +13,14 @@ lib/*
 unsuccessfulbuild
 /MpegCoder/x64/
 
+# Compressed files
+*.tar.xz
+*.tar.gz
+*.tar.bz2
+*.7z
+*.zip
+*.rar
+
 # Prerequisites
 *.d
 

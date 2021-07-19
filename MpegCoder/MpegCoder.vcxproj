@@ -77,8 +77,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\yjin4\Anaconda3\envs\torch19\include;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\yjin4\Anaconda3\envs\torch19\libs;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\yjin4\.conda\envs\py39\include;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\yjin4\.conda\envs\py39\libs;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -87,8 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\yjin4\Anaconda3\envs\torch19\include;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\yjin4\Anaconda3\envs\torch19\libs;C:\Users\yjin4\Anaconda3\envs\torch19\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\yjin4\.conda\envs\py39\include;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\yjin4\.conda\envs\py39\libs;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

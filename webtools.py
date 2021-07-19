@@ -3,7 +3,7 @@
 '''
 ################################################################
 # WebTools
-# @ PyCodes for Shell Project
+# @ FFMpeg encoder and decoder.
 # Yuchen Jin @ cainmagi@gmail.com
 # Requirements: (Pay attention to version)
 #   python 3.3+
@@ -23,13 +23,14 @@ import tarfile
 import urllib3
 
 try:
-    from tqdm.tqdm import wrapattr
+    from tqdm import tqdm
+    wrapattr=tqdm.wrapattr
 except ImportError:
     import contextlib
 
     @contextlib.contextmanager
     def wrapattr(req, mode=None, total=0, desc=None):
-        return req
+        yield req
 
 __all__ = [
     'get_token',
