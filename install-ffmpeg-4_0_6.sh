@@ -24,7 +24,8 @@ function mcd {
   cd "$1" || fail
 }
 
-sudo apt-get update -qq && sudo apt-get -y install \
+sudo apt-get update -qq || fail
+sudo apt-get -y install \
   autoconf automake build-essential cmake \
   git-core libass-dev libfreetype6-dev \
   libgnutls28-dev libsdl2-dev libtool \
@@ -160,7 +161,7 @@ PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PA
   --enable-libx265 \
   --enable-shared \
   --enable-nonfree
-PATH="$HOME/bin:$PATH" make -j$(nproc) || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 hash -r || fail
 
@@ -174,4 +175,4 @@ export PATH=$BUILD_PATH:$PATH
 export PKG_CONFIG_PATH=$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PATH
 export PKG_CONFIG_LIBDIR=$BUILD_PATH/lib/:$PKG_CONFIG_LIBDIR
 
-msg "According to the instructions from ffmpeg, you need to run \"source ~/.profile\" now."
+msg "According to the instructions from ffmpeg, you need to run \"source ~/.profile\" now. You may need to add \"${BIN_PATH}\" to your \$PATH."
