@@ -134,8 +134,9 @@ sudo make install || fail
 # Install dependencies: libtheora
 msg "Install theora 1.1.1."
 cd $SOURCE_PATH || fail
-wget -O- http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2 | tar xj -C . || fail
-cd libtheora-1.1.1 || fail
+wget -O- http://downloads.xiph.org/releases/theora/libtheora-1.2.0alpha1.tar.xz | tar xJ -C . || fail
+cd libtheora-1.2.0alpha1 || fail
+./autogen.sh || fail
 PATH="$BIN_PATH:$PATH" ./configure --disable-examples --disable-oggtest --prefix="$BUILD_PATH" --bindir="$BIN_PATH" --enable-shared --enable-static || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
