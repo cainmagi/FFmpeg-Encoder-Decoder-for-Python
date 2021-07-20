@@ -29,13 +29,14 @@ sudo apt-get update -qq || fail
 sudo apt-get -y install \
   autoconf automake build-essential cmake \
   git-core libass-dev libfreetype6-dev \
-  libgnutls28-dev libsdl2-dev libtool \
-  libva-dev libvdpau-dev libvorbis-dev \
+  libgnutls28-dev libsdl1.2-dev libsdl2-dev libtool \
+  libva-dev libvdpau-dev libogg-dev libvorbis-dev \
   libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev \
   meson ninja-build pkg-config texinfo wget yasm \
   zlib1g-dev libunistring-dev libssl-dev \
+  libopenmpt-dev libopencore-amrwb-dev \
   libc6 libc6-dev unzip libnuma1 libnuma-dev \
-  perl clang || fail
+  perl clang libomp-dev libssh-dev libssl-dev || fail
 
 msg "Install rustc and cargo 1.53.0."
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh || fail
@@ -74,6 +75,77 @@ wget -O- https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2
 cd nasm-2.15.05 || fail
 ./autogen.sh || fail
 PATH="$BIN_PATH:$PATH" ./configure --prefix="$BUILD_PATH" --bindir="$BIN_PATH" || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+
+# Install dependencies: YASM
+msg "Install yasm 1.3.0."
+cd $SOURCE_PATH || fail
+wget -O- https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz | tar xz -C . || fail
+cd yasm-1.3.0 || fail
+PATH="$BIN_PATH:$PATH" ./configure --prefix=$BUILD_PATH --bindir=$BIN_PATH || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+
+# Install dependencies: libsrt
+msg "Install srt 1.4.3."
+cd $SOURCE_PATH || fail
+git -C srt pull 2> /dev/null || git clone -b v1.4.3 --single-branch --depth 1 https://github.com/Haivision/srt.git
+mkdir -p srt/build || fail
+cd srt/build || fail
+PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DENABLE_CXX11=ON -DENABLE_CXX_DEPS=ON -DENABLE_SHARED=ON -DENABLE_STATIC=ON .. || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+sudo cp $BUILD_PATH/bin/srt-* $BIN_PATH || fail
+
+# Install dependencies: libopenjpeg
+msg "Install openjpeg 2.4.0."
+cd $SOURCE_PATH || fail
+git -C openjpeg pull 2> /dev/null || git clone -b v2.4.0 --single-branch --depth 1 https://github.com/uclouvain/openjpeg.git
+mkdir -p openjpeg/build || fail
+cd openjpeg/build || fail
+PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" .. || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+sudo cp $BUILD_PATH/bin/opj_decompress $BIN_PATH || fail
+sudo cp $BUILD_PATH/bin/opj_compress $BIN_PATH || fail
+sudo cp $BUILD_PATH/bin/opj_dump $BIN_PATH || fail
+
+# Install dependencies: libwebp
+msg "Install libwebp 1.2.0."
+cd $SOURCE_PATH || fail
+git -C libwebp pull 2> /dev/null || git clone -b v1.2.0 --single-branch --depth 1 https://github.com/webmproject/libwebp.git
+mkdir -p libwebp/build || fail
+cd libwebp/build || fail
+PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DWEBP_BUILD_CWEBP=ON -DWEBP_BUILD_DWEBP=ON -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DCMAKE_INSTALL_BINDIR="$BIN_PATH" .. || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+
+# Install dependencies: libxvid
+msg "Install xvidcore 1.3.7."
+cd $SOURCE_PATH || fail
+wget -O- https://downloads.xvid.com/downloads/xvidcore-1.3.7.tar.gz | tar xz -C . || fail
+cd xvidcore/build/generic || fail
+PATH="$BIN_PATH:$PATH" ./configure --bindir="$BIN_PATH" --prefix="$BUILD_PATH" || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+
+# Install dependencies: libvidstab
+msg "Install the newest vid.stab."
+cd $SOURCE_PATH || fail
+git -C vid.stab pull 2> /dev/null || git clone --depth 1 https://github.com/georgmartius/vid.stab.git
+mkdir -p vid.stab/build || fail
+cd vid.stab/build || fail
+PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="$BUILD_PATH" .. || fail
+PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+sudo make install || fail
+
+# Install dependencies: libtheora
+msg "Install theora 1.1.1."
+cd $SOURCE_PATH || fail
+wget -O- http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2 | tar xj -C . || fail
+cd libtheora-1.1.1 || fail
+PATH="$BIN_PATH:$PATH" ./configure --disable-examples --disable-oggtest --prefix="$BUILD_PATH" --bindir="$BIN_PATH" --enable-shared --enable-static || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
 
@@ -218,6 +290,11 @@ PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PA
   --enable-cuda-nvcc \
   --enable-nvenc \
   --enable-libnpp \
+  --enable-sdl2 \
+  --enable-libssh \
+  --enable-libsrt \
+  --enable-libopenjpeg \
+  --enable-libwebp \
   --enable-libaom \
   --enable-libass \
   --enable-libfdk-aac \
@@ -226,9 +303,15 @@ PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PA
   --enable-libopus \
   --enable-libsvtav1 \
   --enable-libdav1d \
+  --enable-libvidstab \
+  --enable-librav1e \
   --enable-libvmaf \
   --enable-libvorbis \
+  --enable-libtheora \
+  --enable-libopenmpt \
+  --enable-libopencore-amrwb \
   --enable-libvpx \
+  --enable-libxvid \
   --enable-libx264 \
   --enable-libx265 \
   --enable-shared \
