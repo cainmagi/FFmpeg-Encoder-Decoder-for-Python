@@ -81,8 +81,9 @@ sudo make install || fail
 # Install dependencies: YASM
 msg "Install yasm 1.3.0."
 cd $SOURCE_PATH || fail
-wget -O- https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz | tar xz -C . || fail
-cd yasm-1.3.0 || fail
+git -C yasm pull 2> /dev/null || git clone -b v1.3.0 --single-branch --depth 1 https://github.com/yasm/yasm.git
+cd yasm || fail
+./autogen.sh || fail
 PATH="$BIN_PATH:$PATH" ./configure --prefix=$BUILD_PATH --bindir=$BIN_PATH || fail
 PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
 sudo make install || fail
@@ -110,16 +111,6 @@ sudo make install || fail
 sudo cp $BUILD_PATH/bin/opj_decompress $BIN_PATH || fail
 sudo cp $BUILD_PATH/bin/opj_compress $BIN_PATH || fail
 sudo cp $BUILD_PATH/bin/opj_dump $BIN_PATH || fail
-
-# Install dependencies: libwebp
-msg "Install libwebp 1.2.0."
-cd $SOURCE_PATH || fail
-git -C libwebp pull 2> /dev/null || git clone -b v1.2.0 --single-branch --depth 1 https://github.com/webmproject/libwebp.git
-mkdir -p libwebp/build || fail
-cd libwebp/build || fail
-PATH="$BIN_PATH:$PATH" cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DWEBP_BUILD_CWEBP=ON -DWEBP_BUILD_DWEBP=ON -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DCMAKE_INSTALL_BINDIR="$BIN_PATH" .. || fail
-PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
-sudo make install || fail
 
 # Install dependencies: libxvid
 msg "Install xvidcore 1.3.7."
@@ -286,6 +277,7 @@ PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PA
   --bindir="$BIN_PATH" \
   --enable-gpl \
   --enable-gnutls \
+  --enable-version3 \
   --enable-cuda \
   --enable-cuda-nvcc \
   --enable-nvenc \
@@ -294,7 +286,6 @@ PATH="$BIN_PATH:$PATH" PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PA
   --enable-libssh \
   --enable-libsrt \
   --enable-libopenjpeg \
-  --enable-libwebp \
   --enable-libaom \
   --enable-libass \
   --enable-libfdk-aac \
