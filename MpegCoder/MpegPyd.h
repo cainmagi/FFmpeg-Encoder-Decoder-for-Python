@@ -216,10 +216,11 @@ V3.1.0 update report:
 	2. Support http, ftp, sftp streams for MpegServer.
     3. Support "nthread" option for MpegDecoder, MpegEncoder, MpegClient and
        MpegServer.
-    4. Fix typos in docstrings.
+	4. Fix a bug caused by the constructor MpegServer().
+    5. Fix typos in docstrings.
 V3.0.0 update report:
     1. Fix a severe memory leaking bugs when using AVPacket.
-    2. Fix a bug caused by using `MpegClient.terminate()` when a video is closed
+    2. Fix a bug caused by using MpegClient.terminate() when a video is closed
        by the server.
     3. Support the MpegServer. This class is used for serving the online video
        streams.
