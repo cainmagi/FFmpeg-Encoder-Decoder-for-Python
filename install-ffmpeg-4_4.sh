@@ -251,6 +251,7 @@ sudo cp target/x86_64-unknown-linux-gnu/release/rav1e.h $BUILD_PATH/include/
 sudo cp -r target/x86_64-unknown-linux-gnu/release/rav1e $BUILD_PATH/include/
 sudo cp target/x86_64-unknown-linux-gnu/release/rav1e.pc $BUILD_PATH/lib/pkgconfig/
 sudo cp target/x86_64-unknown-linux-gnu/release/librav1e.* $BUILD_PATH/lib/
+sudo ln -s $BUILD_PATH/lib/librav1e.so $BUILD_PATH/lib/librav1e.so.0
 
 # Install dependencies for GPU: ffnvcodec
 msg "Install the newest ffnvcodec."
