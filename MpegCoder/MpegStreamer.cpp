@@ -945,7 +945,7 @@ cmpc::CMpegServer::CMpegServer(void) :
     bitRate(1024), width(100), height(100), timeBase(_setAVRational(1, 25)), frameRate(_setAVRational(25, 1)), \
     GOPSize(10), MaxBFrame(1), PStreamContex({ 0 }), PFormatCtx(nullptr), PswsCtx(nullptr), RGBbuffer(nullptr), \
     Ppacket(nullptr), __have_video(false), __enable_header(false), widthSrc(0), heightSrc(0), __frameRGB(nullptr), \
-    __start_time(0), __cur_time(0), time_base_q(_setAVRational(1, AV_TIME_BASE)), nthread(nthread) {
+    __start_time(0), __cur_time(0), time_base_q(_setAVRational(1, AV_TIME_BASE)), nthread(0) {
     videoPath.clear();
     __formatName.clear();
     codecName.clear();

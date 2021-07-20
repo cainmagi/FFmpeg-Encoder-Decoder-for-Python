@@ -10,7 +10,9 @@
 
 3. Support `nthread` option for `MpegDecoder`, `MpegEncoder`, `MpegClient` and `MpegServer`.
 
-4. Fix typos in docstrings.
+4. Fix a bug caused by the constructor `MpegServer()`.
+
+5. Fix typos in docstrings.
 
 ### V3.0.0 update report:
 
