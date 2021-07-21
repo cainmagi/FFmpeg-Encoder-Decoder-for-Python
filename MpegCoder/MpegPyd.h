@@ -21,7 +21,7 @@ PyObject *str2PyStr(string Str) {  // Convert the output string to the widechar 
     wchar_t* wszString = new wchar_t[static_cast<size_t>(wlen) + 1];
     MultiByteToWideChar(CP_ACP, NULL, Str.c_str(), int(Str.size()), wszString, wlen);
     wszString[wlen] = 0;
-    PyObject* res = PyUnicode_FromWideChar((const Py_UNICODE*)wszString, wlen);
+    PyObject* res = PyUnicode_FromWideChar(wszString, wlen);
     delete[] wszString;
     return res;
 }
