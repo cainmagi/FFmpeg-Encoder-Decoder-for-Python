@@ -12,7 +12,9 @@
 
 4. Fix a bug caused by the constructor `MpegServer()`.
 
-5. Fix typos in docstrings.
+5. Clean up all `gcc` warnings of the source codes.
+
+6. Fix typos in docstrings.
 
 ### V3.0.0 update report:
 

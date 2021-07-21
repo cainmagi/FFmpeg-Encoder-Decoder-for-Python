@@ -22,17 +22,17 @@ namespace cmpc {
     public:
         CMpegDecoder(void);                                         // Constructor.
         ~CMpegDecoder(void);                                        // 3-5 law. Destructor.
-        CMpegDecoder(const CMpegDecoder &ref);                      // Copy constructor.
-        CMpegDecoder& operator=(const CMpegDecoder &ref);           // Copy assignment operator.
-        CMpegDecoder(CMpegDecoder &&ref) noexcept;                  // Move constructor.
-        CMpegDecoder& operator=(CMpegDecoder &&ref) noexcept;       // Move assignment operator.
+        CMpegDecoder(const CMpegDecoder& ref);                      // Copy constructor.
+        CMpegDecoder& operator=(const CMpegDecoder& ref);           // Copy assignment operator.
+        CMpegDecoder(CMpegDecoder&& ref) noexcept;                  // Move constructor.
+        CMpegDecoder& operator=(CMpegDecoder&& ref) noexcept;       // Move assignment operator.
         friend class CMpegEncoder;  // Let the encoder be able to access the member of this class.
         friend class CMpegServer;  // Let the server be able to access the member of this class.
-        friend ostream & operator<<(ostream & out, CMpegDecoder & self_class);  // Show the results.
+        friend ostream& operator<<(ostream& out, CMpegDecoder& self_class);  // Show the results.
         void clear(void);  // Clear all configurations and resources.
         void meta_protected_clear(void);  // Clear the resources, but the configurations are remained.
         void dumpFormat();  // Show the av_format results.
-        void setParameter(string keyword, void *ptr);  // Set arguments.
+        void setParameter(string keyword, void* ptr);  // Set arguments.
         PyObject* getParameter(string keyword);  // Get the current arguments.
         PyObject* getParameter();  // Get all key arguments.
         void resetPath(string inVideoPath);  // Reset the path (encoded) of the online video stream.
@@ -44,17 +44,17 @@ namespace cmpc {
         void setGOPPosition(double inpos);  // Set the cuurent GOP position by the time.
     private:
         string videoPath;                   // The path of video stream to be decoded.
-        AVFormatContext *PFormatCtx;        // Format context of the video.
-        AVCodecContext *PCodecCtx;          // Codec context of the video.
         int width, height;                  // Width, height of the video.
         int widthDst, heightDst;            // Target width, height of ExtractFrame().
         enum AVPixelFormat PPixelFormat;    // Enum object of the pixel format.
-        AVStream *PVideoStream;             // Video stream.
+        AVFormatContext* PFormatCtx;        // Format context of the video.
+        AVCodecContext* PCodecCtx;          // Codec context of the video.
+        AVStream* PVideoStream;             // Video stream.
 
         int PVideoStreamIDX;                // The index of the video stream.
         int PVideoFrameCount;               // The counter of the decoded frames.
-        uint8_t *RGBbuffer;                 // The buffer of the RGB formatted images.
-        struct SwsContext *PswsCtx;         // The context of the scale transformator.
+        uint8_t* RGBbuffer;                 // The buffer of the RGB formatted images.
+        struct SwsContext* PswsCtx;         // The context of the scale transformator.
 
         string _str_codec;                  // Show the name of the current codec.
         double _duration;                   // Show the time of the video play.
@@ -69,12 +69,12 @@ namespace cmpc {
         * needs. Look for the use of refcount in this example to see what are the
         * differences of API usage between them. */
         int refcount;                       // Reference count of the video frame.
-        int _open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, AVFormatContext *PFormatCtx, enum AVMediaType type);
-        int _SaveFrame(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket *&pkt, bool &got_frame, int64_t minPTS, bool &processed, int cached);
-        int _SaveFrameForGOP(PyObject *PyFrameList, AVFrame *&frame, AVFrame *&frameRGB, AVPacket *&pkt, bool &got_frame, int &GOPstate, bool &processed, int cached);
-        PyObject *_SaveFrame_castToPyFrameArray(uint8_t *data[], int fWidth, int fHeight);
-        PyObject *_SaveFrame_castToPyFrameArrayOld(uint8_t *data[], int fWidth, int fHeight);
-        int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
+        int _open_codec_context(int& stream_idx, AVCodecContext*& dec_ctx, AVFormatContext* PFormatCtx, enum AVMediaType type);
+        int _SaveFrame(PyObject* PyFrameList, AVFrame*& frame, AVFrame*& frameRGB, AVPacket*& pkt, bool& got_frame, int64_t minPTS, bool& processed, int cached);
+        int _SaveFrameForGOP(PyObject* PyFrameList, AVFrame*& frame, AVFrame*& frameRGB, AVPacket*& pkt, bool& got_frame, int& GOPstate, bool& processed, int cached);
+        PyObject* _SaveFrame_castToPyFrameArray(uint8_t* data[], int fWidth, int fHeight);
+        PyObject* _SaveFrame_castToPyFrameArrayOld(uint8_t* data[], int fWidth, int fHeight);
+        int __avcodec_decode_video2(AVCodecContext* avctx, AVFrame* frame, bool& got_frame, AVPacket* pkt);
         int64_t __FrameToPts(int64_t seekFrame) const;
         int64_t __TimeToPts(double seekTime) const;
     };
@@ -83,11 +83,11 @@ namespace cmpc {
     public:
         CMpegEncoder(void);                                         // Constructor.
         ~CMpegEncoder(void);                                        // 3-5 law. Destructor.
-        CMpegEncoder(const CMpegEncoder &ref);                      // Copy constructor.
-        CMpegEncoder& operator=(const CMpegEncoder &ref);           // Copy assignment operator.
-        CMpegEncoder(CMpegEncoder &&ref) noexcept;                  // Move constructor.
-        CMpegEncoder& operator=(CMpegEncoder &&ref) noexcept;       // Move assignment operator.
-        friend ostream & operator<<(ostream & out, CMpegEncoder & self_class);  // Show the results.
+        CMpegEncoder(const CMpegEncoder& ref);                      // Copy constructor.
+        CMpegEncoder& operator=(const CMpegEncoder& ref);           // Copy assignment operator.
+        CMpegEncoder(CMpegEncoder&& ref) noexcept;                  // Move constructor.
+        CMpegEncoder& operator=(CMpegEncoder&& ref) noexcept;       // Move assignment operator.
+        friend ostream& operator<<(ostream& out, CMpegEncoder& self_class);  // Show the results.
         void clear(void);  // Clear all configurations and resources.
         void resetPath(string inVideoPath);  // Reset the path of the output video stream.
         void dumpFormat();  // Show the av_format results.
@@ -95,7 +95,7 @@ namespace cmpc {
         bool FFmpegSetup(string inVideoPath);  // Configure the encoder with extra arguments.
         void FFmpegClose();  // Close the encoder, and finalize the written of the encoded video.
         int EncodeFrame(PyArrayObject* PyFrame);  // Encode one frame.
-        void setParameter(string keyword, void *ptr);  // Set arguments.
+        void setParameter(string keyword, void* ptr);  // Set arguments.
         PyObject* getParameter(string keyword);  // Get the current arguments.
         PyObject* getParameter();  // Get all key arguments.
     private:
@@ -107,11 +107,11 @@ namespace cmpc {
         AVRational timeBase, frameRate;     // The time base and the frame rate.
         int GOPSize, MaxBFrame;             // The size of GOPs, and the maximal number of B frames.
         OutputStream PStreamContex;         // The context of the current video parser.
-        AVFormatContext *PFormatCtx;        // Format context of the video.
-        AVPacket *Ppacket;                  // AV Packet used for writing frames.
-        struct SwsContext *PswsCtx;         // The context of the scale transformator.
-        AVFrame *__frameRGB;                // A temp AV frame object. Used for converting the data format.
-        uint8_t *RGBbuffer;                 // Data buffer.
+        AVFormatContext* PFormatCtx;        // Format context of the video.
+        AVPacket* Ppacket;                  // AV Packet used for writing frames.
+        struct SwsContext* PswsCtx;         // The context of the scale transformator.
+        AVFrame* __frameRGB;                // A temp AV frame object. Used for converting the data format.
+        uint8_t* RGBbuffer;                 // Data buffer.
         bool __have_video, __enable_header;
 
         int nthread;                        // The number of threads;
@@ -119,19 +119,19 @@ namespace cmpc {
         AVRational _setAVRational(int num, int den);
         int64_t __FrameToPts(int64_t seekFrame) const;
         int64_t __TimeToPts(double seekTime) const;
-        bool _LoadFrame_castFromPyFrameArray(AVFrame *frame, PyArrayObject* PyFrame);
+        bool _LoadFrame_castFromPyFrameArray(AVFrame* frame, PyArrayObject* PyFrame);
         void __log_packet();
         int __write_frame();
-        bool __add_stream(AVCodec **codec);
+        bool __add_stream(AVCodec** codec);
         AVFrame* __alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
-        bool __open_video(AVCodec *codec, AVDictionary *opt_arg);
-        AVFrame *__get_video_frame(PyArrayObject* PyFrame);
-        int __avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame);
-        int __avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt);
-        void __copyMetaData(const CMpegEncoder &ref);
+        bool __open_video(AVCodec* codec, AVDictionary* opt_arg);
+        AVFrame* __get_video_frame(PyArrayObject* PyFrame);
+        int __avcodec_encode_video2(AVCodecContext* enc_ctx, AVPacket* pkt, AVFrame* frame);
+        int __avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AVPacket* pkt);
     };
 
     ostream& operator<<(ostream& out, CMpegDecoder& self_class);
     ostream& operator<<(ostream& out, CMpegEncoder& self_class);
 }
+
 #endif

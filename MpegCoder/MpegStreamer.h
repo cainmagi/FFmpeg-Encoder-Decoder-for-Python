@@ -20,18 +20,18 @@ namespace cmpc {
     public:
         BufferList(void);
         ~BufferList(void);
-        BufferList(const BufferList &ref);
-        BufferList& operator=(const BufferList &ref);
-        BufferList(BufferList &&ref) noexcept;
-        BufferList& operator=(BufferList &&ref) noexcept;
+        BufferList(const BufferList& ref);
+        BufferList& operator=(const BufferList& ref);
+        BufferList(BufferList&& ref) noexcept;
+        BufferList& operator=(BufferList&& ref) noexcept;
         void clear(void);
         const int64_t size() const;
-        void set(int64_t set_size, int width, int height, int widthDst=0, int heightDst=0);
+        void set(int64_t set_size, int width, int height, int widthDst = 0, int heightDst = 0);
         void set_timer(AVRational targetFrameRate, AVRational timeBase);
         bool reset_memory();
         void freeze_write(int64_t read_size);
-        bool write(SwsContext *PswsCtx, AVFrame *frame);
-        PyObject *read();
+        bool write(SwsContext* PswsCtx, AVFrame* frame);
+        PyObject* read();
     private:
         int64_t _Buffer_pos;               // Writring cursor of the source buffer，pointing to the index of the currently written frame.
         int64_t _Buffer_rpos;              // Reading cursor of the source buffer，pointing to the index of the currently read frame.
@@ -42,25 +42,25 @@ namespace cmpc {
         int dst_width, dst_height;
         int src_width, src_height;
         int _Buffer_capacity;
-        AVFrame *frameRGB;
-        uint8_t **_Buffer_List;           // Source buffer, the size of this buffer is determined by the number of required frames.
+        AVFrame* frameRGB;
+        uint8_t** _Buffer_List;           // Source buffer, the size of this buffer is determined by the number of required frames.
     };
 
     class CMpegClient {
     public:
         CMpegClient(void);                                        // Constructor.
         ~CMpegClient(void);                                       // 3-5 law. Destructor.
-        CMpegClient(const CMpegClient &ref) = delete;             // Delete the copy constructor.
-        CMpegClient& operator=(const CMpegClient &ref) = delete;  // Delete the copy assignment operator. 
-        CMpegClient(CMpegClient &&ref) noexcept;                  // Move constructor.
-        CMpegClient& operator=(CMpegClient &&ref) noexcept;       // Move assignment operator.
+        CMpegClient(const CMpegClient& ref) = delete;             // Delete the copy constructor.
+        CMpegClient& operator=(const CMpegClient& ref) = delete;  // Delete the copy assignment operator. 
+        CMpegClient(CMpegClient&& ref) noexcept;                  // Move constructor.
+        CMpegClient& operator=(CMpegClient&& ref) noexcept;       // Move assignment operator.
         friend class CMpegEncoder;  // Let the encoder be able to access the member of this class.
         friend class CMpegServer;  // Let the server be able to access the member of this class.
-        friend ostream & operator<<(ostream & out, CMpegClient & self_class);  // Show the results.
+        friend ostream& operator<<(ostream& out, CMpegClient& self_class);  // Show the results.
         void clear(void);  // Clear all configurations and resources.
         void meta_protected_clear(void);  // Clear the resources, but the configurations are remained.
         void dumpFormat();  // Show the av_format results.
-        void setParameter(string keyword, void *ptr);  // Set arguments.
+        void setParameter(string keyword, void* ptr);  // Set arguments.
         PyObject* getParameter(string keyword);  // Get the current arguments.
         PyObject* getParameter();  // Get all key arguments.
         void resetPath(string inVideoPath);  // Reset the path (URL) of the online video stream.
@@ -68,23 +68,23 @@ namespace cmpc {
         bool FFmpegSetup(string inVideoPath);  // Configure the decoder with extra arguments.
         bool start();  // Start the listening to the online stream.
         void terminate();  // Terminate the listener.
-        PyObject * ExtractFrame(int64_t readsize);  // Extract frames with the given number. 
-        PyObject * ExtractFrame();  // Extract frames. The number is configured in the class properties.
+        PyObject* ExtractFrame(int64_t readsize);  // Extract frames with the given number. 
+        PyObject* ExtractFrame();  // Extract frames. The number is configured in the class properties.
     private:
         string videoPath;                   // The path (URL) of the online video stream.
-        AVFormatContext *PFormatCtx;        // Format context of the video.
-        AVCodecContext *PCodecCtx;          // Codec context of the video.
         int width, height;                  // Width, height of the video.
         int widthDst, heightDst;            // Target width, height of ExtractFrame().
         enum AVPixelFormat PPixelFormat;    // Enum object of the pixel format.
-        AVStream *PVideoStream;             // Video stream.
+        AVFormatContext* PFormatCtx;        // Format context of the video.
+        AVCodecContext* PCodecCtx;          // Codec context of the video.
+        AVStream* PVideoStream;             // Video stream.
 
-        AVFrame *frame;
+        AVFrame* frame;
 
         int PVideoStreamIDX;                // The index of the video stream.
         int PVideoFrameCount;               // The counter of the decoded frames.
         BufferList buffer;                 // The buffer of the RGB formatted images.
-        struct SwsContext *PswsCtx;         // The context of the scale transformator.
+        struct SwsContext* PswsCtx;         // The context of the scale transformator.
         int64_t cache_size, read_size;
         AVRational frameRate;
 
@@ -104,11 +104,11 @@ namespace cmpc {
         * differences of API usage between them. */
         int refcount;                       // Reference count of the video frame.
         bool __setup_check() const;
-        int _open_codec_context(int &stream_idx, AVCodecContext *&dec_ctx, AVFormatContext *PFormatCtx, enum AVMediaType type);
+        int _open_codec_context(int& stream_idx, AVCodecContext*& dec_ctx, AVFormatContext* PFormatCtx, enum AVMediaType type);
         void __client_holder();
         AVRational _setAVRational(int num, int den);
-        int __save_frame(AVFrame *&frame, AVPacket *&pkt, bool &got_frame, int cached);
-        int __avcodec_decode_video2(AVCodecContext *avctx, AVFrame *frame, bool &got_frame, AVPacket *pkt);
+        int __save_frame(AVFrame*& frame, AVPacket*& pkt, bool& got_frame, int cached);
+        int __avcodec_decode_video2(AVCodecContext* avctx, AVFrame* frame, bool& got_frame, AVPacket* pkt);
     };
 
     class CMpegServer {
@@ -169,10 +169,10 @@ namespace cmpc {
         AVFrame* __get_video_frame(PyArrayObject* PyFrame);
         int __avcodec_encode_video2(AVCodecContext* enc_ctx, AVPacket* pkt, AVFrame* frame);
         int __avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AVPacket* pkt);
-        void __copyMetaData(const CMpegServer& ref);
     };
 
     ostream& operator<<(ostream& out, CMpegClient& self_class);
     ostream& operator<<(ostream& out, CMpegServer& self_class);
 }
+
 #endif

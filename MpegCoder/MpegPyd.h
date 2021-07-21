@@ -26,7 +26,7 @@ PyObject *str2PyStr(string Str) {  // Convert the output string to the widechar 
     return res;
 }
 
-bool PyStr2str(PyObject* py_str, string &s_str) {  // Convert a python str to std::string.
+bool PyStr2str(PyObject* py_str, string& s_str) {  // Convert a python str to std::string.
     if (!py_str) {
         return false;
     }
@@ -71,25 +71,25 @@ bool PyStr2str(PyObject* py_str, string &s_str) {  // Convert a python str to st
 typedef struct _C_MpegDecoder
 {
     PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
-    cmpc::CMpegDecoder *_in_Handle;  // Define the implementation of the C Object.
+    cmpc::CMpegDecoder* _in_Handle;  // Define the implementation of the C Object.
 } C_MpegDecoder;
 
 typedef struct _C_MpegEncoder
 {
     PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
-    cmpc::CMpegEncoder *_in_Handle;  // Define the implementation of the C Object.
+    cmpc::CMpegEncoder* _in_Handle;  // Define the implementation of the C Object.
 } C_MpegEncoder;
 
 typedef struct _C_MpegClient
 {
     PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
-    cmpc::CMpegClient *_in_Handle;  // Define the implementation of the C Object.
+    cmpc::CMpegClient* _in_Handle;   // Define the implementation of the C Object.
 } C_MpegClient;
 
 typedef struct _C_MpegServer
 {
     PyObject_HEAD                    // == PyObject ob_base; Define the PyObject header.
-    cmpc::CMpegServer* _in_Handle;  // Define the implementation of the C Object.
+    cmpc::CMpegServer* _in_Handle;   // Define the implementation of the C Object.
 } C_MpegServer;
 
 static PyMemberDef C_MPDC_DataMembers[] =        // Register the members of the python class.
@@ -128,9 +128,11 @@ static PyMemberDef C_MPSV_DataMembers[] =        // Register the members of the 
 /*static void Example(ClassName* Self, PyObject* pArgs);
 PyMODINIT_FUNC PyFunc_Example(void);*/
 
-static PyObject* C_MPC_Global(PyObject* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPC_Global(PyObject* Self, PyObject* args, PyObject* kwargs) {
     char dumpLevel = -1;
-    static char *kwlist[] = { "dumpLevel", nullptr };
+    cmpc::CharList kwlist_str({ "dumpLevel" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|B", kwlist, &dumpLevel)) {
         PyErr_SetString(PyExc_TypeError, "Error.GlobalSettings: invalid keyword'");
         return nullptr;
@@ -213,11 +215,12 @@ Yuchen's Mpeg Coder - Readme
 ================================================================================
 V3.1.0 update report:
     1. Support str() type for all string arguments.
-	2. Support http, ftp, sftp streams for MpegServer.
+    2. Support http, ftp, sftp streams for MpegServer.
     3. Support "nthread" option for MpegDecoder, MpegEncoder, MpegClient and
        MpegServer.
-	4. Fix a bug caused by the constructor MpegServer().
-    5. Fix typos in docstrings.
+    4. Fix a bug caused by the constructor MpegServer().
+    5. Clean up all gcc warnings of the source codes.
+    6. Fix typos in docstrings.
 V3.0.0 update report:
     1. Fix a severe memory leaking bugs when using AVPacket.
     2. Fix a bug caused by using MpegClient.terminate() when a video is closed
@@ -274,11 +277,13 @@ V1.0 update report:
 /*****************************************************************************
 * Declare the core methods of the classes.
 *****************************************************************************/
-static int C_MPDC_init(C_MpegDecoder* Self, PyObject* args, PyObject *kwargs) {  // Construct
+static int C_MPDC_init(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {  // Construct
     PyObject* vpath = nullptr;
-    static char *kwlist[] = { "videoPath", nullptr };
+    cmpc::CharList kwlist_str({ "videoPath" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
-        PyErr_SetString(PyExc_TypeError, "Error.Initialize: need 'videoPath(str)'" );
+        PyErr_SetString(PyExc_TypeError, "Error.Initialize: need 'videoPath(str)'");
         return -1;
     }
     string in_vpath;
@@ -390,12 +395,14 @@ static PyObject* C_MPSV_Repr(C_MpegServer* Self) {  // The __repr__ operator.
 * C_MPDC_Setup:             Configure the decoder by the video.
 * C_MPDC_ExtractFrame       Extract serveral frames.
 *****************************************************************************/
-static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPDC_Setup method, the inputs are:
     *   videoPath [str/bytes->str]: the video path to be decoded.
     */
     PyObject* vpath = nullptr;
-    static char *kwlist[] = { "videoPath", nullptr };
+    cmpc::CharList kwlist_str({ "videoPath" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
@@ -420,12 +427,14 @@ static PyObject* C_MPDC_Setup(C_MpegDecoder* Self, PyObject *args, PyObject *kwa
         Py_RETURN_FALSE;
 }
 
-static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPEC_Setup method, the inputs are:
     *   videoPath [str/bytes->str]: the video path to be encoded.
     */
     PyObject* vpath = nullptr;
-    static char *kwlist[] = { "videoPath", nullptr };
+    cmpc::CharList kwlist_str({ "videoPath" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
@@ -450,12 +459,14 @@ static PyObject* C_MPEC_Setup(C_MpegEncoder* Self, PyObject *args, PyObject *kwa
         Py_RETURN_FALSE;
 }
 
-static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPCT_Setup(C_MpegClient* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPCT_Setup method, the inputs are:
     *   videoAddress [str/bytes->str]: the video path to be demuxed.
     */
     PyObject* vpath = nullptr;
-    static char *kwlist[] = { "videoAddress", nullptr };
+    cmpc::CharList kwlist_str({ "videoAddress" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
@@ -485,7 +496,9 @@ static PyObject* C_MPSV_Setup(C_MpegServer* Self, PyObject* args, PyObject* kwar
     *   videoAddress [str/bytes->str]: the video address to be served.
     */
     PyObject* vpath = nullptr;
-    static char* kwlist[] = { "videoAddress", nullptr };
+    cmpc::CharList kwlist_str({ "videoAddress" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
@@ -510,12 +523,14 @@ static PyObject* C_MPSV_Setup(C_MpegServer* Self, PyObject* args, PyObject* kwar
         Py_RETURN_FALSE;
 }
 
-static PyObject* C_MPDC_resetPath(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_resetPath(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPDC_resetPath method, the inputs are:
     *   videoPath [str/bytes->str]: the video path to be decoded.
     */
     PyObject* vpath = nullptr;
-    static char *kwlist[] = { "videoPath", nullptr };
+    cmpc::CharList kwlist_str({ "videoPath" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
@@ -535,7 +550,9 @@ static PyObject* C_MPEC_resetPath(C_MpegEncoder* Self, PyObject* args, PyObject*
     *   videoPath [str/bytes->str]: the video path to be encoded.
     */
     PyObject* vpath = nullptr;
-    static char* kwlist[] = { "videoPath", nullptr };
+    cmpc::CharList kwlist_str({ "videoPath" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoPath(str)'");
         return nullptr;
@@ -550,12 +567,14 @@ static PyObject* C_MPEC_resetPath(C_MpegEncoder* Self, PyObject* args, PyObject*
     Py_RETURN_NONE;
 }
 
-static PyObject* C_MPCT_resetPath(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPCT_resetPath(C_MpegClient* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPCT_resetPath method, the inputs are:
     *   videoAddress [str/bytes->str]: the video path to be demuxed.
     */
     PyObject* vpath = nullptr;
-    static char *kwlist[] = { "videoAddress", nullptr };
+    cmpc::CharList kwlist_str({ "videoAddress" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
@@ -575,7 +594,9 @@ static PyObject* C_MPSV_resetPath(C_MpegServer* Self, PyObject* args, PyObject* 
     *   videoAddress [str/bytes->str]: the video address to be served.
     */
     PyObject* vpath = nullptr;
-    static char* kwlist[] = { "videoAddress", nullptr };
+    cmpc::CharList kwlist_str({ "videoAddress" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &vpath)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'videoAddress(str)'");
         return nullptr;
@@ -608,41 +629,43 @@ static PyObject* C_MPCT_Terminate(C_MpegClient* Self) {
 
 /* Pay attention to the following two methods :
  * Why do we remove the Py_IN/DECREF?
- * Because no temp variables are created, so we do not need to manage them, 
+ * Because no temp variables are created, so we do not need to manage them,
  * but just use None as the returned value. */
-static PyObject* FreePyArray(PyArrayObject *PyArray) {
-    uint8_t * out_dataptr = (uint8_t *)PyArray_DATA(PyArray);
-    delete [] out_dataptr;
+static PyObject* FreePyArray(PyArrayObject* PyArray) {
+    uint8_t* out_dataptr = (uint8_t*)PyArray_DATA(PyArray);
+    delete[] out_dataptr;
     return nullptr;
 }
-void FreePyList(PyObject *PyList) {
+void FreePyList(PyObject* PyList) {
     Py_ssize_t getlen = PyList_Size(PyList);
     for (Py_ssize_t i = 0; i < getlen; i++) {
-        PyObject *Item = PyList_GetItem(PyList, i);
+        PyObject* Item = PyList_GetItem(PyList, i);
         FreePyArray((PyArrayObject*)Item);
     }
     Py_DECREF(PyList);
     PyGC_Collect();
 }
 
-static PyObject* C_MPDC_ExtractFrame(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_ExtractFrame(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (int)ExtractFrame method, the inputs are:
     *   framePos [int->int64_t]: the start position of the extracted frames.
     *   frameNum [int->int64_t]: the number of extracted frames.
     */
     int64_t framePos = 0, frameNum = 1;
-    static char *kwlist[] = { "framePos", "frameNum", nullptr };
+    cmpc::CharList kwlist_str({ "framePos", "frameNum" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|LL", kwlist, &framePos, &frameNum)) {
         PyErr_SetString(PyExc_TypeError, "Error.ExtractFrame: need 'framePos(int)/frameNum(int)'");
         return nullptr;
     }
-    PyObject *PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
+    PyObject* PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
     //cout << framePos << " - " << frameNum << endl;
     bool res = Self->_in_Handle->ExtractFrame(PyFrameList, framePos, frameNum, 0, 0);
     Py_ssize_t getlen = PyList_Size(PyFrameList);
     res = res && (getlen > 0);
     if (res) {
-        PyObject *PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
+        PyObject* PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
         FreePyList(PyFrameList);
         return PyFrameArray;
     }
@@ -653,25 +676,27 @@ static PyObject* C_MPDC_ExtractFrame(C_MpegDecoder* Self, PyObject *args, PyObje
     }
 }
 
-static PyObject* C_MPDC_ExtractFrame_Time(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_ExtractFrame_Time(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (int)ExtractFrame method, the inputs are:
     *   timePos [float->double]: the start position (time unit) of the extracted frames.
     *   frameNum [int->int64_t]: the number of extracted frames.
     */
     double timePos = 0;
     int64_t frameNum = 1;
-    static char *kwlist[] = { "timePos", "frameNum", nullptr };
+    cmpc::CharList kwlist_str({ "timePos", "frameNum" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dL", kwlist, &timePos, &frameNum)) {
         PyErr_SetString(PyExc_TypeError, "Error.ExtractFrame_Time: need 'timePos(float)/frameNum(int)'");
         return nullptr;
     }
-    PyObject *PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
+    PyObject* PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
     //cout << framePos << " - " << frameNum << endl;
     bool res = Self->_in_Handle->ExtractFrame(PyFrameList, 0, frameNum, timePos, 1);
     Py_ssize_t getlen = PyList_Size(PyFrameList);
     res = res && (getlen > 0);
     if (res) {
-        PyObject *PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
+        PyObject* PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
         FreePyList(PyFrameList);
         return PyFrameArray;
     }
@@ -682,18 +707,20 @@ static PyObject* C_MPDC_ExtractFrame_Time(C_MpegDecoder* Self, PyObject *args, P
     }
 }
 
-static PyObject* C_MPEC_EncodeFrame(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPEC_EncodeFrame(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)EncodeFrame method, the inputs are:
     *   PyArrayFrame [ndarray->PyArrayObject]: the frame to be encoded.
     */
-    PyObject *PyArrayFrame = nullptr;
-    static char *kwlist[] = { "PyArrayFrame", nullptr };
+    PyObject* PyArrayFrame = nullptr;
+    cmpc::CharList kwlist_str({ "PyArrayFrame" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &PyArrayFrame)) {
         PyErr_SetString(PyExc_TypeError, "Error.EncodeFrame: need 'PyArrayFrame(ndarray)'");
         return nullptr;
     }
-    int res = Self->_in_Handle->EncodeFrame(reinterpret_cast<PyArrayObject *>(PyArrayFrame));
-    if (res>=0)
+    int res = Self->_in_Handle->EncodeFrame(reinterpret_cast<PyArrayObject*>(PyArrayFrame));
+    if (res >= 0)
         Py_RETURN_TRUE;
     else
         Py_RETURN_FALSE;
@@ -704,7 +731,9 @@ static PyObject* C_MPSV_ServeFrame(C_MpegServer* Self, PyObject* args, PyObject*
     *   PyArrayFrame [ndarray->PyArrayObject]: the frame to be encoded and served.
     */
     PyObject* PyArrayFrame = nullptr;
-    static char* kwlist[] = { "PyArrayFrame", nullptr };
+    cmpc::CharList kwlist_str({ "PyArrayFrame" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &PyArrayFrame)) {
         PyErr_SetString(PyExc_TypeError, "Error.EncodeFrame: need 'PyArrayFrame(ndarray)'");
         return nullptr;
@@ -721,7 +750,9 @@ static PyObject* C_MPSV_ServeFrameBlock(C_MpegServer* Self, PyObject* args, PyOb
     *   PyArrayFrame [ndarray->PyArrayObject]: the frame to be encoded and served.
     */
     PyObject* PyArrayFrame = nullptr;
-    static char* kwlist[] = { "PyArrayFrame", nullptr };
+    cmpc::CharList kwlist_str({ "PyArrayFrame" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &PyArrayFrame)) {
         PyErr_SetString(PyExc_TypeError, "Error.EncodeFrame: need 'PyArrayFrame(ndarray)'");
         return nullptr;
@@ -733,19 +764,21 @@ static PyObject* C_MPSV_ServeFrameBlock(C_MpegServer* Self, PyObject* args, PyOb
         Py_RETURN_FALSE;
 }
 
-static PyObject* C_MPCT_ExtractFrame(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPCT_ExtractFrame(C_MpegClient* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (int)ExtractFrame method, the inputs are:
     *   readSize [int->int64_t]: the number of frames to be readed. This value could not
     *       exceeded the size of the frame buffer.
     */
     int64_t readSize = 0;
-    static char *kwlist[] = { "readSize", nullptr };
+    cmpc::CharList kwlist_str({ "readSize" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|L", kwlist, &readSize)) {
         PyErr_SetString(PyExc_TypeError, "Error.ExtractFrame: need 'readSize(int)'");
         return nullptr;
     }
-    PyObject *res = nullptr;
-    if (readSize>0)
+    PyObject* res = nullptr;
+    if (readSize > 0)
         res = Self->_in_Handle->ExtractFrame(readSize);
     else
         res = Self->_in_Handle->ExtractFrame();
@@ -757,17 +790,19 @@ static PyObject* C_MPCT_ExtractFrame(C_MpegClient* Self, PyObject *args, PyObjec
     }
 }
 
-static PyObject* C_MPDC_ExtractGOP(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_ExtractGOP(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (int)ExtractGOP method, the inputs are:
     *   framePos [int->int64_t]: the start position of the GOP to be extracted.
     */
     int64_t framePos = -1;
-    static char *kwlist[] = { "framePos", nullptr };
+    cmpc::CharList kwlist_str({ "framePos" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|L", kwlist, &framePos)) {
         PyErr_SetString(PyExc_TypeError, "Error.ExtractGOP: need 'framePos(int)'");
         return nullptr;
     }
-    PyObject *PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
+    PyObject* PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
     //cout << framePos << " - " << frameNum << endl;
     if (!(framePos < 0))
         Self->_in_Handle->setGOPPosition(framePos);
@@ -775,7 +810,7 @@ static PyObject* C_MPDC_ExtractGOP(C_MpegDecoder* Self, PyObject *args, PyObject
     Py_ssize_t getlen = PyList_Size(PyFrameList);
     res = res && (getlen > 0);
     if (res) {
-        PyObject *PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
+        PyObject* PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
         FreePyList(PyFrameList);
         return PyFrameArray;
     }
@@ -786,17 +821,19 @@ static PyObject* C_MPDC_ExtractGOP(C_MpegDecoder* Self, PyObject *args, PyObject
     }
 }
 
-static PyObject* C_MPDC_ExtractGOP_Time(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_ExtractGOP_Time(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (int)ExtractGOP_Time method, the inputs are:
     *   timePos [float->double]: the start position (time unit) of the GOP to be extracted.
     */
     double timePos = -1;
-    static char *kwlist[] = { "timePos", nullptr };
+    cmpc::CharList kwlist_str({ "timePos" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|d", kwlist, &timePos)) {
         PyErr_SetString(PyExc_TypeError, "Error.ExtractGOP_Time: need 'timePos(float)'");
         return nullptr;
     }
-    PyObject *PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
+    PyObject* PyFrameList = PyList_New(static_cast<Py_ssize_t>(0));
     //cout << framePos << " - " << frameNum << endl;
     if (!(timePos < 0))
         Self->_in_Handle->setGOPPosition(timePos);
@@ -804,7 +841,7 @@ static PyObject* C_MPDC_ExtractGOP_Time(C_MpegDecoder* Self, PyObject *args, PyO
     Py_ssize_t getlen = PyList_Size(PyFrameList);
     res = res && (getlen > 0);
     if (res) {
-        PyObject *PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
+        PyObject* PyFrameArray = PyArray_FromObject(PyFrameList, NPY_UINT8, 4, 4);
         FreePyList(PyFrameList);
         return PyFrameArray;
     }
@@ -815,14 +852,16 @@ static PyObject* C_MPDC_ExtractGOP_Time(C_MpegDecoder* Self, PyObject *args, PyO
     }
 }
 
-static PyObject* C_MPDC_setGOPPosition(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_setGOPPosition(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (void)setGOPPosition method, the inputs are:
     *   framePos [int->int64_t]: the start position of the GOP to be extracted.
     *   timePos [float->double]: the start position (time unit) of the GOP to be extracted.
     */
     int64_t framePos = -1;
     double timePos = -1;
-    static char *kwlist[] = { "framePos", "timePos", nullptr };
+    cmpc::CharList kwlist_str({ "framePos", "timePos" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Ld", kwlist, &framePos, &timePos)) {
         PyErr_SetString(PyExc_TypeError, "Error.setGOPPosition: need 'framePos(int)'/'timePos(float)'");
         return nullptr;
@@ -834,7 +873,7 @@ static PyObject* C_MPDC_setGOPPosition(C_MpegDecoder* Self, PyObject *args, PyOb
     Py_RETURN_NONE;
 }
 
-static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPDC_getParam function, the inputs are:
     *   paramName [str/bytes->str]: The name of the parameter to be gotten, could be.
     *       videoPath:    [str]   Path of the current video.
@@ -847,9 +886,11 @@ static PyObject* C_MPDC_getParam(C_MpegDecoder* Self, PyObject *args, PyObject *
     *       avgFrameRate  [float] The average frame rate.
     */
     PyObject* param = nullptr;
-    static char *kwlist[] = { "paramName", nullptr };
+    cmpc::CharList kwlist_str({ "paramName" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
-        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'" );
+        PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
     }
     string in_param;
@@ -884,7 +925,9 @@ static PyObject* C_MPEC_getParam(C_MpegEncoder* Self, PyObject* args, PyObject* 
     *       frameRate:          [float] The target frame rate.
     */
     PyObject* param = nullptr;
-    static char* kwlist[] = { "paramName", nullptr };
+    cmpc::CharList kwlist_str({ "paramName" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
         PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
@@ -907,7 +950,7 @@ static PyObject* C_MPEC_getParam(C_MpegEncoder* Self, PyObject* args, PyObject* 
     return res;
 }
 
-static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPCT_getParam method, the inputs are:
     *   parameter [str/bytes->str]: The name of the parameter to be gotten, could be.
     *       videoAddress: [str]   The address of the current video.
@@ -920,7 +963,9 @@ static PyObject* C_MPCT_getParam(C_MpegClient* Self, PyObject *args, PyObject *k
     *       avgFrameRate  [float] The average frame rate.
     */
     PyObject* param = nullptr;
-    static char *kwlist[] = { "paramName", nullptr };
+    cmpc::CharList kwlist_str({ "paramName" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
         PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
@@ -960,7 +1005,9 @@ static PyObject* C_MPSV_getParam(C_MpegServer* Self, PyObject* args, PyObject* k
     *       ptsAhead            [int]   The ahead time duration in the uit of time stamp.
     */
     PyObject* param = nullptr;
-    static char* kwlist[] = { "paramName", nullptr };
+    cmpc::CharList kwlist_str({ "paramName" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &param)) {
         PyErr_SetString(PyExc_TypeError, "Error.getParameter: need 'paramName(str)'");
         return nullptr;
@@ -983,7 +1030,7 @@ static PyObject* C_MPSV_getParam(C_MpegServer* Self, PyObject* args, PyObject* k
     return res;
 }
 
-static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (void)C_MPDC_setParam method, the inputs are:
     *   widthDst/heightDst: [int] The width / height of the decoded frames.
     *   nthread:      [int]   The number of decoder threads.
@@ -991,9 +1038,11 @@ static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *
     int widthDst = 0;
     int heightDst = 0;
     int nthread = 0;
-    static char *kwlist[] = { "widthDst", "heightDst", "nthread", nullptr};
+    cmpc::CharList kwlist_str({ "widthDst", "heightDst", "nthread" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iii", kwlist, &widthDst, &heightDst, &nthread)) {
-        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'params'" );
+        PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'params'");
         return nullptr;
     }
     if (widthDst > 0) {
@@ -1008,7 +1057,7 @@ static PyObject* C_MPDC_setParam(C_MpegDecoder* Self, PyObject *args, PyObject *
     Py_RETURN_NONE;
 }
 
-static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (bool)C_MPEC_setParam method, the inputs are:
     *   decoder:            [MpegDecoder / MpegClient]: The parameters to be configured.
     *   configDict:         [dict]       A collection of key params.
@@ -1034,8 +1083,10 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
     int heightSrc = 0;
     int GOPSize = 0;
     int MaxBframe = -1;
-    PyObject *frameRate = nullptr;
-    static char *kwlist[] = { "decoder", "configDict", "videoPath", "codecName", "nthread", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", nullptr};
+    PyObject* frameRate = nullptr;
+    cmpc::CharList kwlist_str({ "decoder", "configDict", "videoPath", "codecName", "nthread", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOOOidiiiiiiO", kwlist, &decoder, &configDict, &videoPath, &codecName, &nthread, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate)) {
         PyErr_SetString(PyExc_TypeError, "Error.setParameter: need 'params'");
         return nullptr;
@@ -1046,7 +1097,8 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
         if (temp_str.compare("mpegCoder.MpegDecoder") == 0) {
             auto decoderPtr = reinterpret_cast<C_MpegDecoder*>(decoder);
             Self->_in_Handle->setParameter("decoder", decoderPtr->_in_Handle);
-        } else if (temp_str.compare("mpegCoder.MpegClient") == 0) {
+        }
+        else if (temp_str.compare("mpegCoder.MpegClient") == 0) {
             auto decoderPtr = reinterpret_cast<C_MpegClient*>(decoder);
             Self->_in_Handle->setParameter("client", decoderPtr->_in_Handle);
         }
@@ -1081,25 +1133,25 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
     if (nthread > 0) {
         Self->_in_Handle->setParameter("nthread", &nthread);
     }
-    if (bitRate>0) {
+    if (bitRate > 0) {
         Self->_in_Handle->setParameter("bitRate", &bitRate);
     }
-    if (width>0) {
+    if (width > 0) {
         Self->_in_Handle->setParameter("width", &width);
     }
-    if (height>0) {
+    if (height > 0) {
         Self->_in_Handle->setParameter("height", &height);
     }
-    if (widthSrc>0) {
+    if (widthSrc > 0) {
         Self->_in_Handle->setParameter("widthSrc", &widthSrc);
     }
-    if (heightSrc>0) {
+    if (heightSrc > 0) {
         Self->_in_Handle->setParameter("heightSrc", &heightSrc);
     }
-    if (GOPSize>0) {
+    if (GOPSize > 0) {
         Self->_in_Handle->setParameter("GOPSize", &GOPSize);
     }
-    if (MaxBframe>=0) {
+    if (MaxBframe >= 0) {
         Self->_in_Handle->setParameter("maxBframe", &MaxBframe);
     }
     if (frameRate) {
@@ -1114,7 +1166,7 @@ static PyObject* C_MPEC_setParam(C_MpegEncoder* Self, PyObject *args, PyObject *
     Py_RETURN_NONE;
 }
 
-static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject *args, PyObject *kwargs) {
+static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject* args, PyObject* kwargs) {
     /* Wrapped (void)C_MPCT_setParam method, the inputs are:
     *   widthDst/heightDst: [int] The width / height of the decoded frames.
     *   cacheSize/readSize: [int] The size of the cache, and the reading size.
@@ -1126,22 +1178,24 @@ static PyObject* C_MPCT_setParam(C_MpegClient* Self, PyObject *args, PyObject *k
     int nthread = 0;
     int64_t cacheSize = 0;
     int64_t readSize = 0;
-    PyObject *frameRate = nullptr;
-    static char *kwlist[] = { "widthDst", "heightDst", "cacheSize", "readSize", "dstFrameRate", "nthread", nullptr};
+    PyObject* frameRate = nullptr;
+    cmpc::CharList kwlist_str({ "widthDst", "heightDst", "cacheSize", "readSize", "dstFrameRate", "nthread" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iiLLOi", kwlist, &widthDst, &heightDst, &cacheSize, &readSize, &frameRate, &nthread)) {
         PyErr_SetString(PyExc_TypeError, "Error.FFmpegSetup: need 'params'");
         return nullptr;
     }
-    if (widthDst>0) {
+    if (widthDst > 0) {
         Self->_in_Handle->setParameter("widthDst", &widthDst);
     }
-    if (heightDst>0) {
+    if (heightDst > 0) {
         Self->_in_Handle->setParameter("heightDst", &heightDst);
     }
-    if (cacheSize>0) {
+    if (cacheSize > 0) {
         Self->_in_Handle->setParameter("cacheSize", &cacheSize);
     }
-    if (readSize>0) {
+    if (readSize > 0) {
         Self->_in_Handle->setParameter("readSize", &readSize);
     }
     if (frameRate) {
@@ -1187,7 +1241,9 @@ static PyObject* C_MPSV_setParam(C_MpegServer* Self, PyObject* args, PyObject* k
     int MaxBframe = -1;
     int frameAhead = 0;
     PyObject* frameRate = nullptr;
-    static char* kwlist[] = { "decoder", "configDict", "videoAddress", "codecName", "nthread", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", "frameAhead", nullptr};
+    cmpc::CharList kwlist_str({ "decoder", "configDict", "videoAddress", "codecName", "nthread", "bitRate", "width", "height", "widthSrc", "heightSrc", "GOPSize", "maxBframe", "frameRate", "frameAhead" });
+    auto kwlist_ptr = kwlist_str.c_str();
+    auto kwlist = (char**)(kwlist_ptr.get());
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOOOidiiiiiiOi", kwlist, &decoder, &configDict, &videoAddress, &codecName, &nthread, &bitRate, &width, &height, &widthSrc, &heightSrc, &GOPSize, &MaxBframe, &frameRate, &frameAhead)) {
         PyErr_SetString(PyExc_TypeError, "Error.setParameter: need 'params'");
         return nullptr;

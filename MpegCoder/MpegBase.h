@@ -21,12 +21,13 @@
 
 #include <cstdint>
 #include <iostream>
-//#include <memory>
 #include <string>
 #include <functional>
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <vector>
+#include <memory>
 #include <thread>
 #include <mutex>
 #include <Python.h>
@@ -56,30 +57,15 @@ namespace cmpc {
 
 #ifdef  __cplusplus
 namespace cmpc {
-    static const string av_make_error_string2(int errnum) {
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(errnum, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        string strerrbuf = errbuf;
-        return strerrbuf;
-    }
+    const string av_make_error_string2_cpp(int errnum);
     #undef av_err2str
-    #define av_err2str(errnum) av_make_error_string2(errnum).c_str()
-    static const string av_ts_make_string_cpp(int64_t ts) {
-        char tsstrbuf[AV_TS_MAX_STRING_SIZE];
-        av_ts_make_string(tsstrbuf, ts);
-        string strtsstrbuf = tsstrbuf;
-        return strtsstrbuf;
-    }
+    #define av_err2str(errnum) av_make_error_string2_cpp(errnum)
+    const string av_ts_make_string_cpp(int64_t ts);
     #undef av_ts2str
-    #define av_ts2str(ts) av_ts_make_string_cpp(ts).c_str()
-    static const string av_ts_make_time_string_cpp(int64_t ts, AVRational* tb) {
-        char tsstrbuf[AV_TS_MAX_STRING_SIZE];
-        av_ts_make_time_string(tsstrbuf, ts, tb);
-        string strtsstrbuf = tsstrbuf;
-        return strtsstrbuf;
-    }
+    #define av_ts2str(ts) av_ts_make_string_cpp(ts)
+    const string av_ts_make_time_string_cpp(int64_t ts, AVRational* tb);
     #undef av_ts2timestr
-    #define av_ts2timestr(ts, tb) av_ts_make_time_string_cpp(ts, tb).c_str()
+    #define av_ts2timestr(ts, tb) av_ts_make_time_string_cpp(ts, tb)
 }
 #endif // __cplusplus
 
@@ -97,6 +83,27 @@ namespace cmpc {
 
         struct SwsContext* sws_ctx;
     } OutputStream;
+
+    // A wrapper of the char *[]
+    class CharList {
+    public:
+        CharList(void);                                            // Constructor.
+        CharList(const std::vector<string>& args);                 // Copy constructor (string ver).
+        CharList(const std::vector<string>&& args) noexcept;       // Move constructor (string ver).
+        ~CharList(void);                                           // 3-5 law. Destructor.
+        CharList(const CharList& ref);                             // Copy constructor.
+        CharList& operator=(const CharList& ref);                  // Copy assignment operator.
+        CharList(CharList&& ref) noexcept;                         // Move constructor.
+        CharList& operator=(CharList&& ref) noexcept;              // Move assignment operator.
+        CharList& operator=(const std::vector<string>& args);      // Copy assignment operator (string ver).
+        CharList& operator=(std::vector<string>&& args) noexcept;  // Move assignment operator (string ver).
+        void set(const std::vector<string>& args);  // Set strings as data.
+        void set(std::vector<string>&& args) noexcept;  // Set strings as data (move).
+        void clear();  // clear all data.
+        std::shared_ptr<const char*> c_str();  // Equivalent conversion for char **
+    private:
+        std::vector<string> data;
+    };
 }
 
 // compatibility with newer API

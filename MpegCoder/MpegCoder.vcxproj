@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="MpegBase.cpp" />
     <ClCompile Include="MpegCoder.cpp" />
     <ClCompile Include="MpegStreamer.cpp" />
     <ClCompile Include="snprintf.cpp" />

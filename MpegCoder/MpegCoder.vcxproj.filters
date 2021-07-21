@@ -50,6 +50,9 @@
     <ClCompile Include="MpegStreamer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="MpegBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
