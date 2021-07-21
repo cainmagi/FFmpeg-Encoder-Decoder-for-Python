@@ -62,6 +62,7 @@ module_mpegCoder = Extension(
     libraries = [PYTHON_LIB_NAME, 'avcodec', 'avformat', 'avutil', 'swresample', 'swscale', 'npymath'],
     library_dirs = [PYTHON_LIB_DIR, '{0}/lib'.format(NUMPY_DIR), '{0}/lib'.format(FFMPEG_DIR)],
     sources = [
+        '{0}/MpegBase.cpp'.format(BASE_SRC_DIR),
         '{0}/MpegCoder.cpp'.format(BASE_SRC_DIR),
         '{0}/MpegStreamer.cpp'.format(BASE_SRC_DIR),
         '{0}/dllmain.cpp'.format(BASE_SRC_DIR)

@@ -72,11 +72,11 @@ namespace cmpc {
         PyObject * ExtractFrame();  // Extract frames. The number is configured in the class properties.
     private:
         string videoPath;                   // The path (URL) of the online video stream.
-        AVFormatContext *PFormatCtx;        // Format context of the video.
-        AVCodecContext *PCodecCtx;          // Codec context of the video.
         int width, height;                  // Width, height of the video.
         int widthDst, heightDst;            // Target width, height of ExtractFrame().
         enum AVPixelFormat PPixelFormat;    // Enum object of the pixel format.
+        AVFormatContext *PFormatCtx;        // Format context of the video.
+        AVCodecContext *PCodecCtx;          // Codec context of the video.
         AVStream *PVideoStream;             // Video stream.
 
         AVFrame *frame;
@@ -169,7 +169,6 @@ namespace cmpc {
         AVFrame* __get_video_frame(PyArrayObject* PyFrame);
         int __avcodec_encode_video2(AVCodecContext* enc_ctx, AVPacket* pkt, AVFrame* frame);
         int __avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AVPacket* pkt);
-        void __copyMetaData(const CMpegServer& ref);
     };
 
     ostream& operator<<(ostream& out, CMpegClient& self_class);

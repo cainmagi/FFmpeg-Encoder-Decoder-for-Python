@@ -44,11 +44,11 @@ namespace cmpc {
         void setGOPPosition(double inpos);  // Set the cuurent GOP position by the time.
     private:
         string videoPath;                   // The path of video stream to be decoded.
-        AVFormatContext *PFormatCtx;        // Format context of the video.
-        AVCodecContext *PCodecCtx;          // Codec context of the video.
         int width, height;                  // Width, height of the video.
         int widthDst, heightDst;            // Target width, height of ExtractFrame().
         enum AVPixelFormat PPixelFormat;    // Enum object of the pixel format.
+        AVFormatContext *PFormatCtx;        // Format context of the video.
+        AVCodecContext *PCodecCtx;          // Codec context of the video.
         AVStream *PVideoStream;             // Video stream.
 
         int PVideoStreamIDX;                // The index of the video stream.
@@ -128,7 +128,6 @@ namespace cmpc {
         AVFrame *__get_video_frame(PyArrayObject* PyFrame);
         int __avcodec_encode_video2(AVCodecContext *enc_ctx, AVPacket *pkt, AVFrame *frame);
         int __avcodec_encode_video2_flush(AVCodecContext *enc_ctx, AVPacket *pkt);
-        void __copyMetaData(const CMpegEncoder &ref);
     };
 
     ostream& operator<<(ostream& out, CMpegDecoder& self_class);

@@ -5,25 +5,28 @@
 #include "MpegCoder.h"
 #include "MpegStreamer.h"
 
-cmpc::CMpegClient::CMpegClient(void) :
-    width(0), height(0), widthDst(0), heightDst(0), PPixelFormat(AVPixelFormat::AV_PIX_FMT_NONE), PVideoStreamIDX(0),
-    PVideoFrameCount(0), cache_size(0), read_size(0), frameRate({ 0,0 }), reading(false),
-    _duration(0), _predictFrameNum(0), refcount(0), PFormatCtx(nullptr), PCodecCtx(nullptr),
-    PVideoStream(nullptr), frame(nullptr), PswsCtx(nullptr), buffer(), read_handle(), read_check(),
-    info_lock(), nthread(0) {
+cmpc::CMpegClient::CMpegClient(void):
+    videoPath(), width(0), height(0), widthDst(0), heightDst(0),
+    PPixelFormat(AVPixelFormat::AV_PIX_FMT_NONE), PFormatCtx(nullptr), PCodecCtx(nullptr),
+    PVideoStream(nullptr), frame(nullptr), PVideoStreamIDX(0), PVideoFrameCount(0),
+    buffer(), PswsCtx(nullptr), cache_size(0), read_size(0),
+    frameRate({ 0,0 }), read_handle(), read_check(), info_lock(), reading(false),
+    _str_codec(), _duration(0), _predictFrameNum(0), nthread(0), refcount(1) {
 }
 cmpc::CMpegClient::~CMpegClient(void) {
     clear();
 }
 cmpc::CMpegClient::CMpegClient(CMpegClient &&ref) noexcept:
-    width(ref.width), height(ref.height), widthDst(ref.widthDst), heightDst(ref.heightDst), 
-    PPixelFormat(ref.PPixelFormat), PVideoStreamIDX(ref.PVideoStreamIDX), PVideoFrameCount(ref.PVideoFrameCount), 
-    cache_size(ref.cache_size), read_size(ref.read_size), frameRate(ref.frameRate), reading(ref.reading),
-    _duration(ref._duration), _predictFrameNum(ref._predictFrameNum), refcount(ref.refcount), 
-    PFormatCtx(ref.PFormatCtx), PCodecCtx(ref.PCodecCtx), PVideoStream(ref.PVideoStream), frame(ref.frame), 
-    PswsCtx(ref.PswsCtx), buffer(std::move(ref.buffer)), nthread(ref.nthread), read_check(),
-    info_lock(){
-    read_handle = std::move(ref.read_handle);
+    videoPath(std::move(ref.videoPath)), width(ref.width), height(ref.height),
+    widthDst(ref.widthDst), heightDst(ref.heightDst),
+    PPixelFormat(ref.PPixelFormat), PFormatCtx(ref.PFormatCtx), PCodecCtx(ref.PCodecCtx),
+    PVideoStream(ref.PVideoStream), frame(ref.frame),
+    PVideoStreamIDX(ref.PVideoStreamIDX), PVideoFrameCount(ref.PVideoFrameCount),
+    buffer(std::move(ref.buffer)), PswsCtx(ref.PswsCtx),
+    cache_size(ref.cache_size), read_size(ref.read_size),
+    frameRate(ref.frameRate), read_handle(std::move(std::thread())), read_check(), info_lock(),
+    reading(ref.reading), _str_codec(std::move(ref._str_codec)), _duration(ref._duration),
+    _predictFrameNum(ref._predictFrameNum), nthread(ref.nthread), refcount(ref.refcount) {
     ref.PFormatCtx = nullptr;
     ref.PCodecCtx = nullptr;
     ref.PVideoStream = nullptr;
@@ -32,6 +35,7 @@ cmpc::CMpegClient::CMpegClient(CMpegClient &&ref) noexcept:
 }
 cmpc::CMpegClient& cmpc::CMpegClient::operator=(CMpegClient &&ref) noexcept {
     if (this != &ref) {
+        videoPath = std::move(ref.videoPath);
         width = ref.width;
         height = ref.height;
         widthDst = ref.widthDst;
@@ -50,9 +54,9 @@ cmpc::CMpegClient& cmpc::CMpegClient::operator=(CMpegClient &&ref) noexcept {
         PCodecCtx = ref.PCodecCtx;
         PVideoStream = ref.PVideoStream;
         frame = ref.frame;
-        PswsCtx = ref.PswsCtx; 
+        PswsCtx = ref.PswsCtx;
         buffer = std::move(ref.buffer);
-        read_handle = std::move(ref.read_handle);
+        read_handle = std::move(std::thread());
         nthread = ref.nthread;
         ref.PFormatCtx = nullptr;
         ref.PCodecCtx = nullptr;
@@ -60,6 +64,7 @@ cmpc::CMpegClient& cmpc::CMpegClient::operator=(CMpegClient &&ref) noexcept {
         ref.frame = nullptr;
         ref.PswsCtx = nullptr;
     }
+    return *this;
 }
 
 void cmpc::CMpegClient::meta_protected_clear(void) {
@@ -717,9 +722,10 @@ ostream & cmpc::operator<<(ostream & out, cmpc::CMpegClient & self_class) {
 }
 
 cmpc::BufferList::BufferList(void):
-    _Buffer_pos(0), _Buffer_rpos(-1), _Buffer_size(0), dst_width(0), dst_height(0), _Buffer_capacity(0),
-    _Buffer_List(nullptr), __Read_size(0), next_pts(0), interval_pts(0), src_width(0), src_height(0), 
-    frameRGB(nullptr){
+    _Buffer_pos(0), _Buffer_rpos(-1), _Buffer_size(0), __Read_size(0),
+    next_pts(0), interval_pts(0), dst_width(0), dst_height(0),
+    src_width(0), src_height(0), _Buffer_capacity(0),
+    frameRGB(nullptr), _Buffer_List(nullptr) {
 }
 cmpc::BufferList::~BufferList(void) {
     if (_Buffer_List) {
@@ -737,10 +743,11 @@ cmpc::BufferList::~BufferList(void) {
     }
 }
 cmpc::BufferList::BufferList(const BufferList &ref):
-    _Buffer_pos(ref._Buffer_pos), _Buffer_rpos(ref._Buffer_rpos), _Buffer_size(ref._Buffer_size), 
-    dst_width(ref.dst_width), dst_height(ref.dst_height), _Buffer_capacity(ref._Buffer_capacity),
+    _Buffer_pos(ref._Buffer_pos), _Buffer_rpos(ref._Buffer_rpos), _Buffer_size(ref._Buffer_size),
     __Read_size(ref.__Read_size), next_pts(ref.next_pts), interval_pts(ref.interval_pts),
-    src_width(ref.src_width), src_height(ref.src_height), frameRGB(ref.frameRGB), _Buffer_List(nullptr){
+    dst_width(ref.dst_width), dst_height(ref.dst_height),
+    src_width(ref.src_width), src_height(ref.src_height),
+    _Buffer_capacity(ref._Buffer_capacity), frameRGB(ref.frameRGB), _Buffer_List(nullptr) {
     if (!(frameRGB = av_frame_alloc())) {
         cerr << "Could Allocate Temp Frame (RGB)" << endl;
         return;
@@ -788,10 +795,10 @@ cmpc::BufferList& cmpc::BufferList::operator=(const BufferList &ref) {
 }
 cmpc::BufferList::BufferList(BufferList &&ref) noexcept:
     _Buffer_pos(ref._Buffer_pos), _Buffer_rpos(ref._Buffer_rpos), _Buffer_size(ref._Buffer_size),
-    dst_width(ref.dst_width), dst_height(ref.dst_height), _Buffer_capacity(ref._Buffer_capacity),
-    _Buffer_List(ref._Buffer_List), __Read_size(ref.__Read_size), next_pts(ref.next_pts),
-    interval_pts(ref.interval_pts), src_width(ref.src_width), src_height(ref.src_height), 
-    frameRGB(ref.frameRGB) {
+    __Read_size(ref.__Read_size), next_pts(ref.next_pts), interval_pts(ref.interval_pts),
+    dst_width(ref.dst_width), dst_height(ref.dst_height),
+    src_width(ref.src_width), src_height(ref.src_height),
+    _Buffer_capacity(ref._Buffer_capacity), frameRGB(ref.frameRGB), _Buffer_List(ref._Buffer_List) {
     ref._Buffer_List = nullptr;
     ref.frameRGB = nullptr;
 }
@@ -862,7 +869,7 @@ void cmpc::BufferList::set(int64_t set_size, int width, int height, int widthDst
     _Buffer_capacity = av_image_get_buffer_size(AV_PIX_FMT_RGB24, dst_width, dst_height, 1);
 }
 void cmpc::BufferList::set_timer(AVRational targetFrameRate, AVRational timeBase) {
-    auto interval_pts = av_rescale(av_rescale(1, timeBase.den, timeBase.num), targetFrameRate.den, targetFrameRate.num);
+    interval_pts = av_rescale(av_rescale(1, timeBase.den, timeBase.num), targetFrameRate.den, targetFrameRate.num);
 }
 bool cmpc::BufferList::reset_memory() {
     if (!frameRGB) {
@@ -942,13 +949,13 @@ PyObject * cmpc::BufferList::read() {
 
  // Constructors following 3-5 law.
 cmpc::CMpegServer::CMpegServer(void) :
-    bitRate(1024), width(100), height(100), timeBase(_setAVRational(1, 25)), frameRate(_setAVRational(25, 1)), \
-    GOPSize(10), MaxBFrame(1), PStreamContex({ 0 }), PFormatCtx(nullptr), PswsCtx(nullptr), RGBbuffer(nullptr), \
-    Ppacket(nullptr), __have_video(false), __enable_header(false), widthSrc(0), heightSrc(0), __frameRGB(nullptr), \
-    __start_time(0), __cur_time(0), time_base_q(_setAVRational(1, AV_TIME_BASE)), nthread(0) {
-    videoPath.clear();
-    __formatName.clear();
-    codecName.clear();
+    videoPath(), __formatName(), codecName(), bitRate(1024),
+    __start_time(0), __cur_time(0), width(100), height(100), widthSrc(0), heightSrc(0),
+    timeBase(_setAVRational(1, 25)), frameRate(_setAVRational(25, 1)),
+    time_base_q(_setAVRational(1, AV_TIME_BASE)), GOPSize(10), MaxBFrame(1),
+    PStreamContex({ 0 }), PFormatCtx(nullptr), Ppacket(nullptr), PswsCtx(nullptr),
+    __frameRGB(nullptr), RGBbuffer(nullptr), __have_video(false), __enable_header(false),
+    nthread(0) {
     __pts_ahead = av_rescale(av_rescale(20, timeBase.den, timeBase.num), frameRate.den, frameRate.num);
 }
 
@@ -974,6 +981,7 @@ void cmpc::CMpegServer::meta_protected_clear(void) {
     heightSrc = protectHeightSrc;
     bitRate = protectBitRate;
     GOPSize = protectGOPSize;
+    MaxBFrame = protectMaxBFrame;
     timeBase = protectTimeBase;
     frameRate = protectFrameRate;
     __pts_ahead = protectPTSAhead;
@@ -1006,90 +1014,111 @@ void cmpc::CMpegServer::clear(void) {
     __cur_time = 0;
 }
 
-void cmpc::CMpegServer::__copyMetaData(const CMpegServer& ref) {
-    videoPath.assign(ref.videoPath);
-    __formatName.assign(ref.__formatName);
-    codecName.assign(ref.codecName);
-    bitRate = ref.bitRate;
-    width = ref.width;
-    height = ref.height;
-    widthSrc = ref.widthSrc;
-    heightSrc = ref.heightSrc;
-    timeBase = ref.timeBase;
-    frameRate = ref.frameRate;
-    GOPSize = ref.GOPSize;
-    MaxBFrame = ref.MaxBFrame;
-    __pts_ahead = ref.__pts_ahead;
-    nthread = ref.nthread;
-    __start_time = 0;
-    __cur_time = 0;
-    time_base_q = _setAVRational(1, AV_TIME_BASE);
-}
-
 cmpc::CMpegServer::~CMpegServer(void) {
     clear();
 }
 
 
-cmpc::CMpegServer::CMpegServer(const CMpegServer& ref) {
-    __copyMetaData(ref);
+cmpc::CMpegServer::CMpegServer(const CMpegServer& ref):
+    videoPath(ref.videoPath), __formatName(ref.__formatName), codecName(ref.codecName),
+    bitRate(ref.bitRate), __pts_ahead(ref.__pts_ahead), __start_time(0), __cur_time(0),
+    width(ref.width), height(ref.height), widthSrc(ref.widthSrc), heightSrc(ref.heightSrc),
+    timeBase(ref.timeBase), frameRate(ref.frameRate),
+    time_base_q(_setAVRational(1, AV_TIME_BASE)), GOPSize(ref.GOPSize), MaxBFrame(ref.MaxBFrame),
+    PStreamContex({ 0 }), PFormatCtx(nullptr), Ppacket(nullptr), PswsCtx(nullptr),
+    __frameRGB(nullptr), RGBbuffer(nullptr), __have_video(false), __enable_header(false),
+    nthread(ref.nthread) {
     if (!FFmpegSetup()) {
         clear();
     }
 }
 
 cmpc::CMpegServer& cmpc::CMpegServer::operator=(const CMpegServer& ref) {
-    __copyMetaData(ref);
-    if (!FFmpegSetup()) {
-        clear();
+    if (this != &ref) {
+        videoPath = ref.videoPath;
+        __formatName = ref.__formatName;
+        codecName = ref.codecName;
+        bitRate = ref.bitRate;
+        __pts_ahead = ref.__pts_ahead;
+        __start_time = 0;
+        __cur_time = 0;
+        width = ref.width;
+        height = ref.height;
+        widthSrc = ref.widthSrc;
+        heightSrc = ref.heightSrc;
+        timeBase = ref.timeBase;
+        frameRate = ref.frameRate;
+        time_base_q = _setAVRational(1, AV_TIME_BASE);
+        GOPSize = ref.GOPSize;
+        MaxBFrame = ref.MaxBFrame;
+        PStreamContex = { 0 };
+        PFormatCtx = nullptr;
+        Ppacket = nullptr;
+        PswsCtx = nullptr;
+        __frameRGB = nullptr;
+        RGBbuffer = nullptr;
+        __have_video = false;
+        __enable_header = false;
+        nthread = ref.nthread;
+        if (!FFmpegSetup()) {
+            clear();
+        }
     }
     return *this;
 }
 
 cmpc::CMpegServer::CMpegServer(CMpegServer&& ref) noexcept :
-    bitRate(ref.bitRate), width(ref.width), height(ref.height), timeBase(ref.timeBase), frameRate(ref.frameRate), \
-    GOPSize(ref.GOPSize), MaxBFrame(ref.MaxBFrame), PStreamContex(ref.PStreamContex), PswsCtx(ref.PswsCtx), \
-    RGBbuffer(ref.RGBbuffer), Ppacket(ref.Ppacket), PFormatCtx(ref.PFormatCtx), __have_video(ref.__have_video), \
-    __enable_header(ref.__enable_header), widthSrc(ref.widthSrc), heightSrc(ref.heightSrc), __frameRGB(ref.__frameRGB), \
-    __pts_ahead(ref.__pts_ahead), __start_time(ref.__start_time), nthread(ref.nthread), __cur_time(ref.__cur_time), \
-   time_base_q(ref.time_base_q) {
-    videoPath.assign(std::move(ref.videoPath));
-    codecName.assign(std::move(ref.codecName));
-    __formatName.assign(std::move(ref.__formatName));
-}
-
-cmpc::CMpegServer& cmpc::CMpegServer::operator=(CMpegServer&& ref) noexcept {
-    videoPath.assign(std::move(ref.videoPath));
-    __formatName.assign(std::move(ref.__formatName));
-    codecName.assign(std::move(ref.codecName));
-    bitRate = ref.bitRate;
-    width = ref.width;
-    height = ref.height;
-    widthSrc = ref.widthSrc;
-    heightSrc = ref.heightSrc;
-    timeBase = ref.timeBase;
-    frameRate = ref.frameRate;
-    time_base_q = ref.time_base_q;
-    GOPSize = ref.GOPSize;
-    MaxBFrame = ref.MaxBFrame;
-    __pts_ahead = ref.__pts_ahead;
-    __start_time = ref.__start_time;
-    __cur_time = ref.__cur_time;
-    PFormatCtx = ref.PFormatCtx;
-    PStreamContex = ref.PStreamContex;
-    PswsCtx = ref.PswsCtx;
-    RGBbuffer = ref.RGBbuffer;
-    Ppacket = ref.Ppacket;
-    nthread = ref.nthread;
-    __frameRGB = ref.__frameRGB;
-    __have_video = ref.__have_video;
-    __enable_header = ref.__enable_header;
+    videoPath(std::move(ref.videoPath)), __formatName(std::move(ref.__formatName)),
+    codecName(std::move(ref.codecName)), bitRate(ref.bitRate), __pts_ahead(ref.__pts_ahead),
+    __start_time(ref.__start_time), __cur_time(ref.__cur_time),
+    width(ref.width), height(ref.height), widthSrc(ref.widthSrc), heightSrc(ref.heightSrc),
+    timeBase(ref.timeBase), frameRate(ref.frameRate), time_base_q(ref.time_base_q),
+    GOPSize(ref.GOPSize), MaxBFrame(ref.MaxBFrame), PStreamContex(std::move(ref.PStreamContex)),
+    PFormatCtx(ref.PFormatCtx), Ppacket(ref.Ppacket), PswsCtx(ref.PswsCtx),
+     __frameRGB(ref.__frameRGB), RGBbuffer(ref.RGBbuffer),
+    __have_video(ref.__have_video), __enable_header(ref.__enable_header), nthread(ref.nthread) {
     ref.PFormatCtx = nullptr;
     ref.PStreamContex = { 0 };
     ref.PswsCtx = nullptr;
     ref.RGBbuffer = nullptr;
     ref.Ppacket = nullptr;
     ref.__frameRGB = nullptr;
+}
+
+cmpc::CMpegServer& cmpc::CMpegServer::operator=(CMpegServer&& ref) noexcept {
+    if (this != &ref) {
+        videoPath.assign(std::move(ref.videoPath));
+        __formatName.assign(std::move(ref.__formatName));
+        codecName.assign(std::move(ref.codecName));
+        bitRate = ref.bitRate;
+        width = ref.width;
+        height = ref.height;
+        widthSrc = ref.widthSrc;
+        heightSrc = ref.heightSrc;
+        timeBase = ref.timeBase;
+        frameRate = ref.frameRate;
+        time_base_q = ref.time_base_q;
+        GOPSize = ref.GOPSize;
+        MaxBFrame = ref.MaxBFrame;
+        __pts_ahead = ref.__pts_ahead;
+        __start_time = ref.__start_time;
+        __cur_time = ref.__cur_time;
+        PFormatCtx = ref.PFormatCtx;
+        PStreamContex = std::move(ref.PStreamContex);
+        PswsCtx = ref.PswsCtx;
+        RGBbuffer = ref.RGBbuffer;
+        Ppacket = ref.Ppacket;
+        nthread = ref.nthread;
+        __frameRGB = ref.__frameRGB;
+        __have_video = ref.__have_video;
+        __enable_header = ref.__enable_header;
+        ref.PFormatCtx = nullptr;
+        ref.PStreamContex = { 0 };
+        ref.PswsCtx = nullptr;
+        ref.RGBbuffer = nullptr;
+        ref.Ppacket = nullptr;
+        ref.__frameRGB = nullptr;
+    }
     return *this;
 }
 

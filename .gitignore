@@ -1,6 +1,7 @@
 # Others
 include/*
 lib/*
+/dependencies/*
 .vs/*
 .vscode/*
 *.pdb
