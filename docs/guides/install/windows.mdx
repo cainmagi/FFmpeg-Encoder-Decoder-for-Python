@@ -1,0 +1,85 @@
+---
+id: windows
+title: Installation for Windows
+sidebar_label: Windows
+slug: /installation/windows
+description: A tutorial about the installation or compilation of the package for Windows.
+---
+
+import DarkButton from '@site/src/components/DarkButton';
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import mdiDownloadBox from '@iconify-icons/mdi/download-box';
+import vsiDebugAlt from '@iconify-icons/codicon/debug-alt';
+
+This guide contains steps for installing or compiling the `mpegCoder` module manually. We recommend users who need to use `mpegCoder` in a project locally to install the package by this way.
+
+## Install the pre-compiled module
+
+### Download `mpegCoder`
+
+First, users need to download the single module. We provide the downloading links in the following table. Please check the correct version according to your environment.
+
+| mpegCoder | FFMpeg | Numpy | Python | VS | OS |
+| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+| [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py39] | `4.4` | `1.21.1` | `3.9.6` | `2019 (v142)` | `Windows 10 21H1` |
+| [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py38] | `4.4` | `1.21.1` | `3.8.10` | `2019 (v142)` | `Windows 10 21H1` |
+| [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py37] | `4.4` | `1.21.1` | `3.7.10` | `2019 (v142)` | `Windows 10 21H1` |
+| [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py36] | `4.4` | `1.19.5` | `3.6.13` | `2019 (v142)` | `Windows 10 21H1` |
+| [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py35] | `4.4` | `1.15.2` | `3.5.5` | `2019 (v142)` | `Windows 10 21H1` |
+
+After extracting the tarball, we could get `mpegCoder.pyd`.
+
+:::info
+
+Note that the above versions only show the environment when building mpegCoder. It does not mean that they are the dependencies of running mpegCoder. For example, users could use python 3.9.5 and numpy 1.19.5 to run mpegCoder.
+
+:::
+
+### Download dependencies
+
+The pre-compiled dependencies are available on our release page. The dependencies contain several `.dll` files. Users also need to download the tarball with the correct FFMpeg version, and extract the files.
+
+| FFMpeg |
+| :-----: |
+| [`4.4`<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4] |
+
+The above files are collected from the officially released FFMpeg shared libraries. Users could also find them [here<IconExternalLink/>][link-ffmpeg-download].
+
+### Import
+
+To import the libraries, users need to place the `mpegCoder.pyd` and the dependencies in the same folder. For example,
+
+```shell
+.
+|---mpegCoder.pyd
+|---avcodec-58.dll
+|---avformat-58.dll
+|---avutil-56.dll
+|---swresample-3.dll
+`---swscale-5.dll
+```
+
+After that, users could enter the same folder, and import the module by
+
+```python
+import mpegCoder
+```
+
+## Compile the module
+
+If users need to compile the module by themselves, please follow the instructions on Github:
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/README.md" icon={vsiDebugAlt}>
+    Compile with VS2019
+  </DarkButton>
+</p>
+
+[download-3-1-0-py39]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/3.1.0/mpegCoder_3_1_0_Win_py39.tar.xz
+[download-3-1-0-py38]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/3.1.0/mpegCoder_3_1_0_Win_py38.tar.xz
+[download-3-1-0-py37]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/3.1.0/mpegCoder_3_1_0_Win_py37.tar.xz
+[download-3-1-0-py36]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/3.1.0/mpegCoder_3_1_0_Win_py36.tar.xz
+[download-3-1-0-py35]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/3.1.0/mpegCoder_3_1_0_Win_py35.tar.xz
+[download-ff-4-4]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dll-win-ffmpeg_4_4.tar.xz
+[link-ffmpeg-download]:https://www.gyan.dev/ffmpeg/builds/#release-section "FFMpeg release"

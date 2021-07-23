@@ -1,0 +1,38 @@
+---
+id: decoding
+title: Decoding a video
+sidebar_label: Decoding
+slug: /examples/decoding
+description: Example codes for decoding a video.
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+
+The following codes will demux, decode and iterate a video file. The video could be in any valid format. The `mpegCoder.MpegDecoder()` could recognize the video codec automatically.
+
+```python {7,8} title="decoding.py"
+import mpegCoder
+
+d = mpegCoder.MpegDecoder()
+opened = d.FFmpegSetup('test-video.mp4')
+if opened:  # If encoder is not loaded successfully, do not continue.
+    gop = True
+    while gop is not None:
+        gop = d.ExtractGOP()  # Extract current GOP.
+d.clear()  # Close the input video.
+```
+
+In each while loop, a [Group of pictures (GOP)<IconExternalLink/>][wiki-gop] would be extracted. The GOP is a collection of video frames, and also the minimal data unit of the video compression algorithm. In `mpegCoder`, the GOP is arranged as a 4D [`np.ndarray`<IconExternalLink/>][link-ndarray]. The shape `(N, H, W, C)` means frame number, width, height and channel number respectively. Each frame has been converted to RGB (`uint8`) space. If the video reaches its end, the returned `gop` would be `None`.
+
+Users could configure `MpegDecoder()` and scale the video frames. For example, the following codes would scale the frame to 720x486.
+
+```python {3}
+...
+d = mpegCoder.MpegDecoder()
+d.setParameter(widthDst=720, heightDst=486)
+opened = d.FFmpegSetup('test-video.mp4')
+...
+```
+
+[wiki-gop]:https://en.wikipedia.org/wiki/Group_of_pictures "Group of pictures | Wikipedia"
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"

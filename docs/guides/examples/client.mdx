@@ -1,0 +1,90 @@
+---
+id: client
+title: Pulling a video stream
+sidebar_label: Client
+slug: /examples/client
+description: Example codes for pulling a stream on the client side.
+---
+
+import DarkButton from '@site/src/components/DarkButton';
+import IconExternalLink from '@theme/IconExternalLink';
+import octGitBranch16 from '@iconify-icons/octicon/git-branch-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+import ClientSvg from '/img/examples/client.svg';
+
+## Introduction
+
+The following figure show the theory of `mpegCoder.MpegClient()`. Assuming that we have a video server from the remote side, the real-time stream is pushed continuously. Even we do not read the online stream, the data flow would not wait for reading. Therefore, we design the following two-thread workflow.
+
+<ClientSvg className="themeColor"/>
+
+When connecting to the remote server, `mpegCoder.MpegClient()` would create a sub-thread ("*writer*" in the figure). The writer thread would work as a backend service, and keep accepting frames from the remote side, even if we do not read the frames. The accepted frames are stored in a circular buffer (In the figure, the buffer size is 12). There are two pointer maintained by the writer and the reader respectively (shown as the arrows connected to the threads in the figure). The writting pointer is kept stepping each time a new frame is received.
+
+The reading events would be triggered by the Python-C-API. When a new reading event comes from the main thread, the reader would lock the current position of the reading pointer, and read several frames from the buffer. After the reading results are collected, the lock would be released. A locked position would not be updated. In other words, during the reading events, if the writting pointer moves to the locked position, the writer will wait until the reading is finished. Because the reading events are merely data-collecting operations, in most cases the reading events would not block the writer. If the writer is blocked for too long, the demuxing of the online stream may fail. So we recommend users to set a rational buffer size. For example, if we always read 5 frames each time, the buffer size is recommended to be double of the reading size, i.e. 10.
+
+## Codes
+
+To test the following codes, we recommend users to use VLC or ffmpeg to push a remote stream, because the stream pushing without encoding is not supported by `mpegCoder` currently. Using VLC or ffmpeg to serve the stream will occupy less system resources.
+
+The following example codes would scale the remote frame to `480x360`, and resample the frame rate to 5 FPS. The reading size and the buffer size are 5 and 12 respectively.
+
+```python {9,15,19,22-24,26-27} title="client.py"
+import os, sys
+import time
+import mpegCoder
+mpegCoder.setGlobal(dumpLevel=2)  # show full log
+
+if __name__ == '__main__':
+    d = mpegCoder.MpegClient()  # create the handle
+    d.setParameter(widthDst=480, heightDst=360, dstFrameRate=(5,1), readSize=5, cacheSize=12)  # do basic settings
+    success = d.FFmpegSetup('rtsp://localhost:8554/video')  # connect with the server
+    print(d)
+
+    if not success:  # exit the program if the server is not available. You could delete this checking and see what will happen.
+        exit()
+
+    d.start()  # start the sub-thread for demuxing the stream.
+
+    time.sleep(5)  # wait for getting some frames
+    print('Get slept')
+    p = d.ExtractFrame()  # extract some frames from current cache.
+    print(p.shape)  # show information of extracted frames
+
+    for i in range(10):  # wait for 50 seconds
+        time.sleep(5)
+        p = d.ExtractFrame()  # extract some frames from current cache.
+        
+    d.terminate()  # shut down the current thread. You could call start() and let it restart.
+    d.clear()  # but here we would like to clear the handle and exit
+```
+
+After configuring the client, the codes contain the following key steps:
+
+1. The `MpegClient.FFmpegSetup()` accepts a video stream address. The stream type would be detected from the protocol automacially. Currently, we support `http`, `ftp`, `sftp`, `rtsp` and `rtmp`. Note that only `rtsp` and `rtmp` should be used for analyzing the real-time stream. The `http`, `ftp` and `sftp` protocols are mostly used for data transfer. This method will launch a connect to the remote server.
+
+2. When `MpegClient.start()` is called, the sub-thread "*writer*" will be created.
+
+3. Using `MpegClient.ExtractFrame()` to get the real-time data. The returned frame number is given by `readSize` during the configuration. However, user could override the configurtion by using an argument, for example, `ExtractFrame(4)` would force the reader to read 4 frames.
+
+4. If the remote stream is closed, `d.ExtractFrame()` would return `None`. However, user would terminate the client in any time. The method `MpegClient.terminate()` would stop the writing thread. But the connection would not be aborted until `MpegClient.clear()` is called.
+
+## Examples on Github
+
+On Github, we provide the above example as a single branch.
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check" icon={octGitBranch16}>
+    Demuxing Checking Program
+  </DarkButton>
+</p>
+
+In addition, we provide another example. This example is a simple video stream player based on [`PyQt5`<IconExternalLink/>][link-pyqt5] and `mpegCoder`.
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-player" icon={octGitBranch16}>
+    Video Stream Player
+  </DarkButton>
+</p>
+
+[link-pyqt5]:https://www.riverbankcomputing.com/software/pyqt "PyQt5"
