@@ -15,17 +15,17 @@ import ClientSvg from '/img/examples/client.svg';
 
 ## Introduction
 
-The following figure show the theory of `mpegCoder.MpegClient()`. Assuming that we have a video server from the remote side, the real-time stream is pushed continuously. Even we do not read the online stream, the data flow would not wait for reading. Therefore, we design the following two-thread workflow.
+The following figure show the theory of `mpegCoder.MpegClient`. Assuming that we have a video server from the remote side, the real-time stream is pushed continuously. Even we do not read the online stream, the data flow would not wait for reading. Therefore, we design the following two-thread workflow.
 
 <ClientSvg className="themeColor"/>
 
-When connecting to the remote server, `mpegCoder.MpegClient()` would create a sub-thread ("*writer*" in the figure). The writer thread would work as a backend service, and keep accepting frames from the remote side, even if we do not read the frames. The accepted frames are stored in a circular buffer (In the figure, the buffer size is 12). There are two pointer maintained by the writer and the reader respectively (shown as the arrows connected to the threads in the figure). The writting pointer is kept stepping each time a new frame is received.
+When connecting to the remote server, `mpegCoder.MpegClient` would create a sub-thread ("*writer*" in the figure). The writer thread would work as a backend service, and keep accepting frames from the remote side, even if we do not read the frames. The accepted frames are stored in a circular buffer (In the figure, the buffer size is 12). There are two pointer maintained by the writer and the reader respectively (shown as the arrows connected to the threads in the figure). The writting pointer is kept stepping each time a new frame is received.
 
 The reading events would be triggered by the Python-C-API. When a new reading event comes from the main thread, the reader would lock the current position of the reading pointer, and read several frames from the buffer. After the reading results are collected, the lock would be released. A locked position would not be updated. In other words, during the reading events, if the writting pointer moves to the locked position, the writer will wait until the reading is finished. Because the reading events are merely data-collecting operations, in most cases the reading events would not block the writer. If the writer is blocked for too long, the demuxing of the online stream may fail. So we recommend users to set a rational buffer size. For example, if we always read 5 frames each time, the buffer size is recommended to be double of the reading size, i.e. 10.
 
 ## Codes
 
-To test the following codes, we recommend users to use VLC or ffmpeg to push a remote stream, because the stream pushing without encoding is not supported by `mpegCoder` currently. Using VLC or ffmpeg to serve the stream will occupy less system resources.
+To test the following codes, we recommend users to use [VLC<IconExternalLink/>][link-vlc] or [FFMpeg<IconExternalLink/>][link-ffmpeg-stream] to push a remote stream, because the stream pushing without encoding is not supported by `mpegCoder` currently. Using VLC or FFMpeg to serve the stream will occupy less system resources.
 
 The following example codes would scale the remote frame to `480x360`, and resample the frame rate to 5 FPS. The reading size and the buffer size are 5 and 12 respectively.
 
@@ -88,3 +88,5 @@ In addition, we provide another example. This example is a simple video stream p
 </p>
 
 [link-pyqt5]:https://www.riverbankcomputing.com/software/pyqt "PyQt5"
+[link-vlc]:https://www.videolan.org/vlc/streaming.html "VLC used for streaming"
+[link-ffmpeg-stream]:https://trac.ffmpeg.org/wiki/StreamingGuide "FFMpeg used for streaming"

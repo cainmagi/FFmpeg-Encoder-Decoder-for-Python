@@ -15,11 +15,11 @@ import ServerImg from '/img/examples/server.png';
 
 ## Preparation
 
-The `ffserver` has been removed after FFMpeg `3.4` (see the docs [here<IconExternalLink/>][link-ffserver]). In other words, FFMpeg could not work without a server program. The same case exists in our `mpegCoder`. Users need to start a server program first. The server program will keeps listening and waiting for any pushed streams. After that, `mpegCoder` would push the stream to the server by `mpegCoder.MpegServer()`.
+The `ffserver` has been removed after FFMpeg `3.4` (see the docs [here<IconExternalLink/>][link-ffserver]). In other words, FFMpeg could not work without a server program. The same case exists in our `mpegCoder`. Users need to start a server program first. The server program will keeps listening and waiting for any pushed streams. After that, `mpegCoder` would push the stream to the server by `mpegCoder.MpegServer`.
 
 :::caution
 
-It is also supported if you push a stream with `mpegCoder.MpegServer()` and receive the same stream with `mpegCoder.MpegClient()` in the same time. But we recommend users to run `MpegServer()` and `MpegClient()` on different devices, because the encoder implemented in `MpegServer()` may occupy a lot of system resources.
+It is also supported if you push a stream with `mpegCoder.MpegServer` and receive the same stream with `mpegCoder.MpegClient` in the same time. But we recommend users to run `MpegServer` and `MpegClient` on different devices, because the encoder implemented in `MpegServer` may occupy a lot of system resources.
 
 :::
 
@@ -41,7 +41,7 @@ Take *RTSP Simple Server* on Windows as an example. We only need to launch the s
 When the server is listening, we could use the following addresses for the testings
 
 ```shell
-rtsp://localhost:85554/
+rtsp://localhost:8554/
 rtmp://localhost:1935/
 ```
 
@@ -61,12 +61,12 @@ e = mpegCoder.MpegServer()
 e.setParameter(configDict=d.getParameter(), codecName='libx264', videoAddress='rtsp://localhost:8554/video')  # inherit most of parameters from the decoder.
 opened = opened and e.FFmpegSetup()  # Load the encoder.
 if opened:  # If encoder is not loaded successfully, do not continue.
-    p = True
+    gop = True
     s = 0
-    while p is not None:
-        p = d.ExtractGOP()  # Extract current GOP.
-        if p is not None:
-            for i in p:  # Select every frame.
+    while gop is not None:
+        gop = d.ExtractGOP()  # Extract current GOP.
+        if gop is not None:
+            for i in gop:  # Select every frame.
                 e.ServeFrame(i)  # Serve current frame.
                 s += 1
                 if s == 10:  # Wait for synchronization for each 10 frames.
@@ -100,11 +100,11 @@ class Decoder(multiprocessing.Process):
         opened = d.FFmpegSetup(self.video_name)
         self.q_o.put(d.getParameter())
         if opened:
-            p = True
-            while p is not None:
-                p = d.ExtractGOP()  # Extract current GOP.
-                if p is not None:
-                    for i in p:  # Select every frame.
+            gop = True
+            while gop is not None:
+                gop = d.ExtractGOP()  # Extract current GOP.
+                if gop is not None:
+                    for i in gop:  # Select every frame.
                         self.q_o.put(i)
                 else:
                     self.q_o.put(None)
