@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest an idea for this project
+title: "[Feature]"
+labels: enhancement, to be solved
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Get started
+      options:
+        - label: >-
+            I have read [Contributing guidelines](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CONTRIBUTING.md).
+          required: true
+        - label: >-
+            I agree to follow the [Code of Conduct](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CODE_OF_CONDUCT.md).
+          required: true
+        - label: >-
+            I have confirmed that my issue is not duplicated with an existing issue.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Problem
+      description: >-
+        If your feature request is related to a problem, please describe the problem clearly and concisely.
+
+  - type: textarea
+    attributes:
+      label: Required feature
+      description: >-
+        A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Alternative solution
+      description: >-
+        A clear and concise description of any alternative solutions or features you've considered.
+
+  - type: input
+    attributes:
+      label: mpegCoder version
+      description: >-
+        e.g. 3.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: >-
+        Add any other context about the problem here.

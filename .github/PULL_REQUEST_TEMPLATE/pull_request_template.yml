@@ -1,0 +1,50 @@
+name: Pull request
+description: Send a pull request (PR) for this project.
+title: "[PR]"
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Get started
+      options:
+        - label: >-
+            I have read [Contributing guidelines](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CONTRIBUTING.md).
+          required: true
+        - label: >-
+            I agree to follow the [Code of Conduct](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CODE_OF_CONDUCT.md).
+          required: true
+        - label: >-
+            I have confirmed that my pull request (PR) is not duplicated with an existing PR.
+          required: true
+        - label: >-
+            I have confirmed that my pull request (PR) passes the testing workflow of the project.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: >-
+        Describe what you have done with this PR.
+
+  - type: textarea
+    attributes:
+      label: Updated report
+      description: >-
+        Summarize your modifications as itemized report.
+      value: |
+        1. Update ...
+        2. Add ...
+
+  - type: input
+    attributes:
+      label: mpegCoder version
+      description: >-
+        e.g. 3.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: >-
+        Add any other context about the problem here.

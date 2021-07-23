@@ -1,0 +1,45 @@
+name: Docs request
+description: Report a problem or a request for the docs.
+title: "[Docs]"
+labels: documentation, to be solved
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Get started
+      options:
+        - label: >-
+            I have read [Contributing guidelines](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CONTRIBUTING.md).
+          required: true
+        - label: >-
+            I agree to follow the [Code of Conduct](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CODE_OF_CONDUCT.md).
+          required: true
+        - label: >-
+            I have confirmed that my issue is not duplicated with an existing issue.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Problem
+      description: >-
+        If you meet any problems with the documentation, please describe your problems here.
+
+  - type: textarea
+    attributes:
+      label: Required feature
+      description: >-
+        If you need more explanations in the documentation, please describe your needs here.
+
+  - type: input
+    attributes:
+      label: mpegCoder version
+      description: >-
+        e.g. 3.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: >-
+        Add any other context about the problem here.
