@@ -16,7 +16,7 @@ This project is also named as "*FFmpeg-Encoder-Decoder-for-Python*". It is imple
 With this package, users could:
 
 * Make use of **all** FFMpeg video encoders and decoders. When decoding a video (or an online stream), like the original FFMpeg (C version), the provided APIs could detect the video format and codec format automatically. When encoding a video, users could control the codec format, bit rate and some other options by setting parameters.
-* Work with FFMpeg directly. This project invokes the FFMpeg C APIs in the bottom level. Unlike [ffmpeg-python<IconExternalLink/>][git-ffmpeg-python] and [pyffmpeg<IconExternalLink/>][git-pyffmpeg], our project is not driven by the FFMpeg CLI interfaces. The data format used by this package is [`np.ndarray`<IconExternalLink/>][link-ndarray]. In other words, our project enables users to combine [numpy<IconExternalLink/>][link-numpy] and FFMpeg directly.
+* Work with FFMpeg directly. This project invokes the FFMpeg C APIs in the bottom level. Unlike [ffmpeg-python<IconExternalLink/>][git-ffmpeg-python] and [pyffmpeg<IconExternalLink/>][git-pyffmpeg], our project is not driven by the FFMpeg CLI interfaces. The data format used by this package is [`np.ndarray`<IconExternalLink/>][link-ndarray]. In other words, our project enables users to combine [Numpy<IconExternalLink/>][link-numpy] and FFMpeg directly.
 * Frame-level APIs. Unlike [pyffmpeg<IconExternalLink/>][git-pyffmpeg], this package is not a simple wrapper of FFMpeg. Users could works on the frame-level APIs. For example, when decoding a video, users could get the data frame-by-frame. Each frame is a 3D [`np.ndarray`<IconExternalLink/>][link-ndarray].
 * Pre-compiled package. This package has been pre-compiled by the author. If users download the dependent dynamic libraries (`.so` or `.dll`), they do not need to compile the package by themself.
 
@@ -61,7 +61,7 @@ Contributor covenant code of conduct:
 [pip-opencv]:https://pypi.org/project/opencv-python "OpenCV Python"
 [link-cpp11]:https://en.cppreference.com/w/ "C++ 11"
 [link-python-c-api]:https://docs.python.org/3/c-api/index.html "Python-C-API"
-[link-numpy]:https://numpy.org "numpy"
+[link-numpy]:https://numpy.org "Numpy"
 [link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"
 [link-ffmpeg]:https://ffmpeg.org "FFMpeg"
 [link-avfilter]:http://ffmpeg.org/doxygen/trunk/group__lavfi.html "libavfilter"

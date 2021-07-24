@@ -15,7 +15,7 @@ function HomepageHeader() {
       <div className="container">
         <h1 className="hero__title"><span><LogoSVG className={styles['title-logo']} alt={siteConfig.title} /></span> {siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
+        <div className={`buttons ${styles.buttons}`}>
           <DarkButton
             index={true}
             to="/docs/">

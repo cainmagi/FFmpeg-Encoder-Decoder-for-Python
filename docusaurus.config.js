@@ -4,7 +4,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'mpegCoder',
-  tagline: 'This is a C++ based FFmpeg Encoder/Decoder for Python 3.5+ & numpy 1.13+. Both Linux & Win versions are provided. Theoretically you do not need to install FFmpeg for using this library.',
+  tagline: 'This is a C++ based FFmpeg Encoder/Decoder for Python 3.5+ & Numpy 1.13+. Both Linux & Win versions are provided. Theoretically you do not need to install FFmpeg for using this library.',
   url: 'https://cainmagi.github.io',
   baseUrl: '/FFmpeg-Encoder-Decoder-for-Python/',
   onBrokenLinks: 'throw',

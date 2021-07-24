@@ -10,7 +10,7 @@ const FeatureList = [
     Svg: require('../../static/img/icon_python.svg').default,
     description: (
       <>
-        Implemented by the <Link href="https://docs.python.org/3/c-api/index.html" label="Python-C-API">Python-C-API<IconExternalLink /></Link>. This feature has been included in stdlib. No matter when you need to compile or use this package, you do not need any python dependencies.
+        Implemented by the <Link href="https://docs.python.org/3/c-api/index.html" label="Python-C-API">Python-C-API<IconExternalLink /></Link>. This feature has been included in stdlib. No matter when you need to compile or use this package, the only dependency is <Link href="https://numpy.org" label="numpy">Numpy<IconExternalLink /></Link>.
       </>
     ),
   },
@@ -19,7 +19,7 @@ const FeatureList = [
     Svg: require('../../static/img/icon_ffmpeg.svg').default,
     description: (
       <>
-        Built with the shared-lib-enabled <Link href="https://ffmpeg.org/" label="FFMpeg">FFMpeg<IconExternalLink /></Link>. Since the original FFMpeg is not modified. All encoders and decoders are available. We have also provided a packed <code>mpegCoder</code> with all dynamic libraries.
+        Combine the shared-lib-enabled <Link href="https://ffmpeg.org" label="FFMpeg">FFMpeg<IconExternalLink /></Link> and <Link href="https://numpy.org" label="numpy">Numpy<IconExternalLink /></Link> together. Both the two libraries are not modifed. Users could benefit from user-friendly Numpy APIs and all FFMpeg features.
       </>
     ),
   },

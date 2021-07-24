@@ -1,3 +1,6 @@
+/* DarkButton
+ * Author: cainmagi@gmail.com
+ */
 import React, {useEffect, useState} from 'react';
 
 import Link from '@docusaurus/Link';
