@@ -1,0 +1,262 @@
+---
+id: MpegClient
+title: MpegClient
+sidebar_label: MpegClient
+slug: /apis/MpegClient
+description: This class has wrapped the C-API of FFMpeg demuxer so that users could call its methods to demux the network stream in python quickly.
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={vsiSymbolClass}/> Class
+  <Splitter />
+  <SourceURL url="MpegStreamer.h#L49">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+cln = mpegCoder.MpegClient()
+```
+
+The frame-level video stream client used for demuxing an online video stream.
+
+This client instance is integrated with the features of [`MpegDecoder`](./MpegDecoder). The connection to the video server is established by [`FFmpegSetup()`](#ffmpegsetup). When the client is working, it will manage a background sub-thread for fetching the remote frames consecutively. The fetched frames are saved in a circular buffer. The method [`ExtractFrame()`](#extractframe) always return the latest received frames. To learn more details, please review the [description of the theory](../examples/client#introduction).
+
+`MpegClient` requires users to initialize the decoding before reading frames, and close the video after finishing all works. If the video is not closed manually, an automatical closing would be performed when the client is destructed. `MpegClient` also supports threading control. When the client is connected to the server, users could use [`start()`](#start) to keep the buffer synchronized with the video stream. Calling [`terminate()`](#terminate) will force the buffer updating to stop. In this case, the method [`ExtractFrame()`](#extractframe) will always return the same results.
+
+## Arguments
+
+This class does not has initialization arguments.
+
+## Methods
+
+### `clear`
+
+```python
+cln.clear()
+```
+
+Clear all configurations **except** the default video address. If a video stream is alredy opened, `clear()` will release the connection automatically.
+
+:::tip
+
+We suggest that users should call `clear()` manually, like using other file readers. No matter when [`start()`](#start) is called, this method could be used safely without calling [`terminate()`](#terminate).
+
+:::
+
+----------
+
+### `resetPath`
+
+```python
+cln.resetPath(videoAddress)
+```
+
+Reset the default video address to a specific value. Configuring this value will not cause the video stream to be opened. This method is merely used as a configuration.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoAddress` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The address of the video to be read. |
+
+----------
+
+### `getParameter`
+
+```python
+param = cln.getParameter(paramName=None)
+```
+
+Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
+
+Here is a list of checkable `paramName`:
+
+|   Parameter    |  Type   |  <center>Description</center>  |
+| :------------: | :-----: | :----------------------------- |
+| `videoAddress` | `str`   | The current address of the read video. If the video stream is not opened, will return the default video address. |
+| `width`        | `int`   | The width of the read video. This value is determined by the video stream. |
+| `height`       | `int`   | The height of the read video. This value is determined by the video stream. |
+| `frameCount`   | `int`   | The number of returned frames in the last frame extraction method. |
+| `coderName`    | `str`   | The name of the codec used for decoding the video. |
+| `nthread`      | `int`   | The number of decoder threads. |
+| `duration`     | `float` | The total seconds of this video. |
+| `estFrameNum`  | `int`   | The estimated total frame number (may be not accurate). |
+| `srcFrameRate` | `float` | The average of FPS of the source video stream. The actual frame rate may be changed on client side. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. These parameters could serve as `configDict` for `MpegEncoder` and `MpegServer`. |
+
+----------
+
+### `setParameter`
+
+```python
+cln.setParameter(widthDst=None, heightDst=None, cacheSize=None, readSize=None, dstFrameRate=None, nthread=None)
+```
+
+Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
+
+#### Requires
+
+|    Argument    |  Type   |  Required  |  <center>Description</center>  |
+| :------------: | :-----: | :--------: | :----------------------------- |
+| `widthDst`     | `int`   | | The width of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
+| `heightDst`    | `int`   | | The height of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
+| `cacheSize`    | `int`   | | The number of allocated avaliable frames in the cache. We recommend to configure this value as `2*readSize`. |
+| `dstFrameRate` | `tuple` | | The destination FPS of the stream. This value should be formatted as a factor defined as `(numerator, denominator)`. Configuing this value will cause the received frames to be resampled. |
+| `nthread`      | `int`   | | The number of decoder threads. |
+
+----------
+
+### `FFmpegSetup`
+
+```python
+cln.FFmpegSetup(videoAddress=None)
+```
+
+Open the online video stream, and initialize the decoder. After the client initialized, the video parameters will be loaded, the video format will be parsed and the video codec will be detected automatically. If an video stream connection is established by the client now, this connection will be released first, then the new video stream will be opened.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoAddress` | `str` or `bytes` | | The address of the video stream to be read. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video path to change. |
+
+----------
+
+### `dumpFile`
+
+```python
+cln.dumpFile()
+```
+
+Print out a brief preview of the video meta-data to the standard output.
+
+:::caution
+
+This method is based on C stdout. Therefore, these results could not be redirected or catched by python.
+
+:::
+
+----------
+
+### `start`
+
+```python
+cln.start()
+```
+
+Start the demuxing thread. The started sub-thread will keep receiving remote frames to ensure the client buffer is synchronized with the online video stream.
+
+:::caution
+
+This method must be called after [`FFmpegSetup()`](#ffmpegsetup). Once this method is called, users are not allowed to call it again until [`terminate()`](#terminate) is called or the client is restarted by [`FFmpegSetup()`](#ffmpegsetup).
+
+:::
+
+----------
+
+### `terminate`
+
+```python
+cln.terminate()
+```
+
+Terminate the current demuxing thread. This method is required to be called after [`start()`](#start). It will stop the frame receiving, and make the played video to be "paused". In this case, the frame receiving could be started again by [`start()`](#start).
+
+:::caution
+
+This method must be called after [`FFmpegSetup()`](#ffmpegsetup). Calling this method will not cause the current connection aborted. Only [`clear()`](#clear) could release the connection explicitly.
+
+:::
+
+----------
+
+### `ExtractFrame`
+
+```python
+frames = cln.ExtractFrame(readSize=0)
+```
+
+Read the latest several frames from the circular buffer.
+
+This method is merely a reading method, and not decode frames. Instead, the decoding is managed by the sub-thread. `ExtractFrame()` always fetch the several frames that are latestly decoded. Even [`terminate()`](#terminate) is called, this method could be still used safely.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `readSize` | `int`   | | The number of the frames to be read. If configured as `<=0`, will use the default `readSize` configured by [`setParameter()`](#setparameter). |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `readSize` (no matter whether the video reaches its end), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no valid frames are received, this method would return several frames that are totally black. |
+
+## Operators
+
+### `__str__`
+
+```python
+info = str(dec)
+```
+
+Return a brief report of the current client status.
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `info`  | `str` | A brief report of the client status, the configurations and parameters will be listed as formatted texts. |
+
+## Examples
+
+See [*`Client`*](../examples/client) in the tutorial. Here we also show some specific configurations:
+
+### Scale the decoded frame
+
+```python
+...
+cln = mpegCoder.MpegClient()
+cln.setParameter(widthDst=720, heightDst=486)
+...
+```
+
+### Configure the cache size
+
+```python
+...
+cln = mpegCoder.MpegClient()
+# Assume that the source frame rate is 29.997
+cln.setParameter(readSize=30, cacheSize=60)
+...
+```
+
+### Use multi-thread decoding
+
+```python
+...
+cln = mpegCoder.MpegClient()
+cln.setParameter(nthread=8)
+...
+```
+
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"

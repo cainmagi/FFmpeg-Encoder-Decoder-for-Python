@@ -1,0 +1,269 @@
+---
+id: MpegEncoder
+title: MpegEncoder
+sidebar_label: MpegEncoder
+slug: /apis/MpegEncoder
+description: This class has wrapped the C-API of FFMpeg encoder so that users could call its methods to encode frames by using numpy-data quickly.
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={vsiSymbolClass}/> Class
+  <Splitter />
+  <SourceURL url="MpegCoder.h#L82">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+enc = mpegCoder.MpegEncoder()
+```
+
+The frame-level video encoder used for muxing a video file.
+
+This encoder instance serves as a video file writer. It supports:
+
+* Encode a 3D [`np.ndarray`<IconExternalLink/>][link-ndarray] as a video frame.
+* Configure the codec type and the video parameters.
+* Scaling the encoded video frames to a specific size.
+
+`MpegEncoder` requires users to initialize the encoder before writing frames, and close the video after finishing all works. If the video is not closed manually, an automatical closing would be performed when the encoder is destructed. During the distruction, hitting <kbd>Ctrl</kbd>+<kbd>C</kbd> will cause the written video to break.
+
+## Arguments
+
+This class does not has initialization arguments.
+
+## Methods
+
+### `clear`
+
+```python
+enc.clear()
+```
+
+Clear all configurations **including** the default video path. If a video is opened by the encoder, `clear()` will close the video automatically.
+
+:::tip
+
+We suggest that users should call `clear()` manually, like using other file writers.
+
+:::
+
+----------
+
+### `resetPath`
+
+```python
+enc.resetPath(videoPath)
+```
+
+Reset the default video path to a specific value. Configuring this value will not cause the video to be opened. This method is merely used as a configuration.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The path of the video to be written. |
+
+----------
+
+### `getParameter`
+
+```python
+param = enc.getParameter(paramName=None)
+```
+
+Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
+
+Here is a list of checkable `paramName`:
+
+|   Parameter    |  Type   |  <center>Description</center>  |
+| :------------: | :-----: | :----------------------------- |
+| `videoPath`    | `str`   | The current path of the written video. If the video is not opened, will return the default video path. |
+| `codecName`    | `str`   | The name of the encoder. See [here<IconExternalLink/>][ffmpeg-encoder] to view a list of FFMpeg encoders. Note that not all encoders could be used, the avaliable encoders depends on the current FFMpeg built libraries. |
+| `nthread`      | `int`   | The number of encoder threads. |
+| `bitRate`      | `float` | The bit rate of the written video (Kb/s). This value determines the output video size directly. |
+| `width`        | `int`   | The width of the written video. This value is mainly determined by the user configurations. |
+| `height`       | `int`   | The height of the written video. This value is mainly determined by the user configurations. |
+| `widthSrc`     | `int`   | The width of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `width`. |
+| `heightSrc`    | `int`   | The height of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `height`. |
+| `GOPSize`      | `int`   | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
+| `maxBframe`    | `int`   | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
+| `frameRate`    | `tuple` | The target frame rate of the written video. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational] |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. |
+
+----------
+
+### `setParameter`
+
+```python
+enc.setParameter(
+    decoder=None, configDict=None, videoPath=None, codecName=None,
+    nthread=None, bitRate=None, width=None, height=None, widthSrc=None, heightSrc=None,
+    GOPSize=None, maxBframe=None, frameRate=None
+)
+```
+
+Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
+
+#### Requires
+
+|    Argument    |  Type   |  Required  |  <center>Description</center>  |
+| :------------: | :-----: | :--------: | :----------------------------- |
+| `decoder`      | [`MpegDecoder`](./MpegDecoder) or [`MpegClient`](./MpegClient) | | When configure this argument, the required configurations will be copied from a decoder or a client. This argument is useful when trancoding a video. |
+| `configDict`   | `dict` | | An alternative of the argument `decoder` when the parameters need to be passed through different processes. Using `configDict=decoder.getParameter()` is equivalent to using `decoder=decoder`. |
+| `videoPath`    | `str`   | | The current path of the written video. If the video is not opened, will return the default video path. |
+| `codecName`    | `str`   | | The name of the encoder. See [here<IconExternalLink/>][ffmpeg-encoder] to view a list of FFMpeg encoders. Note that not all encoders could be used, the avaliable encoders depends on the current FFMpeg built libraries. |
+| `nthread`      | `int`   | | The number of encoder threads. |
+| `bitRate`      | `float` | | The bit rate of the written video (Kb/s). This value determines the output video size directly. |
+| `width`        | `int`   | | The width of the written video. |
+| `height`       | `int`   | | The height of the written video. |
+| `widthSrc`     | `int`   | | The width of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `width`. |
+| `heightSrc`    | `int`   | | The height of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `height`. |
+| `GOPSize`      | `int`   | | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
+| `maxBframe`    | `int`   | | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
+| `frameRate`    | `tuple` | | The target frame rate of the written video. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational] |
+
+----------
+
+### `FFmpegSetup`
+
+```python
+enc.FFmpegSetup(videoPath=None)
+```
+
+Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the file name and the user configurations set by [`setParameter()`](#setparameter). If an video is opening by the encoder now, this video will be closed first, then the new video will be opened with the same configurations.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str` or `bytes` | | The path of the video to be written. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video path to change. |
+
+----------
+
+### `dumpFile`
+
+```python
+enc.dumpFile()
+```
+
+Print out a brief preview of the video meta-data to the standard output.
+
+:::caution
+
+This method is based on C stdout. Therefore, these results could not be redirected or catched by python.
+
+:::
+
+----------
+
+### `EncodeFrame`
+
+```python
+is_success = enc.EncodeFrame(PyArrayFrame)
+```
+
+Encode one frame into the video. Note that in most cases, the frame will not be written to the file instantly. Instead of, the frames will be saved in a low-level buffer of the codec. Only when [`FFmpegClose()`](#ffmpegclose) is called, the frames in the buffer will be flushed into the file.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `is_success`   | `bool` | The status of the frame encoding. If the given frame succeeds to be encoded, will return `True`; Otherwise, will return `False`. |
+
+----------
+
+### `FFmpegClose`
+
+```python
+enc.FFmpegClose()
+```
+
+Close the video file. Calling this method will flush all buffered frames into the file. Then the video tail will be writen to the file. If users does not call this method explicitly, it will be called when `clear()` is called or when the encoder is destructed.
+
+## Operators
+
+### `__str__`
+
+```python
+info = str(enc)
+```
+
+Return a brief report of the current encoder status.
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `info`  | `str` | A brief report of the encoder status, the configurations and parameters will be listed as formatted texts. |
+
+## Examples
+
+See [*`Transcoding`*](../examples/transcoding) in the tutorial. Here we also show some specific configurations:
+
+### Optimize the video encoding
+
+```python
+...
+dec = mpegCoder.MpegDecoder()
+...
+enc = mpegCoder.MpegEncoder()
+enc.setParameter(decoder=dec, codecName='libx265', videoPath='test-video-x265.mp4', GOPSize=24, maxBframe=16)
+...
+```
+
+### Rescale and resample the video
+
+```python
+...
+enc = mpegCoder.MpegEncoder()
+enc.setParameter(width=1280, height=720, frameRate=(5, 1), codecName='libx265', videoPath='test-video-x265.mp4')
+...
+```
+
+### Use the AV1 encoder
+
+```python
+...
+enc = mpegCoder.MpegEncoder()
+enc.setParameter(width=1280, height=720, codecName='libsvtav1', videoPath='test-video-av1.mp4')
+...
+```
+
+### Use multi-thread encoding
+
+```python
+...
+enc = mpegCoder.MpegEncoder()
+enc.setParameter(nthread=8)
+...
+```
+
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"
+[wiki-gop]:https://en.wikipedia.org/wiki/Group_of_pictures "Group of pictures | Wikipedia"
+[ffmpeg-encoder]:https://ffmpeg.org/ffmpeg-codecs.html#toc-Video-Encoders "Video encoders of FFMpeg"
+[ffmpeg-avrational]:https://ffmpeg.org/doxygen/trunk/structAVRational.html "AVRational"

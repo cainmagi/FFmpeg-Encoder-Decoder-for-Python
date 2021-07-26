@@ -35,6 +35,12 @@ module.exports = {
   ],
   apis: [
     'apis',
+    `apis/readme`,
+    `apis/setGlobal`,
+    `apis/MpegDecoder`,
+    `apis/MpegEncoder`,
+    `apis/MpegClient`,
+    `apis/MpegServer`
   ]
 
   // By default, Docusaurus generates a sidebar from the docs folder structure

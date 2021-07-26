@@ -1,0 +1,332 @@
+---
+id: MpegDecoder
+title: MpegDecoder
+sidebar_label: MpegDecoder
+slug: /apis/MpegDecoder
+description: This class has wrapped the C-API of FFMpeg decoder so that users could call its methods to decode the frame data in python quickly.
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={vsiSymbolClass}/> Class
+  <Splitter />
+  <SourceURL url="MpegCoder.h#L21">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+dec = mpegCoder.MpegDecoder(videoPath=None)
+```
+
+The frame-level video decoder used for demuxing a video file.
+
+This decoder instance serves as a video file reader. It supports:
+
+* Decoding the video frames into [`np.ndarray`<IconExternalLink/>][link-ndarray].
+* Reading video frames consecutively.
+* Setting the reading cursor to any position.
+* Scaling the decoded video frames to a specific size.
+
+`MpegDecoder` requires users to initialize the decoder before reading frames, and close the video after finishing all works. If the video is not closed manually, an automatical closing would be performed when the decoder is destructed.
+
+## Arguments
+
+### Requires
+
+|  Argument  |  Type  |  Required  |  <center>Description</center>  |
+| :--------: | :----: | :--------: | :----------------------------- |
+| `videoPath` | `str` or `bytes` |  | The path of the video to be read. Configuring this value will causes the video to be opened by [`FFmpegSetup()`](#ffmpegsetup). We do not recommend users to set this value when initializing the decoder. |
+
+## Methods
+
+### `clear`
+
+```python
+dec.clear()
+```
+
+Clear all configurations **except** the default video path. If a video is opened by the decoder, `clear()` will close the video automatically.
+
+:::tip
+
+We suggest that users should call `clear()` manually, like using other file readers.
+
+:::
+
+----------
+
+### `resetPath`
+
+```python
+dec.resetPath(videoPath)
+```
+
+Reset the default video path to a specific value. Configuring this value will not cause the video to be opened. This method is merely used as a configuration.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The path of the video to be read. |
+
+----------
+
+### `getParameter`
+
+```python
+param = dec.getParameter(paramName=None)
+```
+
+Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
+
+Here is a list of checkable `paramName`:
+
+|   Parameter    |  Type   |  <center>Description</center>  |
+| :------------: | :-----: | :----------------------------- |
+| `videoPath`    | `str`   | The current path of the read video. If the video is not opened, will return the default video path. |
+| `width`        | `int`   | The width of the read video. This value is determined by the video file. |
+| `height`       | `int`   | The height of the read video. This value is determined by the video file. |
+| `frameCount`   | `int`   | The number of returned frames in the last frame extraction method. |
+| `coderName`    | `str`   | The name of the codec used for decoding the video. |
+| `nthread`      | `int`   | The number of decoder threads. |
+| `duration`     | `float` | The total seconds of this video. |
+| `estFrameNum`  | `int`   | The estimated total frame number (may be not accurate). |
+| `avgFrameRate` | `float` | The average of FPS of the video stream. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. These parameters could serve as `configDict` for `MpegEncoder` and `MpegServer`. |
+
+----------
+
+### `setParameter`
+
+```python
+dec.setParameter(widthDst=None, heightDst=None, nthread=None)
+```
+
+Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
+
+#### Requires
+
+|  Argument   |  Type   |  Required  |  <center>Description</center>  |
+| :---------: | :-----: | :--------: | :----------------------------- |
+| `widthDst`  | `int`   | | The width of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
+| `heightDst` | `int`   | | The height of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
+| `nthread`   | `int`   | | The number of decoder threads. |
+
+----------
+
+### `FFmpegSetup`
+
+```python
+dec.FFmpegSetup(videoPath=None)
+```
+
+Open the video file, and initialize the decoder. After the decoder initialized, the video parameters will be loaded, the video format will be parsed and the video codec will be detected automatically. If an video is opening by the decoder now, this video will be closed first, then the new video will be opened.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str` or `bytes` | | The path of the video to be read. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video path to change. |
+
+----------
+
+### `dumpFile`
+
+```python
+dec.dumpFile()
+```
+
+Print out a brief preview of the video meta-data to the standard output.
+
+:::caution
+
+This method is based on C stdout. Therefore, these results could not be redirected or catched by python.
+
+:::
+
+----------
+
+### `ExtractFrame`
+
+```python
+frames = dec.ExtractFrame(framePos=0, frameNum=1)
+```
+
+Extract several frames at a specific position.
+
+This API is recommended to be used when users only want to fetch few frames. The API will seek the starting position defined by `framePos`, then extract the required number of frames.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `framePos` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | A frame index used as the starting postion. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. |
+| `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | The number of frames that require to be extracted. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `frameNum` (if the deocder reaches the end of the file, `N` may be smaller than `frameNum`), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
+
+----------
+
+### `ExtractFrameByTime`
+
+```python
+frames = dec.ExtractFrameByTime(timePos=0, frameNum=1)
+```
+
+Extract several frames at a specific position.
+
+The functionality of this API is the same as [`ExtractFrame()`](#extractframe). Instead of using a frame index, this method seek the reading cursor by a time point (the unit is `second`).
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `timePos`  | `float` | <InlineIcon icon={vsiCheckIcon}/> | A time index (second) used as the starting postion. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. |
+| `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | The number of frames that require to be extracted. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `frameNum` (if the deocder reaches the end of the file, `N` may be smaller than `frameNum`), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
+
+----------
+
+### `ExtractGOP`
+
+```python
+gop = dec.ExtractGOP(framePos=-1)
+```
+
+Extract a [Group of Pictures<IconExternalLink/>][wiki-gop]. The GOP size is determined by the video file. Users could use [`getParameter()`](#getparameter) to find the GOP size.
+
+We recommend to use `dec.ExtractGOP()` when a video file needs to be read consecutively. When the returned value is `None`, the read cursor reaches the end of the video.
+
+:::info
+
+Each time this method is used with `framePos>=0`, the current reading cursor will be reset by `framePos`.
+
+:::
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `framePos` | `int`   | | A frame index used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects, the GOP will be extracted from the current reading cursor position. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `gop`      | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is the GOP size (if the deocder reaches the end of the file, `N` may be smaller than the GOP size), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
+
+----------
+
+### `ExtractGOPByTime`
+
+```python
+gop = dec.ExtractGOPByTime(timePos=-1)
+```
+
+Extract a [Group of Pictures<IconExternalLink/>][wiki-gop]. Instead of using a frame index, this method uses a time point (the unit is `second`) to seek the starting position.
+
+We recommend to use `dec.ExtractGOPByTime()` when a video file needs to be read consecutively. When the returned value is `None`, the read cursor reaches the end of the video.
+
+:::info
+
+Each time this method is used with `timePos>=0`, the current reading cursor will be reset by `timePos`.
+
+:::
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `timePos`  | `float` | | A time index (second) used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects, the GOP will be extracted from the current reading cursor position. |
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `gop`      | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is the GOP size (if the deocder reaches the end of the file, `N` may be smaller than the GOP size), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
+
+----------
+
+### `ResetGOPPosition`
+
+```python
+gop = dec.ResetGOPPosition(framePos=-1, timePos=-1)
+```
+
+Reset the current reading cursor of [`ExtractGOP()`](#extractgop) and [`ExtractGOPByTime()`](#extractgopbytime). The cursor could be set by either a frame index or a time point (`second`). This method is merely a configuration, and will not return the GOP.
+
+#### Requires
+
+|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `framePos` | `int`   | | A frame index used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects. |
+| `timePos`  | `float` | | A time index (second) used for seeking the starting position of the GOP. If this value is configured as `<0` or the `framePos` is configured, it will not take effects. |
+
+## Operators
+
+### `__str__`
+
+```python
+info = str(dec)
+```
+
+Return a brief report of the current decoder status.
+
+#### Returns
+
+|  Argument  |  Type  |  <center>Description</center>  |
+| :--------: | :-----: | :----------------------------- |
+| `info`  | `str` | A brief report of the decoder status, the configurations and parameters will be listed as formatted texts. |
+
+## Examples
+
+See [*`Decoding`*](../examples/decoding) in the tutorial. Here we also show some specific configurations:
+
+### Scale the decoded frame
+
+```python
+...
+dec = mpegCoder.MpegDecoder()
+dec.setParameter(widthDst=720, heightDst=486)
+...
+```
+
+### Use multi-thread decoding
+
+```python
+...
+dec = mpegCoder.MpegDecoder()
+dec.setParameter(nthread=8)
+...
+```
+
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"
+[wiki-gop]:https://en.wikipedia.org/wiki/Group_of_pictures "Group of pictures | Wikipedia"
+[ffmpeg-avseekframe]:https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gaa23f7619d8d4ea0857065d9979c75ac8 "av_seek_frame"

@@ -1,0 +1,37 @@
+---
+id: readme
+title: readme
+sidebar_label: readme
+slug: /apis/readme
+description: Use it to see README and some useful instructions.
+---
+
+import InlineIcon from '@site/src/components/InlineIcon';
+import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={mdiFunctionVariant}/> Function
+  <Splitter />
+  <SourceURL url="MpegPyd.h#L158">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+mpegCoder.readme()
+```
+
+A function used for showing a short README and updating logs.
+
+## Arguments
+
+This function does not has arguments.
+
+## Example
+
+```python
+mpegCoder.readme()
+```
