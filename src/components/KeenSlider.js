@@ -90,7 +90,7 @@ function KeenSlider(props) {
       </div>
       {slider && (
         <div className={styles.dots}>
-          {Array(slidesSize).keys().map((idx) => {
+          {Array.from(Array(slidesSize).keys()).map((idx) => {
             return (
               <button
                 key={idx}
