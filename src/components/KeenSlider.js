@@ -37,6 +37,7 @@ function ArrowRight(props) {
 
 
 function KeenSlider(props) {
+  const slidesSize = props.slidesSize !== undefined ? props.slidesSize : slider.details().size;
   const [currentSlide, setCurrentSlide] = React.useState(0)
   const [sliderRef, slider] = useKeenSlider({
     initial: props.initial !== undefined ? props.initial : 0,
@@ -82,21 +83,21 @@ function KeenSlider(props) {
             />
             <ArrowRight
               onClick={(e) => e.stopPropagation() || slider.next()}
-              disabled={currentSlide === slider.details().size - 1}
+              disabled={currentSlide === slidesSize - 1}
             />
           </>
         )}
       </div>
       {slider && (
-        <div className={clsx(['dots', styles.dots])}>
-          {[...Array(slider.details().size).keys()].map((idx) => {
+        <div className={styles.dots}>
+          {[...Array(slidesSize).keys()].map((idx) => {
             return (
               <button
                 key={idx}
                 onClick={() => {
                   slider.moveToSlideRelative(idx)
                 }}
-                className={clsx(['dot', styles.dot, (currentSlide === idx ? styles.active : "")])}
+                className={clsx([styles.dot, (currentSlide === idx ? styles.active : "")])}
               />
             )
           })}
