@@ -91,9 +91,10 @@ function KeenSlider(props) {
       {slider && (
         <div className={styles.dots}>
           {[...Array(slidesSize).keys()].map((idx) => {
+            console.log({'idx': idx, 'checkidx': idx.toString()})
             return (
               <button
-                key={idx}
+                key={idx.toString()}
                 onClick={() => {
                   slider.moveToSlideRelative(idx)
                 }}
