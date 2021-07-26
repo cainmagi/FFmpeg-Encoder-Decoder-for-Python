@@ -54,9 +54,6 @@ function KeenSlider(props) {
       "(min-width: 1920px)": {
         slidesPerView: 4,
       },
-      "(min-width: 3096px)": {
-        slidesPerView: 5,
-      },
     },
     slideChanged(s) {
       setCurrentSlide(s.details().relativeSlide)
@@ -91,7 +88,7 @@ function KeenSlider(props) {
         )}
       </div>
       {slider && (
-        <div className={styles.dots}>
+        <div className={clsx(['dots', styles.dots])}>
           {[...Array(slider.details().size).keys()].map((idx) => {
             return (
               <button
@@ -99,7 +96,7 @@ function KeenSlider(props) {
                 onClick={() => {
                   slider.moveToSlideRelative(idx)
                 }}
-                className={clsx([styles.dot, (currentSlide === idx ? styles.active : "")])}
+                className={clsx(['dot', styles.dot, (currentSlide === idx ? styles.active : "")])}
               />
             )
           })}
