@@ -5,27 +5,68 @@ description: The introduction of mpegCoder. The package mpegCoder is used for en
 slug: /
 ---
 
+import Link from '@docusaurus/Link';
 import DarkButton from '@site/src/components/DarkButton';
+import FeatureCase from '@site/src/components/FeatureCase';
+import KeenSlider from '@site/src/components/KeenSlider';
 import IconExternalLink from '@theme/IconExternalLink';
 import octLaw16 from '@iconify-icons/octicon/law-16';
 import octRepoForked16 from '@iconify-icons/octicon/repo-forked-16';
 import octShareAndroid16 from '@iconify-icons/octicon/share-android-16';
 
+import OverviewSvg from '/img/icon_python.svg';
+
 This project is also named as "*FFmpeg-Encoder-Decoder-for-Python*". It is implemented based on [FFMpeg<IconExternalLink/>][link-ffmpeg], [Python-C-API<IconExternalLink/>][link-python-c-api] and [C++11<IconExternalLink/>][link-cpp11]. It is under [GPL v3 License<IconExternalLink/>][git-license], and recommended for researching purposes.
 
 With this package, users could:
 
-* Make use of **all** FFMpeg video encoders and decoders. When decoding a video (or an online stream), like the original FFMpeg (C version), the provided APIs could detect the video format and codec format automatically. When encoding a video, users could control the codec format, bit rate and some other options by setting parameters.
-* Work with FFMpeg directly. This project invokes the FFMpeg C APIs in the bottom level. Unlike [ffmpeg-python<IconExternalLink/>][git-ffmpeg-python] and [pyffmpeg<IconExternalLink/>][git-pyffmpeg], our project is not driven by the FFMpeg CLI interfaces. The data format used by this package is [`np.ndarray`<IconExternalLink/>][link-ndarray]. In other words, our project enables users to combine [Numpy<IconExternalLink/>][link-numpy] and FFMpeg directly.
-* Frame-level APIs. Unlike [pyffmpeg<IconExternalLink/>][git-pyffmpeg], this package is not a simple wrapper of FFMpeg. Users could works on the frame-level APIs. For example, when decoding a video, users could get the data frame-by-frame. Each frame is a 3D [`np.ndarray`<IconExternalLink/>][link-ndarray].
-* Pre-compiled package. This package has been pre-compiled by the author. If users download the dependent dynamic libraries (`.so` or `.dll`), they do not need to compile the package by themself.
+<KeenSlider>
+  <FeatureCase
+    Svg={require('/img/undraw_circuit_board_4c4d.svg').default}
+    title='Make use of all FFMpeg video codec'>
+    When decoding a video (or an online stream), like the original FFMpeg (C version), the provided APIs could detect the video format and codec format automatically. When encoding a video, users could control the codec format, bit rate and some other options by setting parameters.
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_video_files_fu10.svg').default}
+    title='Work with FFMpeg directly'>
+    This project invokes the FFMpeg C APIs in the bottom level. Unlike <Link href='https://github.com/kkroening/ffmpeg-python' alt='ffmpeg-python'>ffmpeg-python<IconExternalLink/></Link> and <Link href='https://github.com/deuteronomy-works/pyffmpeg' alt='pyffmpeg'>pyffmpeg<IconExternalLink/></Link>, our project is not driven by the FFMpeg CLI interfaces. The data format used by this package is <Link href='https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html' alt='np.ndarray'><code>np.ndarray</code><IconExternalLink/></Link>. In other words, our project enables users to combine <Link href='https://numpy.org' alt='Numpy'><code>Numpy</code><IconExternalLink/></Link> and FFMpeg directly.
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_image_focus_wm20.svg').default}
+    title='Frame-level APIs'>
+    Unlike <Link href='https://github.com/deuteronomy-works/pyffmpeg' alt='pyffmpeg'>pyffmpeg<IconExternalLink/></Link>, this package is not a simple wrapper of FFMpeg. Users could works on the frame-level APIs. For example, when decoding a video, users could get the data frame-by-frame. Each frame is a 3D <Link href='https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html' alt='np.ndarray'><code>np.ndarray</code><IconExternalLink/></Link>.
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_completing_6bhr.svg').default}
+    title='Pre-compiled package'>
+    This package has been pre-compiled by the author. If users download the dependent dynamic libraries (<code>.so</code> or <code>.dll</code>), they do not need to compile the package by themself.
+  </FeatureCase>
+</KeenSlider>
 
 However, users could not work with this project in such cases:
 
-* Platform limited. Currently, we only support Linux and Windows. The Linux release is pre-compiled on Debian. It has been only tested in Ubuntu, Debian and Windows. In other cases, the pre-compiled library may not work. Users may need to compile the package by themselves.
-* Version limited. Currently, our project only works with FFMpeg `4.4`. Users need to download the dependent dynamic libraries to make the package work. The legacy versions of this project supports FFMpeg `3.3`, `3.4.2` and `4.0`. However, the legacy built packages are not technically supported now.
-* Audio not supported. Although the original FFMpeg supports both video and audio streams, our project only works on video streams. For example, if a video contains audio streams, our package would omit all audio frames in the bottom level. In other words, you **could not** perform audio analysis now. In the future (`v4`), we may support the audio frame analysis.
-* Filters not supported. Although the original FFMpeg supports some video processing tools ([`avfilter`<IconExternalLink/>][link-avfilter] and [`postproc`<IconExternalLink/>][link-postproc]), our implementation drops these modules. Instead, we suggest that users should process the frames with [pillow<IconExternalLink/>][pip-pillow] or [openCV<IconExternalLink/>][pip-opencv]. On the other hand, our implementation still supports frame scaling and re-sampling (supported by [`swscale`<IconExternalLink/>][link-swscale] and [`swresample`<IconExternalLink/>][link-swresample]).
+<KeenSlider>
+  <FeatureCase
+    Svg={require('/img/undraw_design_components_9vy6.svg').default}
+    title='Platform limited'>
+    Currently, we only support Linux and Windows. The Linux release is pre-compiled on Debian. It has been only tested in Ubuntu, Debian and Windows. In other cases, the pre-compiled library may not work. Users may need to compile the package by themselves.
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_version_control_re_mg66.svg').default}
+    title='Version limited'>
+    Currently, our project only works with FFMpeg <code>4.4</code>. Users need to download the dependent dynamic libraries to make the package work. The legacy versions of this project supports FFMpeg <code>3.3</code>, <code>3.4.2</code> and <code>4.0</code>. However, the legacy built packages are not technically supported now.
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_compose_music_ovo2.svg').default}
+    title='Audio not supporte'>
+    Although the original FFMpeg supports both video and audio streams, our project only works on video streams. For example, if a video contains audio streams, our package would omit all audio frames in the bottom level. In other words, you <b>could not</b> perform audio analysis now. In the future (<code>v4</code>), we may support the audio frame analysis.
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_creativity_wqmm.svg').default}
+    title='Filters not supported'>
+    Although the original FFMpeg supports some video processing tools (<Link href='http://ffmpeg.org/doxygen/trunk/group__lavfi.html' alt='libavfilter'><code>avfilter</code><IconExternalLink/></Link> and <Link href='http://ffmpeg.org/doxygen/trunk/group__lpp.html' alt='libpostproc'><code>postproc</code><IconExternalLink/></Link>), our implementation drops these modules. Instead, we suggest that users should process the frames with <Link href='https://pypi.org/project/Pillow' alt='Pillow'>pillow<IconExternalLink/></Link> or <Link href='https://pypi.org/project/opencv-python' alt='OpenCV Python'>openCV<IconExternalLink/></Link>. On the other hand, our implementation still supports frame scaling and re-sampling (supported by <Link href='http://ffmpeg.org/doxygen/trunk/group__libsws.html' alt='libswscale'><code>swscale</code><IconExternalLink/></Link> and <Link href='http://ffmpeg.org/doxygen/trunk/group__lswr.html' alt='libswresample'><code>swresample</code><IconExternalLink/></Link>).
+  </FeatureCase>
+</KeenSlider>
 
 ## Related materials
 
@@ -57,14 +98,6 @@ Contributor covenant code of conduct:
 [git-ffmpeg-python]:https://github.com/kkroening/ffmpeg-python "ffmpeg-python"
 [git-pyffmpeg]:https://github.com/deuteronomy-works/pyffmpeg "pyffmpeg"
 [git-license]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/LICENSE
-[pip-pillow]:https://pypi.org/project/Pillow "Pillow"
-[pip-opencv]:https://pypi.org/project/opencv-python "OpenCV Python"
 [link-cpp11]:https://en.cppreference.com/w/ "C++ 11"
 [link-python-c-api]:https://docs.python.org/3/c-api/index.html "Python-C-API"
-[link-numpy]:https://numpy.org "Numpy"
-[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"
 [link-ffmpeg]:https://ffmpeg.org "FFMpeg"
-[link-avfilter]:http://ffmpeg.org/doxygen/trunk/group__lavfi.html "libavfilter"
-[link-postproc]:http://ffmpeg.org/doxygen/trunk/group__lpp.html "libpostproc"
-[link-swscale]:http://ffmpeg.org/doxygen/trunk/group__libsws.html "libswscale"
-[link-swresample]:http://ffmpeg.org/doxygen/trunk/group__lswr.html "libswresample"

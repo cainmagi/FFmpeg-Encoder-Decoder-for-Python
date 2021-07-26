@@ -7,7 +7,7 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 
 const variables = {
-  sourceURL: 'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/c2f41bfc95c9c87f91e3a6f59df9b2e6b66e683b/MpegCoder'
+  sourceURL: 'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/e5d48b9c65152a303eddccbe65dad8059d0556ae/MpegCoder'
 };
 
 function SourceURL(props) {
