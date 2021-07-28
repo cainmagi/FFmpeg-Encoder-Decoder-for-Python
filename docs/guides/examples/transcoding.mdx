@@ -43,7 +43,7 @@ In each while loop, we read a GOP, iterate the GOP, and encode the data frame-by
 
 If user trigger <kbd>Ctrl</kbd>+<kbd>C</kbd> during the while loop, the video could be still completed safely. However, if users hit <kbd>Ctrl</kbd>+<kbd>C</kbd> by twice, the output video would be broken, because the video tail has not been written correctly.
 
-## Optimize the output video
+## Optimize the output video {#optimize-the-output-video}
 
 In the above example, the output video may not be encoded by an optimized configuration. The x265 codec could accept a maximal consecutive B frame number of `<=16`. We could also configure the output bit rate manually. Therefore, if we change the configuraitons like the following example, the output video file size would be reduced significantly.
 
@@ -55,7 +55,7 @@ opened = opened and e.FFmpegSetup()
 ...
 ```
 
-## Rescaling and resampling
+## Rescaling and resampling {#rescaling-and-resampling}
 
 In some cases, we may want to rescale the output video size, and resample the output frames,
 

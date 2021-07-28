@@ -35,11 +35,11 @@ This encoder instance serves as a video file writer. It supports:
 
 `MpegEncoder` requires users to initialize the encoder before writing frames, and close the video after finishing all works. If the video is not closed manually, an automatical closing would be performed when the encoder is destructed. During the distruction, hitting <kbd>Ctrl</kbd>+<kbd>C</kbd> will cause the written video to break.
 
-## Arguments
+## Arguments {#arguments}
 
 This class does not has initialization arguments.
 
-## Methods
+## Methods {#methods}
 
 ### `clear`
 
@@ -65,7 +65,7 @@ enc.resetPath(videoPath)
 
 Reset the default video path to a specific value. Configuring this value will not cause the video to be opened. This method is merely used as a configuration.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -81,7 +81,7 @@ param = enc.getParameter(paramName=None)
 
 Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -103,7 +103,7 @@ Here is a list of checkable `paramName`:
 | `maxBframe`    | `int`   | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
 | `frameRate`    | `float` | The target frame rate of the written video. The unit is FPS. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -123,7 +123,7 @@ enc.setParameter(
 
 Set the configurations of the encoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
-#### Requires
+#### Requires {#requires}
 
 |    Argument    |  Type   |  Required  |  <div className="center">Description</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
@@ -151,7 +151,7 @@ enc.FFmpegSetup(videoPath=None)
 
 Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the file name and the user configurations set by [`setParameter()`](#setparameter). If an video is being opened by the encoder now, this video will be closed first, then the new video will be opened with the same configurations.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -183,13 +183,13 @@ is_success = enc.EncodeFrame(PyArrayFrame)
 
 Encode one frame into the video. Note that in most cases, the frame will not be written to the file instantly. Instead of, the frames will be saved in a low-level buffer of the codec. Only when [`FFmpegClose()`](#ffmpegclose) is called, the frames in the buffer will be flushed into the file.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -205,7 +205,7 @@ enc.FFmpegClose()
 
 Close the video file. Calling this method will flush all buffered frames into the file. Then the video tail will be writen to the file. If users does not call this method explicitly, it will be called when [`clear()`](#clear) is called or when the encoder is destructed.
 
-## Operators
+## Operators {#operators}
 
 ### `__str__`
 
@@ -215,17 +215,17 @@ info = str(enc)
 
 Return a brief report of the current encoder status.
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the encoder status, the configurations and parameters will be listed as formatted texts. |
 
-## Examples
+## Examples {#examples}
 
 See [*`Transcoding`*](../examples/transcoding) in the tutorial. Here we also show some specific configurations:
 
-### Optimize the video encoding
+### Optimize the video encoding {#optimize-the-video-encoding}
 
 ```python
 ...
@@ -236,7 +236,7 @@ enc.setParameter(decoder=dec, codecName='libx265', videoPath='test-video-x265.mp
 ...
 ```
 
-### Rescale and resample the video
+### Rescale and resample the video {#rescale-and-resample-the-video}
 
 ```python
 ...
@@ -245,7 +245,7 @@ enc.setParameter(width=1280, height=720, frameRate=(5, 1), codecName='libx265', 
 ...
 ```
 
-### Use the AV1 encoder
+### Use the AV1 encoder {#use-the-av1-encoder}
 
 ```python
 ...
@@ -254,7 +254,7 @@ enc.setParameter(width=1280, height=720, codecName='libsvtav1', videoPath='test-
 ...
 ```
 
-### Use multi-thread encoding
+### Use multi-thread encoding {#use-multi-thread-encoding}
 
 ```python
 ...

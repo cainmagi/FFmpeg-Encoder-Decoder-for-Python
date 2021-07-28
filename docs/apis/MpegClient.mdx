@@ -31,11 +31,11 @@ This client instance is integrated with the features of [`MpegDecoder`](./MpegDe
 
 `MpegClient` requires users to initialize the decoding before reading frames, and close the video after finishing all works. If the video is not closed manually, an automatical closing would be performed when the client is destructed. `MpegClient` also supports threading control. When the client is connected to the server, users could use [`start()`](#start) to keep the buffer synchronized with the video stream. Calling [`terminate()`](#terminate) will force the buffer updating to stop. In this case, the method [`ExtractFrame()`](#extractframe) will always return the same results.
 
-## Arguments
+## Arguments {#arguments}
 
 This class does not has initialization arguments.
 
-## Methods
+## Methods {#methods}
 
 ### `clear`
 
@@ -61,7 +61,7 @@ cln.resetPath(videoAddress)
 
 Reset the default video address to a specific value. Configuring this value will not cause the video stream to be opened. This method is merely used as a configuration.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -77,7 +77,7 @@ param = cln.getParameter(paramName=None)
 
 Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -97,7 +97,7 @@ Here is a list of checkable `paramName`:
 | `estFrameNum`  | `int`   | The estimated total frame number (may be not accurate). |
 | `srcFrameRate` | `float` | The average frame rate of the source video stream. The unit is FPS. The actual frame rate may be changed on client side. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -113,7 +113,7 @@ cln.setParameter(widthDst=None, heightDst=None, cacheSize=None, readSize=None, d
 
 Set the configurations of the client. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
-#### Requires
+#### Requires {#requires}
 
 |    Argument    |  Type   |  Required  |  <div className="center">Description</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
@@ -133,7 +133,7 @@ cln.FFmpegSetup(videoAddress=None)
 
 Open the online video stream, and initialize the decoder. After the client initialized, the video parameters will be loaded, the video format will be parsed and the video codec will be detected automatically. If an video stream connection is established by the client now, this connection will be released first, then the new video stream will be opened.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -199,19 +199,19 @@ Read the latest several frames from the circular buffer.
 
 This method is merely a reading method, and not decode frames. Instead, the decoding is managed by the sub-thread. `ExtractFrame()` always fetch the several frames that are latestly decoded. Even [`terminate()`](#terminate) is called, this method could be still used safely.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `readSize` | `int`   | | The number of the frames to be read. If configured as `<=0`, will use the default `readSize` configured by [`setParameter()`](#setparameter). |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `readSize` (no matter whether the video reaches its end), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no valid frames are received, this method would return several frames that are totally black. |
 
-## Operators
+## Operators {#operators}
 
 ### `__str__`
 
@@ -221,17 +221,17 @@ info = str(cln)
 
 Return a brief report of the current client status.
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the client status, the configurations and parameters will be listed as formatted texts. |
 
-## Examples
+## Examples {#examples}
 
 See [*`Client`*](../examples/client) in the tutorial. Here we also show some specific configurations:
 
-### Scale the decoded frame
+### Scale the decoded frame {#scale-the-decoded-frame}
 
 ```python
 ...
@@ -240,7 +240,7 @@ cln.setParameter(widthDst=720, heightDst=486)
 ...
 ```
 
-### Configure the cache size
+### Configure the cache size {#configure-the-cache-size}
 
 ```python
 ...
@@ -250,7 +250,7 @@ cln.setParameter(readSize=30, cacheSize=60)
 ...
 ```
 
-### Use multi-thread decoding
+### Use multi-thread decoding {#use-multi-thread-decoding}
 
 ```python
 ...

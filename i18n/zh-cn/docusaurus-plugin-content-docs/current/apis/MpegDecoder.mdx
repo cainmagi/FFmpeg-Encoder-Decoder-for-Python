@@ -36,15 +36,15 @@ dec = mpegCoder.MpegDecoder(videoPath=None)
 
 `MpegDecoder`要求用户在读取视频帧之前，初始化视频解码器，并确保在一切工作结束后，关闭解码器。如果解码器没有被手动（显式地）关闭，则会在实例析构的时候，自动检查、并调用关闭视频的方法。
 
-## 参数
+## 参数 {#arguments}
 
-### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :----: | :--------: | :----------------------------- |
 | `videoPath` | `str`或`bytes` |  | 待读取视频的路径。在初始化阶段设置该参数会使得[`FFmpegSetup()`](#ffmpegsetup)被自动调用。鉴于还有数种方式设置该参数，不建议在类初始化时设置。 |
 
-## 方法
+## 方法 {#methods}
 
 ### `clear`
 
@@ -70,7 +70,7 @@ dec.resetPath(videoPath)
 
 将默认的视频路径重置为给定的值。该方法仅仅用于设置参数，不会打开视频。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -86,7 +86,7 @@ param = dec.getParameter(paramName=None)
 
 获取视频参数或设置值。每次调用时，`paramName`仅能接受一个参数名。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -106,7 +106,7 @@ param = dec.getParameter(paramName=None)
 | `estFrameNum`  | `int`   | 预估的视频总帧数（该值有可能不准确）。 |
 | `avgFrameRate` | `float` | 源视频流的平均帧率（单位为FPS）。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -122,7 +122,7 @@ dec.setParameter(widthDst=None, heightDst=None, nthread=None)
 
 设置解码器。该方法仅当调用于[`FFmpegSetup()`](#ffmpegsetup)之前才会生效。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :---------: | :-----: | :--------: | :----------------------------- |
@@ -140,7 +140,7 @@ dec.FFmpegSetup(videoPath=None)
 
 打开视频文件，并初始化解码器。解码器初始化完成后，视频的参数将会从元数据中读取，同时也会自动检测出视频的格式、编码器的类型。如果调用该方法时，已经打开了一个视频文件，则该文件会先被关闭，然后再开启由该方法打开的视频。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -174,14 +174,14 @@ frames = dec.ExtractFrame(framePos=0, frameNum=1)
 
 建议用户在只需要从已知起点获取少量视频帧的场合下使用此API。此API会首先利用`framePos`搜索提取帧的起始位置，然后从此位置开始提取需要数目的帧。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | 用来搜索起始读取位置的帧下标。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。 |
 | `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | 需要提取的连续帧的数目。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -199,14 +199,14 @@ frames = dec.ExtractFrameByTime(timePos=0, frameNum=1)
 
 该方法从功能上和[`ExtractFrame()`](#extractframe)一致。唯一的区别是，它并非使用帧的下标作为搜索起点，而是使用时间点（单位为秒）来搜索帧的起点。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `timePos`  | `float` | <InlineIcon icon={vsiCheckIcon}/> | 用来搜索起始读取位置的时间点（单位为秒）。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。 |
 | `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | 需要提取的连续帧的数目。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -230,13 +230,13 @@ gop = dec.ExtractGOP(framePos=-1)
 
 :::
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | | 用来搜索读取画面组时起始位置的帧下标。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -260,13 +260,13 @@ gop = dec.ExtractGOPByTime(timePos=-1)
 
 :::
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `timePos`  | `float` | | 用来搜索读取画面组时起始位置的时间点（单位为秒）。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -282,14 +282,14 @@ gop = dec.ResetGOPPosition(framePos=-1, timePos=-1)
 
 重置[`ExtractGOP()`](#extractgop)和[`ExtractGOPByTime()`](#extractgopbytime)共用的当前读取指针。该指针可以被重置为一个帧下标或一个时间点。该方法仅仅用于设置参数，不会触发画面组的读取。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | | 用来搜索读取画面组时起始位置的帧下标。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
 | `timePos`  | `float` | | 用来搜索读取画面组时起始位置的时间点（单位为秒）。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
 
-## 操作符
+## 操作符 {#operators}
 
 ### `__str__`
 
@@ -299,17 +299,17 @@ info = str(dec)
 
 返回当前解码器状态的简要报告。
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | 当前解码器状态的简报。解码器的设置和参数会以格式化字符串的形式展示。 |
 
-## 范例
+## 范例 {#examples}
 
 参见教程中的[*解码*](../examples/decoding)一节。接下来展示几种常用参数设置：
 
-### 缩放获取的帧
+### 缩放获取的帧 {#scale-the-decoded-frame}
 
 ```python
 ...
@@ -318,7 +318,7 @@ dec.setParameter(widthDst=720, heightDst=486)
 ...
 ```
 
-### 多线程解码
+### 多线程解码 {#use-multi-thread-decoding}
 
 ```python
 ...

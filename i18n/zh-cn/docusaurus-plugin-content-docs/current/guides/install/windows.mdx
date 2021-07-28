@@ -14,9 +14,9 @@ import vsiDebugAlt from '@iconify-icons/codicon/debug-alt';
 
 本教程包含安装或编译`mpegCoder`的步骤。建议需要在项目里局部部署本模块的用户使用这种方式安装。
 
-## 安装预编译的模块
+## 安装预编译的模块 {#install-the-pre-compiled-module}
 
-### 下载`mpegCoder`
+### 下载`mpegCoder` {#download-mpegcoder}
 
 首先，用户需要下载本项目的单模块文件。下表提供了下载链接。请根据你的环境选择对应的版本。
 
@@ -36,7 +36,7 @@ import vsiDebugAlt from '@iconify-icons/codicon/debug-alt';
 
 :::
 
-### 安装Numpy
+### 安装Numpy {#install-numpy}
 
 运行`mpegCoder`之前，必须先安装合适版本的[Numpy<IconExternalLink/>][link-numpy]。每个`mpegCoder`发行版的最佳Numpy版本已经列在上表之中。如果你安装的Numpy版本与所需的最佳版本差距过大，`mpegCoder`可能无法正常运行。以下是安装命令：
 
@@ -44,7 +44,7 @@ import vsiDebugAlt from '@iconify-icons/codicon/debug-alt';
 python -m pip install numpy==<version>
 ```
 
-### 下载依赖项
+### 下载依赖项 {#download-dependencies}
 
 在发行页上，我们提供了预编译好的依赖项。这些依赖项包含几个`.dll`文件。用户需要根据`mpegCoder`所需的FFMpeg版本，来选择合适的tarball，来下载、并解压文件。
 
@@ -54,7 +54,7 @@ python -m pip install numpy==<version>
 
 以上这些文件是直接从FFMpeg的官方发行页摘出的。用户也可以在[这里<IconExternalLink/>][link-ffmpeg-download]找到它们。
 
-### 导入
+### 导入 {#import}
 
 要导入模块，用户需要将`mpegCoder.pyd`和所下载的依赖项文件放在同一个文件夹里，例如：
 
@@ -74,7 +74,7 @@ python -m pip install numpy==<version>
 import mpegCoder
 ```
 
-## 编译模块
+## 编译模块 {#compile-the-module}
 
 如果用户需要自行编译模块，则可以按照以下发布在Github上的指导完成：
 

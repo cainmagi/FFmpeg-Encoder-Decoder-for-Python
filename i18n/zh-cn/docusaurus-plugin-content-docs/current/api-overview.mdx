@@ -11,7 +11,7 @@ import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
 import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
 import { SourceURL, Splitter } from '@site/src/envs/variables';
 
-import OverviewSvg from '/img/overview.svg';
+import OverviewSvg from '/img/overview-zhcn.svg';
 
 本项目是一个单模块包，其结构如下图所示：
 
@@ -21,7 +21,7 @@ import OverviewSvg from '/img/overview.svg';
 
 在大多数API里，定义为字符串型的输入参数皆可以是`str`或`bytes`对象。如果用户提供了一个`str`对象，则会根据当前文件系统推算转换到C++后的字码，参见[`PyUnicode_DecodeFSDefaultAndSize`<IconExternalLink/>][py-decodefs]。如果提供的是`bytes`对象，那么它就会被直接转成`std::string`对象。因此，如果用户需要确保输入的字符串被编码成某种固定的格式，可以通过`str_argu.encode('...')`来代替直接使用`str_argu`。
 
-## 类
+## 类 {#classes}
 
 该模块包含四个类:
 
@@ -32,7 +32,7 @@ import OverviewSvg from '/img/overview.svg';
 | <SourceURL url="MpegStreamer.h#L49"><InlineIcon icon={vsiSymbolClass}/> `MpegClient`</SourceURL> | FFMpeg客户端，用以解流、解码远程视频。该类维护了一个用来同步解码器和远端实时视频流的子线程。 |
 | <SourceURL url="MpegStreamer.h#L114"><InlineIcon icon={vsiSymbolClass}/> `MpegServer`</SourceURL> | FFMpeg服务端，用于编码、推流远程视频。数据以逐帧的方式推流。该类无法独立运行，需要一个可用的视频服务软件来协助推流。 |
 
-## 函数
+## 函数 {#functions}
 
 以下函数作用于模块全局。
 

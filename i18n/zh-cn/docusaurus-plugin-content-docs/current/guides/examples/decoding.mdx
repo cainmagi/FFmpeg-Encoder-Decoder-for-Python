@@ -24,7 +24,7 @@ d.clear()  # 关闭输入视频。
 
 在每个循环里，都会提取出一个[画面组<IconExternalLink/>][wiki-gop]（亦称为图像组，GOP）。画面组是由连续的数帧构成的集合，同时也是视频压缩编码算法的最小单位。在`mpegCoder`里，图像组被处理成了一个四维数组[`np.ndarray`<IconExternalLink/>][link-ndarray]。其形状`(N, H, W, C)`分别代表帧数、高度、宽度、以及通道数。每一帧在返还给用户的时候，都已经转移到了RGB （`uint8`）空间里。如果视频读取到了文件尾，返回的`gop`则会是`None`。
 
-## 解码并缩放
+## 解码并缩放 {#decoder-rescaling}
 
 用户可以通过设置`MpegDecoder`来缩放视频帧。例如，以下的代码将会确保无论原视频尺寸如何，返回的帧都是720x486的尺寸。
 

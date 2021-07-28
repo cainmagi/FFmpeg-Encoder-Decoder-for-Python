@@ -12,7 +12,7 @@ import InlineIcon from '@site/src/components/InlineIcon';
 import octInfo16 from '@iconify-icons/octicon/info-16';
 import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
-## Instruction
+## Introduction {#introduction}
 
 If you could not find your problem in this page, please fire an issue:
 
@@ -22,9 +22,9 @@ If you could not find your problem in this page, please fire an issue:
   </DarkButton>
 </p>
 
-## Questions and answers
+## Questions and answers {#questions-and-answers}
 
-### DLL not found
+### DLL not found {#dll-not-found}
 
 * **Question**: When importing the module, why meeting the following error?
     
@@ -44,7 +44,7 @@ If you could not find your problem in this page, please fire an issue:
 
 * **Fix**: Download the [dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-win] and extract the DLLs in the same folder of `mpegCoder.pyd`.
 
-### `.so` not found
+### `.so` not found {#so-not-found}
 
 * **Question**: When importing the module, why meeting the following error?
     
@@ -64,7 +64,7 @@ If you could not find your problem in this page, please fire an issue:
 
 * **Fix**: Download the [dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux] and extract the missing `.so` to a folder in `$LD_LIBRARY_PATH`.
 
-### `numpy.core.multiarray` not found
+### `numpy.core.multiarray` not found {#numpycoremultiarray-not-found}
 
 * **Question**: When importing the module, why meeting the following error?
 
@@ -76,7 +76,7 @@ If you could not find your problem in this page, please fire an issue:
 
 * **Fix**: Reinstall Numpy, or compile `mpegCoder` by yourself.
 
-### GLibC not found
+### GLibC not found {#glibc-not-found}
 
 * **Question**: When importing the module, why meeting the following error?
 
@@ -102,7 +102,7 @@ If you could not find your problem in this page, please fire an issue:
 
   The same file (`libm-2.31.so`) could be also found in the [Linux dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux].
 
-### Incorrect dependencies
+### Incorrect dependencies {#incorrect-dependencies}
 
 * **Question**: I have not installed any dependencies, and I am not using the PyPI version. Why could I import `mpegCoder` successfully?
 

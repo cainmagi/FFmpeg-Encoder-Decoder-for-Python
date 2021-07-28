@@ -21,7 +21,7 @@ This package is a single-module package. The classes are shown in the following 
 
 In most APIs, the `string` formatted arguments accept both `str` and `bytes` objects. If a `str` object is given, its coding will be recognized by the file system encoding, see [`PyUnicode_DecodeFSDefaultAndSize`<IconExternalLink/>][py-decodefs]. If a `bytes` object is given, the contents will be converted to a `std::string` directly. Therefore, if users want to use an argument with a specific encoding, they could use `str_argu.encode('...')` instead of using `str_argu` directly.
 
-## Classes
+## Classes {#classes}
 
 The module contains four classes:
 
@@ -32,7 +32,7 @@ The module contains four classes:
 | <SourceURL url="MpegStreamer.h#L49"><InlineIcon icon={vsiSymbolClass}/> `MpegClient`</SourceURL> | The FFMpeg decoder designed for pulling and demuxing a remote video stream. This class manages a `std::thread`, and use the thread to synchronize the decoder with the real-time stream. |
 | <SourceURL url="MpegStreamer.h#L114"><InlineIcon icon={vsiSymbolClass}/> `MpegServer`</SourceURL> | The FFMpeg encoder designed for muxing and pushing a remote video stream. The stream is pushed frame-by-frame. Note that this class is required to be used with an active server. |
 
-## Functions
+## Functions {#functions}
 
 The following functions are global methods of the module.
 

@@ -26,17 +26,17 @@ mpegCoder.setGlobal(dumpLevel=None)
 
 A function used for setting global configurations. If a configuration is not specified, that item will not be changed.
 
-## Arguments
+## Arguments {#arguments}
 
-### Requires
+### Requires {#requires}
 
 |  Argument   |  Type  |  Required  |  <div className="center">Description</div>  |
 | :---------: | :----: | :--------: | :----------------------------- |
 | `dumpLevel` | `int`  | | The level of dumped log. This level will only influence `mpegCoder` logs, FFMpeg logs and some codec logs. A few codec, like `libx265` is not influenced by this configuration. Avaliable values: `0`: Silent executing; `1`: (default) Dump basic informations; `2`: Dump all informations. |
 
-## Example
+## Example {#example}
 
-### Disable all logs except errors
+### Disable all logs except errors {#disable-all-logs-except-errors}
 
 ```python
 mpegCoder.setGlobal(dumpLevel=0)

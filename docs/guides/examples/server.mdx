@@ -13,7 +13,7 @@ import vsiCloseIcon from '@iconify-icons/codicon/close';
 
 import ServerImg from '/img/examples/server.png';
 
-## Preparation
+## Preparation {#preparation}
 
 The `ffserver` has been removed after FFMpeg `3.4` (see the docs [here<IconExternalLink/>][link-ffserver]). In other words, FFMpeg could not work without a server program. The same case exists in our `mpegCoder`. Users need to start a server program first. The server program will keeps listening and waiting for any pushed streams. After that, `mpegCoder` would push the stream to the server by `mpegCoder.MpegServer`.
 
@@ -47,7 +47,7 @@ rtsp://localhost:8554/
 rtmp://localhost:1935/
 ```
 
-## Non-blocking example
+## Non-blocking example {#non-blocking-example}
 
 This example is based on the non-blocking API `MpegServer.ServeFrame()`. Synchronization is an important problem when pushing a stream. If we keeps using `ServeFrame()`, the frames would be sent as many as possible. The newly income frames would override the previous pushed frames. In some cases, the server would be broken, because the server could not accept so many frames.
 
@@ -82,7 +82,7 @@ e.clear()  # Close the pusher.
 d.clear()  # Close the decoder.
 ```
 
-## Dual-process example
+## Dual-process example {#dual-process-example}
 
 The above example is not an elegant implementation, because `MpegDecoder` and `MpegServer` occupy the same main thread. When decoder takes a lot of time, there would be an obvious latency. Therefore, we suggest users to split `MpegDecoder` and `MpegServer` to two different sub-processes. The following codes are implemented by this way. The decoder and the streamer are synchronized by a shared queue. Instead of using `MpegServer.ServeFrame()`, we use `MpegServer.ServeFrameBlock()` here. Each time this method is called, `MpegServer` will check the current playing time first, and ensure that the timestamp of the newly incoming frame is not ahead of the playing time too much. If the time lag between the new frame and the playing time is too long, the method will wait until the time lag becomes small enough.
 

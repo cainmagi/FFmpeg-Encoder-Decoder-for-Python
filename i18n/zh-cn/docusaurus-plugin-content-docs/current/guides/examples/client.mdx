@@ -11,9 +11,9 @@ import IconExternalLink from '@theme/IconExternalLink';
 import octGitBranch16 from '@iconify-icons/octicon/git-branch-16';
 import { SourceURL, Splitter } from '@site/src/envs/variables';
 
-import ClientSvg from '/img/examples/client.svg';
+import ClientSvg from '/img/examples/client-zhcn.svg';
 
-## 简介
+## 简介 {#introduction}
 
 下图展示了`mpegCoder.MpegClient`背靠的理论。假设在远端有一个视频服务器正在连续不断地推送实时视频流，即使不读取这个视频流的内容，数据流也不会为了客户端暂停下来。因此，我们设计了以下的双线程工作模式。
 
@@ -25,7 +25,7 @@ import ClientSvg from '/img/examples/client.svg';
 
 读取事件都是由Python-C-API触发的。当一个新的读取事件来到主线程时，读者将会锁住读指针的当前位置，并且从这个位置开始读取需要的数帧。在需要的数据被取出后，读指针将会解锁，并且读指针会更新到读取结束的位置。写者在写新接收到帧的时候，也会通过写指针锁住正在写的位置。当缓存的某个位置被锁住时，从这个位置开始的数据将无法再更新，例如，在读取事件中，如果写指针的位置步进到了读指针锁住的位置，写者就会被阻塞，一直等待到读取事件结束。如果写者被阻塞的时间太长，对远端视频的解流可能失败。所以我们建议用户设置一个合理的缓存大小。例如，如果我们每次需要读5帧，那么建议将缓存大小设置为这个值的2倍，即10帧。
 
-## 代码
+## 代码 {#codes}
 
 要测试以下代码，我们建议用户使用[VLC<IconExternalLink/>][link-vlc]或[FFMpeg<IconExternalLink/>][link-ffmpeg-stream]来推送远端视频流，因为`mpegCoder`不支持免编码地推送视频流，使用VLC或原生的FFMpeg来做这件事可以占用更少的系统资源。
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
 4. 当远端视频流关闭时，`d.ExtractFrame()`就会返回`None`。不过，用户也可以选择在任意时间自行中断写者。调用方法`MpegClient.terminate()`会关闭子线程。但直到`MpegClient.clear()`调用的时候，连接才会被释放。
 
-## Github上的几个例子
+## Github上的几个例子 {#examples-on-github}
 
 本文的例子已经作为一个单独的分支，提供在了在Github上。
 

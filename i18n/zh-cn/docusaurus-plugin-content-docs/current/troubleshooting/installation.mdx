@@ -12,7 +12,7 @@ import InlineIcon from '@site/src/components/InlineIcon';
 import octInfo16 from '@iconify-icons/octicon/info-16';
 import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
-## 简介
+## 简介 {#introduction}
 
 如果你无法通过本页解决你的问题，请通过以下按钮提出问题：
 
@@ -22,9 +22,9 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
   </DarkButton>
 </p>
 
-## 问与答
+## 问与答 {#questions-and-answers}
 
-### 找不到DLL
+### 找不到DLL {#dll-not-found}
 
 * **问**: 当我导入（import）模块的时候，为什么会遇到以下错误？
 
@@ -44,7 +44,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
 * **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-win]并将其中包含的DLL文件解压到`mpegCoder.pyd`所在的目录下。
 
-### 找不到`.so`
+### 找不到`.so` {#so-not-found}
 
 * **问**: 当我导入模块的时候，为什么会遇到以下错误？
     
@@ -64,7 +64,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
 * **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux]并将其中包含的、所缺少的`.so`文件解压到一个在`$LD_LIBRARY_PATH`里的文件夹内。
 
-### 找不到`numpy.core.multiarray`
+### 找不到`numpy.core.multiarray` {#numpycoremultiarray-not-found}
 
 * **问**: 当我导入模块的时候，为什么会遇到以下错误？
 
@@ -76,7 +76,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
 * **修复**: 重装Numpy，或者自行编译`mpegCoder`。
 
-### 找不到GLibC
+### 找不到GLibC {#glibc-not-found}
 
 * **问**: 当我导入模块的时候，为什么会遇到以下错误？
 
@@ -102,7 +102,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
   这个文件（`libm-2.31.so`）也可以在[Linux依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux]里找到。
 
-### 不正确的依赖项
+### 不正确的依赖项 {#incorrect-dependencies}
 
 * **问**: 我没有安装任何依赖项，我也没有使用从PyPI安装的版本。为什么我可以成功导入`mpegCoder`？
 

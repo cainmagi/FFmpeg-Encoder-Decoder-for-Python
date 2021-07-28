@@ -13,7 +13,7 @@ import { SourceURL, Splitter } from '@site/src/envs/variables';
 
 import ClientSvg from '/img/examples/client.svg';
 
-## Introduction
+## Introduction {#introduction}
 
 The following figure show the theory of `mpegCoder.MpegClient`. Assuming that we have a video server from the remote side, the real-time stream is pushed continuously. Even we do not read the online stream, the data flow would not wait for reading. Therefore, we design the following two-thread workflow.
 
@@ -25,7 +25,7 @@ When connecting to the remote server, `MpegClient` would create a sub-thread ("*
 
 The reading events would be triggered by the Python-C-API. When a new reading event comes from the main thread, the reader would lock the current position of the reading cursor, and read several frames from the buffer. After the reading results are collected, the lock would be released, and the reading cursor will be reset to the end of the read frames. When the writer is writing a new frame, the current written position will also be locked by the writer. A locked position would not be updated. For example, during the reading events, if the writting cursor moves to the locked position, the writer will wait until the reading is finished. Because the reading events are merely data-collecting operations, in most cases the reading events would not block the writer. If the writer is blocked for too long, the demuxing of the online stream may fail. So we recommend users to set a rational buffer size. For example, if we always read 5 frames each time, the buffer size is recommended to be double of the reading size, i.e. 10.
 
-## Codes
+## Codes {#codes}
 
 To test the following codes, we recommend users to use [VLC<IconExternalLink/>][link-vlc] or [FFMpeg<IconExternalLink/>][link-ffmpeg-stream] to push a remote stream, because the stream pushing without encoding is not supported by `mpegCoder` currently. Using VLC or FFMpeg to serve the stream will occupy less system resources.
 
@@ -71,7 +71,7 @@ After configuring the client, the codes contain the following key steps:
 
 4. If the remote stream is closed, `d.ExtractFrame()` would return `None`. However, user would terminate the client in any time. The method `MpegClient.terminate()` would stop the writing thread. But the connection would not be aborted until `MpegClient.clear()` is called.
 
-## Examples on Github
+## Examples on Github {#examples-on-github}
 
 On Github, we provide the above example as a single branch.
 

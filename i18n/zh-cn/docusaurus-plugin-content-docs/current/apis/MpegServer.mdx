@@ -31,11 +31,11 @@ sev = mpegCoder.MpegServer()
 
 在实际场合中，我们建议用户将本实例拆分到一个子进程里，并通过[`multiprocessing`<IconExternalLink/>][python-mp]库来输送数据，例子参见[tutorial](../examples/server#dual-process-example)。尽管本类也提供了一个非阻塞式的API，但并不建议使用它。
 
-## 参数
+## 参数 {#arguments}
 
 该类不提供初始化参数。
 
-## 方法
+## 方法 {#methods}
 
 ### `clear`
 
@@ -61,7 +61,7 @@ sev.resetPath(videoAddress)
 
 将默认的视频地址重置为给定的值。该方法仅仅用于设置参数，不会推送出视频。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -77,11 +77,11 @@ param = sev.getParameter(paramName=None)
 
 获取视频参数或设置值。每次调用时，`paramName`仅能接受一个参数名。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
-| `paramName` | `str` or `bytes` | | 待检查的参数名字。如果没有给定，则所有的重要参数（包括一小部分私有参数）会被收集并返回成一个`dict`。 |
+| `paramName` | `str`或`bytes` | | 待检查的参数名字。如果没有给定，则所有的重要参数（包括一小部分私有参数）会被收集并返回成一个`dict`。 |
 
 接下来列出可以被索引的`paramName`:
 
@@ -102,7 +102,7 @@ param = sev.getParameter(paramName=None)
 | `waitRef`      | `float` | 参考等待时长（单位为秒）。该值表示从获取该参数开始，建议等待多长时间后再推送下一帧。在使用非阻塞式API [ServeFrame()](#serveframe)的时候，必须检查该值。 |
 | `ptsAhead`     | `int`   | 目标前置时长（单位为时间戳）。该值是通过`frameAhead`转换而来的，并用于控制`waitRef`的值，以及阻塞式API的等待时长。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -122,7 +122,7 @@ sev.setParameter(
 
 设置编码器。该方法仅当调用于[`FFmpegSetup()`](#ffmpegsetup)之前才会生效。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
@@ -152,7 +152,7 @@ sev.FFmpegSetup(videoAddress=None)
 
 打开视频文件，并初始化编码器。编码器初始化的过程中，所用编码方式(codec)和视频格式(例如`mp4`,`flv`)将会从用户利用[`setParameter()`](#setparameter)指定的参数设置、以及推送地址的协议检出。如果调用该方法时，已经在推送一个视频，则该视频会先被释放，然后再以相同设置推送由该方法指定的视频。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -186,13 +186,13 @@ is_success = sev.ServeFrame(PyArrayFrame)
 
 这是一个非阻塞式的API，亦即是说，调用此方法时，当前线程只会被编码操作所阻塞。用户在使用此方法时，需要与[`getParameter('waitRef')`](#getparameter)连用以控制推送帧的数目。否则将会一口气推送过多的帧，而这要么会导致多余的数据被服务器丢掉，要么就直接导致服务器宕机。正确使用此方法的例子参见[这里](../examples/server#non-blocking-example)。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | 一个形状为`(H, W, C)`的数组，其中`(H, W)`分别为源帧的高度（`heightSrc`）和宽度（`widthSrc`）。 `C`代表3个RGB通道。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -210,13 +210,13 @@ is_success = sev.ServeFrameBlock(PyArrayFrame)
 
 这是**推荐**使用的阻塞式API，亦即是说，如果已经推送的帧数明显超过已经播放的帧数，那么调用此方法会导致当前线程被阻塞。在这种情况下，该方法会一直等待，直到播放时间追上已经被推送、但还未被播放的视频时长的一半。使用该方法可以保证视频服务器的安全。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | 一个形状为`(H, W, C)`的数组，其中`(H, W)`分别为源帧的高度（`heightSrc`）和宽度（`widthSrc`）。 `C`代表3个RGB通道。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -232,7 +232,7 @@ sev.FFmpegClose()
 
 关闭视频流，并释放与服务器的连接。调用该方法会使得所有缓存内的帧被编码、并刷入（flush）到视频流中。此后，编码器会为视频流推送文件尾（video tail）。如果用户没有显式调用该方法，则会被[`clear()`](#clear)隐式调用，或者在编码器实例析构的时候隐式调用。
 
-## 操作符
+## 操作符 {#operators}
 
 ### `__str__`
 
@@ -242,17 +242,17 @@ info = str(sev)
 
 返回当前流编码器状态的简要报告。
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | 当前流编码器状态的简报。编码器的设置和参数会以格式化字符串的形式展示。 |
 
-## 范例
+## 范例 {#examples}
 
 参见教程中的[*`服务端`*](../examples/server)一节。接下来展示几种常用参数设置：
 
-### 优化视频编码
+### 优化视频编码 {#optimize-the-video-encoding}
 
 ```python
 ...
@@ -263,7 +263,7 @@ sev.setParameter(decoder=dec, codecName='libx265', videoAddress='rtsp://localhos
 ...
 ```
 
-### 缩放、并重采样视频
+### 缩放、并重采样视频 {#rescale-and-resample-the-video}
 
 ```python
 ...
@@ -272,7 +272,7 @@ sev.setParameter(width=1280, height=720, frameRate=(5, 1), GOPSize=12, codecName
 ...
 ```
 
-### 多线程编码
+### 多线程编码 {#use-multi-thread-encoding}
 
 ```python
 ...
@@ -281,7 +281,7 @@ sev.setParameter(width=1280, height=720, GOPSize=12, nthread=8, videoAddress='rt
 ...
 ```
 
-### 手动设置目标前置帧数
+### 手动设置目标前置帧数 {#configure-the-ahead-frame-number-manually}
 
 ```python
 ...

@@ -36,15 +36,15 @@ This decoder instance serves as a video file reader. It supports:
 
 `MpegDecoder` requires users to initialize the decoder before reading frames, and close the video after finishing all works. If the video is not closed manually, an automatical closing would be performed when the decoder is destructed.
 
-## Arguments
+## Arguments {#arguments}
 
-### Requires
+### Requires {#requires}
 
 |  Argument  |  Type  |  Required  |  <div className="center">Description</div>  |
 | :--------: | :----: | :--------: | :----------------------------- |
 | `videoPath` | `str` or `bytes` |  | The path of the video to be read. Configuring this value will causes the video to be opened by [`FFmpegSetup()`](#ffmpegsetup). We do not recommend users to set this value when initializing the decoder. |
 
-## Methods
+## Methods {#methods}
 
 ### `clear`
 
@@ -70,7 +70,7 @@ dec.resetPath(videoPath)
 
 Reset the default video path to a specific value. Configuring this value will not cause the video to be opened. This method is merely used as a configuration.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -86,7 +86,7 @@ param = dec.getParameter(paramName=None)
 
 Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -106,7 +106,7 @@ Here is a list of checkable `paramName`:
 | `estFrameNum`  | `int`   | The estimated total frame number (may be not accurate). |
 | `avgFrameRate` | `float` | The average of the frame rate of the video stream. The unit is FPS. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -122,7 +122,7 @@ dec.setParameter(widthDst=None, heightDst=None, nthread=None)
 
 Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument   |  Type   |  Required  |  <div className="center">Description</div>  |
 | :---------: | :-----: | :--------: | :----------------------------- |
@@ -140,7 +140,7 @@ dec.FFmpegSetup(videoPath=None)
 
 Open the video file, and initialize the decoder. After the decoder initialized, the video parameters will be loaded, the video format will be parsed and the video codec will be detected automatically. If an video is being opened by the decoder now, this video will be closed first, then the new video will be opened.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -174,14 +174,14 @@ Extract several frames at a specific position.
 
 This API is recommended to be used when users only want to fetch few frames. The API will seek the starting position defined by `framePos`, then extract the required number of frames.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | A frame index used as the starting postion. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. |
 | `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | The number of frames that require to be extracted. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -199,14 +199,14 @@ Extract several frames at a specific position.
 
 The functionality of this API is the same as [`ExtractFrame()`](#extractframe). Instead of using a frame index, this method seek the reading cursor by a time point (the unit is `second`).
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `timePos`  | `float` | <InlineIcon icon={vsiCheckIcon}/> | A time index (second) used as the starting postion. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. |
 | `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | The number of frames that require to be extracted. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -230,13 +230,13 @@ Each time this method is used with `framePos>=0`, the current reading cursor wil
 
 :::
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | | A frame index used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects, the GOP will be extracted from the current reading cursor position. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -260,13 +260,13 @@ Each time this method is used with `timePos>=0`, the current reading cursor will
 
 :::
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `timePos`  | `float` | | A time index (second) used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects, the GOP will be extracted from the current reading cursor position. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -282,14 +282,14 @@ gop = dec.ResetGOPPosition(framePos=-1, timePos=-1)
 
 Reset the current reading cursor of [`ExtractGOP()`](#extractgop) and [`ExtractGOPByTime()`](#extractgopbytime). The cursor could be set by either a frame index or a time point (`second`). This method is merely a configuration, and will not return the GOP.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | | A frame index used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects. |
 | `timePos`  | `float` | | A time index (second) used for seeking the starting position of the GOP. If this value is configured as `<0` or the `framePos` is configured, it will not take effects. |
 
-## Operators
+## Operators {#operators}
 
 ### `__str__`
 
@@ -299,17 +299,17 @@ info = str(dec)
 
 Return a brief report of the current decoder status.
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the decoder status, the configurations and parameters will be listed as formatted texts. |
 
-## Examples
+## Examples {#examples}
 
 See [*`Decoding`*](../examples/decoding) in the tutorial. Here we also show some specific configurations:
 
-### Scale the decoded frame
+### Scale the decoded frame {#scale-the-decoded-frame}
 
 ```python
 ...
@@ -318,7 +318,7 @@ dec.setParameter(widthDst=720, heightDst=486)
 ...
 ```
 
-### Use multi-thread decoding
+### Use multi-thread decoding {#use-multi-thread-decoding}
 
 ```python
 ...

@@ -31,11 +31,11 @@ cln = mpegCoder.MpegClient()
 
 `MpegClient`要求用户在读取缓存的帧之前，初始化视频解码器，并确保在一切工作结束后，关闭解码器。如果解码器没有被手动（显式地）关闭，则会在实例析构的时候，自动检查、并调用关闭视频的方法。`MpegClient`同时也支持线程控制。当客户端连接上服务器以后，用户需要通过[`start()`](#start)来启动子线程，并确保缓存的帧总是和推送来的视频流同步。在此期间，调用[`terminate()`](#terminate)则会中断子线程，并停止缓存的更新。在这种情况下，[`ExtractFrame()`](#extractframe)永远只会返回相同的内容。
 
-## 参数
+## 参数 {#arguments}
 
 该类不提供初始化参数。
 
-## 方法
+## 方法 {#methods}
 
 ### `clear`
 
@@ -61,7 +61,7 @@ cln.resetPath(videoAddress)
 
 将默认的视频地址重置为给定的值。该方法仅仅用于设置参数，不会建立视频连接。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -77,7 +77,7 @@ param = cln.getParameter(paramName=None)
 
 获取视频参数或设置值。每次调用时，`paramName`仅能接受一个参数名。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -97,7 +97,7 @@ param = cln.getParameter(paramName=None)
 | `estFrameNum`  | `int`   | 预估的视频总帧数（该值有可能不准确）。 |
 | `srcFrameRate` | `float` | 源视频流的帧率（单位为FPS）。实际获取视频的帧率可以在客户端侧通过设置参数来调整。 |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -113,7 +113,7 @@ cln.setParameter(widthDst=None, heightDst=None, cacheSize=None, readSize=None, d
 
 设置客户端。该方法仅当调用于[`FFmpegSetup()`](#ffmpegsetup)之前才会生效。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
@@ -133,7 +133,7 @@ cln.FFmpegSetup(videoAddress=None)
 
 连接并打开在线实时视频流，并初始化解码器。客户端初始化完成后，视频的参数将会从元数据中读取，同时也会自动检测出视频的格式、编码器的类型。如果调用该方法时，已经连接了一个视频服务，则该连接会先被释放掉，然后再开启由该方法连接的视频流。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -199,19 +199,19 @@ frames = cln.ExtractFrame(readSize=0)
 
 该方法只实现了一个读取数据的功能，并不会解码视频。实际上，视频的解码是由解流子线程完成的。`ExtractFrame()`总是获取最后被解码的那几帧。即使用户调用了[`terminate()`](#terminate)，该方法仍然能安全地返回有意义的结果。
 
-#### 输入
+#### 输入 {#requires}
 
 |  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `readSize` | `int`   | | 视频读取的帧数. 如果该参数设置为 `<=0`，则会使用由[`setParameter()`](#setparameter)设置的`readSize`的默认值. |
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `frames`   | `np.ndarray` | 一个形状为 `(N, H, W, C)` 的数组，其中`N`由`readSize`决定（无论视频是否已经播放到末尾）。`(H, W)`分别为帧的高度和宽度。`C`代表3个RGB通道。若该方法调用的时候没有接收到任何数据，则会返回几帧完全由黑屏构成的数据。 |
 
-## 操作符
+## 操作符 {#operators}
 
 ### `__str__`
 
@@ -221,17 +221,17 @@ info = str(cln)
 
 返回当前客户端状态的简要报告。
 
-#### 输出
+#### 输出 {#returns}
 
 |  参数   |  类型  |  <div className="center">说明</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | 当前客户端状态的简报。客户端的设置和参数会以格式化字符串的形式展示。 |
 
-## 范例
+## 范例 {#examples}
 
 参见教程中的[*客户端*](../examples/client)一节。接下来展示几种常用参数设置：
 
-### 缩放获取的帧
+### 缩放获取的帧 {#scale-the-decoded-frame}
 
 ```python
 ...
@@ -240,7 +240,7 @@ cln.setParameter(widthDst=720, heightDst=486)
 ...
 ```
 
-### 设置缓存大小
+### 设置缓存大小 {#configure-the-cache-size}
 
 ```python
 ...
@@ -250,7 +250,7 @@ cln.setParameter(readSize=30, cacheSize=60)
 ...
 ```
 
-### 多线程解码
+### 多线程解码 {#use-multi-thread-decoding}
 
 ```python
 ...

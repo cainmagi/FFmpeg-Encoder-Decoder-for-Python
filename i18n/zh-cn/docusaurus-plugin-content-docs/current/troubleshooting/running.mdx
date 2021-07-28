@@ -10,7 +10,7 @@ import DarkButton from '@site/src/components/DarkButton';
 import IconExternalLink from '@theme/IconExternalLink';
 import octInfo16 from '@iconify-icons/octicon/info-16';
 
-## 简介
+## 简介 {#introduction}
 
 如果你无法通过本页解决你的问题，请通过以下按钮提出问题：
 
@@ -20,21 +20,21 @@ import octInfo16 from '@iconify-icons/octicon/info-16';
   </DarkButton>
 </p>
 
-## 问与答
+## 问与答 {#questions-and-answers}
 
-### 无法解码第一帧
+### 无法解码第一帧 {#fail-to-decode-first-frame}
 
 * **问**: 为什么我无法正确解码第一帧？我得到的帧是全黑的。
 
 * **答**: 这一问题一般在使用`MpegClient`时出现，特别时解那些RTSP流的时候。在一些编码算法里，存在I，P，B这三种帧。在解码其他两种帧的时候，必须先得到其对应的已经解码过的I帧。如果你接收到的第一帧不是一个I帧，那么你就没办法正确解码它了。如果你保持继续解码几帧同一个视频，这个问题应该会自然解决。
 
-### 无法编码帧
+### 无法编码帧 {#fail-to-encode-frames}
 
 * **问**: 为什么`mpegCoder`在编码视频帧的时候崩溃了？
 
 * **答**: 你可能对`MpegEncoder.EncodeFrame()`传入了不正确的数据。输入数据必须是一个三维矩阵[`np.ndarray`<IconExternalLink/>][link-ndarray]，且其大小需要与编码器的用户设置一致。
 
-### 输出视频损坏
+### 输出视频损坏 {#bad-output-video}
 
 * **问**: 为什么我使用`MpegEncoder`输出的视频损坏了？
 
@@ -43,19 +43,19 @@ import octInfo16 from '@iconify-icons/octicon/info-16';
   * 视频文件尾没有正确写入。这一问题一般是由于强制中断正在运行的编码器程序引起的。
   * 某些输入帧没有被正确地写入。
 
-### 推流、解流器卡住不动
+### 推流、解流器卡住不动 {#stuck-of-the-streamer}
 
 * **问**: 为什么我在使用`MpegClient`或`MpegServer`的时候，程序卡住不动了？
 
 * **答**: 这一问题往往是由`streamer.FFmpegSetup()`引起的，特别是在远端的服务器程序没有启动的情况下，或者所用的协议被远端服务器拒绝的情况下。我不得不承认的是，现在关于这个问题的处理还不够好，在未来的版本里，我会试图添加一个超时（timeout）选项。
 
-### 无法推流
+### 无法推流 {#fail-to-push-the-stream}
 
 * **问**: 我可以通过`MpegServer.FFmpegSetup()`连接到远端服务器。为什么在这种情况下，我没有办法利用`MpegServer.ServeFrame()`推送第一帧呢？
 
 * **答**: 这种问题一般是由于使用了不合适的编码器（codec）引起的。并不是所有的编码都支持在线流服务的。建议用户使用`libx264`。
 
-### 设置日志级别
+### 设置日志级别 {#set-log-level}
 
 * **问**: 我不想在控制台看到一大堆状态信息，怎么把它们去掉？
 
@@ -67,7 +67,7 @@ import octInfo16 from '@iconify-icons/octicon/info-16';
 
   该值可以是`0`（只显示错误），`1`（显示基本的日志），`2`（显示详细的日志）。
 
-### 复用实例
+### 复用实例 {#reuse-the-instances}
 
 * **问**: 我能复用`mpegCoder`的实例吗？例如，复用`mpegCoder.MpegDecoder`?
 

@@ -14,9 +14,9 @@ import vsiDebugAlt from '@iconify-icons/codicon/debug-alt';
 
 This guide contains steps for installing or compiling the `mpegCoder` module manually. We recommend users who need to use `mpegCoder` in a project locally to install the package by this way.
 
-## Install the pre-compiled module
+## Install the pre-compiled module {#install-the-pre-compiled-module}
 
-### Download `mpegCoder`
+### Download `mpegCoder` {#download-mpegcoder}
 
 First, users need to download the single module. We provide the downloading links in the following table. Please check the correct version according to your environment.
 
@@ -36,7 +36,7 @@ Note that the above versions only show the environment when building `mpegCoder`
 
 :::
 
-### Install Numpy
+### Install Numpy {#install-numpy}
 
 To run `mpegCoder`, you are required to install [Numpy<IconExternalLink/>][link-numpy] with the correct version first. The best version for each `mpegCoder` release has been listed before. If your Numpy version is differnt from the best version too much, `mpegCoder` may not work. Here is the command for installation.
 
@@ -44,7 +44,7 @@ To run `mpegCoder`, you are required to install [Numpy<IconExternalLink/>][link-
 python -m pip install numpy==<version>
 ```
 
-### Download dependencies
+### Download dependencies {#download-dependencies}
 
 The pre-compiled dependencies are available on our release page. The dependencies contain several `.dll` files. Users also need to download the tarball with the correct FFMpeg version, and extract the files.
 
@@ -54,7 +54,7 @@ The pre-compiled dependencies are available on our release page. The dependencie
 
 The above files are collected from the officially released FFMpeg shared libraries. Users could also find them [here<IconExternalLink/>][link-ffmpeg-download].
 
-### Import
+### Import {#import}
 
 To import the module, users need to place the `mpegCoder.pyd` and the dependencies in the same folder. For example,
 
@@ -74,7 +74,7 @@ After that, users could enter the same folder, and import the module by
 import mpegCoder
 ```
 
-## Compile the module
+## Compile the module {#compile-the-module}
 
 If users need to compile the module by themselves, please follow the instructions on Github:
 

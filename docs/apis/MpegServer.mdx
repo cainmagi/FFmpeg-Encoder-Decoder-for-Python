@@ -31,11 +31,11 @@ This service instance is integrated with the features of [`MpegEncoder`](./MpegE
 
 In practice, we recommend to split this instance into a sub-process, and use the [`multiprocessing`<IconExternalLink/>][python-mp] to feed the served data. See the [tutorial](../examples/server#dual-process-example) to find the example. Although this class also provides a non-blocking style API, we do not recommend users to use that. 
 
-## Arguments
+## Arguments {#arguments}
 
 This class does not has initialization arguments.
 
-## Methods
+## Methods {#methods}
 
 ### `clear`
 
@@ -61,7 +61,7 @@ sev.resetPath(videoAddress)
 
 Reset the default video address to a specific value. Configuring this value will not cause the video to be pushed. This method is merely used as a configuration.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -77,7 +77,7 @@ param = sev.getParameter(paramName=None)
 
 Get the video parameter or configuration value. Each time `paramName` only accepts one parameter name.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -102,7 +102,7 @@ Here is a list of checkable `paramName`:
 | `waitRef`      | `float` | A wait reference with the unit of `second`. This value represents how long users need to wait from this moment before pushing the next video frame. This value is required to be used with the non-blocking API [ServeFrame()](#serveframe). |
 | `ptsAhead`     | `int`   | The target ahead time duration in the unit of time stamp. This value is used for controlling the amount of `waitRef` and the waiting time of the blocking API. It is converted from the configuration `frameAhead`. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -122,7 +122,7 @@ sev.setParameter(
 
 Set the configurations of the server. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
-#### Requires
+#### Requires {#requires}
 
 |    Argument    |  Type   |  Required  |  <div className="center">Description</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
@@ -152,7 +152,7 @@ sev.FFmpegSetup(videoAddress=None)
 
 Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the protocol used by the serving address and the user configurations set by [`setParameter()`](#setparameter). If an video is being pushed by the server now, this video will be disconnected and released first, then the new video will be pushed with the same configurations.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
@@ -186,13 +186,13 @@ Push one frame to the video stream. Note that in most cases, the frame will not 
 
 This is the non-blocking API, which means the current thread will be only blocked by the frame encoding operations. Users need to use this API with [`getParameter('waitRef')`](#getparameter) to control the number of served frames. Otherwise, serving too many frames will make the data to be dropped or cause the video server to collapse. The example about how to correctly use this API could be found [here](../examples/server#non-blocking-example).
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -210,13 +210,13 @@ Push one frame to the video stream. Note that in most cases, the frame will not 
 
 This is the **recommended** blocking API, which means the method will cause the current thread blocked if the served frames are ahead of the playing time too much. In this case, the method will wait until the playing time catch the half of the served but not played frames. This method will ensure the safety of the video server.
 
-#### Requires
+#### Requires {#requires}
 
 |  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
@@ -232,7 +232,7 @@ sev.FFmpegClose()
 
 Close the video stream and release the connection. Calling this method will flush all buffered frames into the video stream. In some cases, the video tail will be writen to the stream. If users does not call this method explicitly, it will be called when `clear()` is called or when the server is destructed.
 
-## Operators
+## Operators {#operators}
 
 ### `__str__`
 
@@ -242,17 +242,17 @@ info = str(sev)
 
 Return a brief report of the current stream encoder status.
 
-#### Returns
+#### Returns {#returns}
 
 |  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the stream encoder status, the configurations and parameters will be listed as formatted texts. |
 
-## Examples
+## Examples {#examples}
 
 See [*`Server`*](../examples/server) in the tutorial. Here we also show some specific configurations:
 
-### Optimize the video encoding
+### Optimize the video encoding {#optimize-the-video-encoding}
 
 ```python
 ...
@@ -263,7 +263,7 @@ sev.setParameter(decoder=dec, codecName='libx265', videoAddress='rtsp://localhos
 ...
 ```
 
-### Rescale and resample the video
+### Rescale and resample the video {#rescale-and-resample-the-video}
 
 ```python
 ...
@@ -272,7 +272,7 @@ sev.setParameter(width=1280, height=720, frameRate=(5, 1), GOPSize=12, codecName
 ...
 ```
 
-### Use multi-thread encoding
+### Use multi-thread encoding {#use-multi-thread-encoding}
 
 ```python
 ...
@@ -281,7 +281,7 @@ sev.setParameter(width=1280, height=720, GOPSize=12, nthread=8, videoAddress='rt
 ...
 ```
 
-### Configure the ahead frame number manually
+### Configure the ahead frame number manually {#configure-the-ahead-frame-number-manually}
 
 ```python
 ...

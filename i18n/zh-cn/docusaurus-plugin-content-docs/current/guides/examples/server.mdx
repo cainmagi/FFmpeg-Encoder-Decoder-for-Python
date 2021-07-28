@@ -13,7 +13,7 @@ import vsiCloseIcon from '@iconify-icons/codicon/close';
 
 import ServerImg from '/img/examples/server.png';
 
-## 准备
+## 准备 {#preparation}
 
 鉴于`ffserver`在FFMpeg `3.4`版本后就已经被移除（参见[这里<IconExternalLink/>][link-ffserver]），FFMpeg无法在没有一个服务器程序协同的情况下单独完成推流工作。同样的问题也存在于`mpegCoder`中。用户需要先启动一个服务器程序，该程序会持续侦听、等待推送的视频流。在此之后`mpegCoder`就可以通过`mpegCoder.MpegServer`推送视频了。
 
@@ -47,7 +47,7 @@ rtsp://localhost:8554/
 rtmp://localhost:1935/
 ```
 
-## 范例：非阻塞式推流
+## 范例：非阻塞式推流 {#non-blocking-example}
 
 此例基于非阻塞式API `MpegServer.ServeFrame()`。在推流的过程中，确保数据同步是一个很重要的问题。如果我们一直不断地使用`ServeFrame()`，那么我们就会尽可能地能推送多少帧、就推送多少帧。这些新推送的帧就会覆盖掉之前推送的帧。在一些情况下，服务器甚至会崩溃，因为服务器无法接收如此多的帧。
 
@@ -82,7 +82,7 @@ e.clear()  # 清除推流器设置。
 d.clear()  # 关闭解码器、并清除设置。
 ```
 
-## 范例：双进程模式
+## 范例：双进程模式 {#dual-process-example}
 
 以上的例子并不是一个优雅的实现，因为`MpegDecoder`和`MpegServer`同时抢占了主线程。如果解码器需要花费相当的时间，那么推流就会出现明显延迟。因此，建议将`MpegDecoder`和`MpegServer`分离到两个不同的子进程里。下面的代码就是通过这种方式实现的。解码器和推流器通过一个共享的数据队列实现同步。在此我们使用`MpegServer.ServeFrameBlock()`取代`MpegServer.ServeFrame()`。每当调用这个方法的时候，`MpegServer`就会检查当前的播放时长，并自动确保新推送帧的时间戳不超过播放时长过多。如果新帧的时间戳和播放时长的差距过大，该方法就会阻塞所在的线程，直到这个差距小到可以接受为止。
 
