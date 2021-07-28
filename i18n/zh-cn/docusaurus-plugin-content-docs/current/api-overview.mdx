@@ -1,0 +1,44 @@
+---
+id: apis
+title: 总览
+description: 对所有API的总览。
+slug: /apis/
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+import OverviewSvg from '/img/overview.svg';
+
+本项目是一个单模块包，其结构如下图所示：
+
+<p>
+  <OverviewSvg className="mermaid"/>
+</p>
+
+在大多数API里，定义为字符串型的输入参数皆可以是`str`或`bytes`对象。如果用户提供了一个`str`对象，则会根据当前文件系统推算转换到C++后的字码，参见[`PyUnicode_DecodeFSDefaultAndSize`<IconExternalLink/>][py-decodefs]。如果提供的是`bytes`对象，那么它就会被直接转成`std::string`对象。因此，如果用户需要确保输入的字符串被编码成某种固定的格式，可以通过`str_argu.encode('...')`来代替直接使用`str_argu`。
+
+## 类
+
+该模块包含四个类:
+
+|  类  |  <div className="center">说明</div>  |
+| :------: | :----------- |
+| <SourceURL url="MpegCoder.h#L21"><InlineIcon icon={vsiSymbolClass}/> `MpegDecoder`</SourceURL> | FFMpeg解码器。用以解析视频文件，并支持按帧或按GOP读取数据。 |
+| <SourceURL url="MpegCoder.h#L82"><InlineIcon icon={vsiSymbolClass}/> `MpegEncoder`</SourceURL> | FFMpeg编码器，用以写入新的视频文件，数据以帧为单位，逐帧写入文件中。 |
+| <SourceURL url="MpegStreamer.h#L49"><InlineIcon icon={vsiSymbolClass}/> `MpegClient`</SourceURL> | FFMpeg客户端，用以解流、解码远程视频。该类维护了一个用来同步解码器和远端实时视频流的子线程。 |
+| <SourceURL url="MpegStreamer.h#L114"><InlineIcon icon={vsiSymbolClass}/> `MpegServer`</SourceURL> | FFMpeg服务端，用于编码、推流远程视频。数据以逐帧的方式推流。该类无法独立运行，需要一个可用的视频服务软件来协助推流。 |
+
+## 函数
+
+以下函数作用于模块全局。
+
+|  函数  |  <div className="center">说明</div>  |
+| :------: | :----------- |
+| <SourceURL url="MpegPyd.h#L131"><InlineIcon icon={mdiFunctionVariant}/> `setGlobal`</SourceURL> | 用以进行模块级的全局设置。 |
+| <SourceURL url="MpegPyd.h#L158"><InlineIcon icon={mdiFunctionVariant}/> `readme`</SourceURL> | 导读函数。调用本函数会展示一篇简短的说明书，和近期更新报告。 |
+
+[py-decodefs]:https://docs.python.org/zh-cn/3/c-api/unicode.html#c.PyUnicode_DecodeFSDefaultAndSize "PyUnicode_DecodeFSDefaultAndSize"

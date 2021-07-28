@@ -1,0 +1,262 @@
+---
+id: MpegClient
+title: MpegClient
+sidebar_label: MpegClient
+slug: /apis/MpegClient
+description: 面向Python的快速实时视频解流接口，其底层通过C-API封装FFMpeg的解流器实现。
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={vsiSymbolClass}/> Class
+  <Splitter />
+  <SourceURL url="MpegStreamer.h#L49">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+cln = mpegCoder.MpegClient()
+```
+
+帧尺度的视频流客户端，用于实时在线视频解流。
+
+该客户端实例综合了[`MpegDecoder`](./MpegDecoder)的特性，通过[`FFmpegSetup()`](#ffmpegsetup)建立对视频服务器的连接。当客户端在工作的时候，该实例会维护一个后台子线程，并通过这个子线程连续不断地获取、并解码远端的视频帧。所获的视频帧保存在一个循环缓存(circular buffer)里，并通过[`ExtractFrame()`](#extractframe)在任意时刻获取循环缓存里最新的数帧。如果读者想了解更多的实现细节，请参详[关于实时解流的理论叙述](../examples/client#introduction)。
+
+`MpegClient`要求用户在读取缓存的帧之前，初始化视频解码器，并确保在一切工作结束后，关闭解码器。如果解码器没有被手动（显式地）关闭，则会在实例析构的时候，自动检查、并调用关闭视频的方法。`MpegClient`同时也支持线程控制。当客户端连接上服务器以后，用户需要通过[`start()`](#start)来启动子线程，并确保缓存的帧总是和推送来的视频流同步。在此期间，调用[`terminate()`](#terminate)则会中断子线程，并停止缓存的更新。在这种情况下，[`ExtractFrame()`](#extractframe)永远只会返回相同的内容。
+
+## 参数
+
+该类不提供初始化参数。
+
+## 方法
+
+### `clear`
+
+```python
+cln.clear()
+```
+
+清除**除去**默认视频地址之外的其它所有设置、参数。如果该方法调用的时候，正在接收视频数据，`clear()`就会自动中断解流子线程，并释放与服务器之间的连接。
+
+:::tip
+
+就像使用其他的文件读取类一样，建议用户总是手动调用`clear()`。无论[`start()`](#start)是否被调用，该方法总是能在不需要调用[`terminate()`](#terminate)的情况下安全释放连接。
+
+:::
+
+----------
+
+### `resetPath`
+
+```python
+cln.resetPath(videoAddress)
+```
+
+将默认的视频地址重置为给定的值。该方法仅仅用于设置参数，不会建立视频连接。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoAddress` | `str`或`bytes` | <InlineIcon icon={vsiCheckIcon}/> | 所解视频流的地址。 |
+
+----------
+
+### `getParameter`
+
+```python
+param = cln.getParameter(paramName=None)
+```
+
+获取视频参数或设置值。每次调用时，`paramName`仅能接受一个参数名。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `paramName` | `str`或`bytes` | | 待检查的参数名字。如果没有给定，则所有的重要参数（包括一小部分私有参数）会被收集并返回成一个`dict`。 |
+
+接下来列出可以被索引的`paramName`:
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :------------: | :-----: | :----------------------------- |
+| `videoAddress` | `str`或`bytes` | 当前读取的视频地址。若视频连接还未建立，则会返回默认视频地址。 |
+| `width`        | `int`   | 源视频的宽度，该值仅由视频流本身所决定。 |
+| `height`       | `int`   | 源视频的高度，该值仅由视频流本身所决定。 |
+| `frameCount`   | `int`   | 帧计数，用来记录最后一次调用帧读取时，所读取的帧的数目。 |
+| `coderName`    | `str`   | 解码器的名字。 |
+| `nthread`      | `int`   | 解码用的线程数。 |
+| `duration`     | `float` | 视频的总时长（单位：秒）。 |
+| `estFrameNum`  | `int`   | 预估的视频总帧数（该值有可能不准确）。 |
+| `srcFrameRate` | `float` | 源视频流的帧率（单位为FPS）。实际获取视频的帧率可以在客户端侧通过设置参数来调整。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `param`    | 由`paramName`决定 | 返回的参数值。若函数调用时未提供`paramName`，则会收集所有重要的参数，这些重要参数可以充当[`MpegEncoder`](./MpegEncoder)和[`MpegServer`](./MpegServer)的“设置字典”(`configDict`)。 |
+
+----------
+
+### `setParameter`
+
+```python
+cln.setParameter(widthDst=None, heightDst=None, cacheSize=None, readSize=None, dstFrameRate=None, nthread=None)
+```
+
+设置客户端。该方法仅当调用于[`FFmpegSetup()`](#ffmpegsetup)之前才会生效。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :------------: | :-----: | :--------: | :----------------------------- |
+| `widthDst`     | `int`   | | 实际解得的视频帧宽度. 同时设置`widthDst`和`heightDst`将使得视频被缩放为指定大小。如果该值被设置为`<=0`，则该值不会生效。 |
+| `heightDst`    | `int`   | | 实际解得的视频帧高度. 同时设置`widthDst`和`heightDst`将使得视频被缩放为指定大小。如果该值被设置为`<=0`，则该值不会生效。 |
+| `cacheSize`    | `int`   | | 缓存可容纳的最大帧数。建议将该值设置为`2*readSize`。 |
+| `dstFrameRate` | `tuple` | | 目标帧率。该值需要是一个由两个`int`构成的二元元组： `(分子, 分母)`。设置该值将使输出的视频被重新采样为指定帧数。 |
+| `nthread`      | `int`   | | 解码用的线程数。 |
+
+----------
+
+### `FFmpegSetup`
+
+```python
+cln.FFmpegSetup(videoAddress=None)
+```
+
+连接并打开在线实时视频流，并初始化解码器。客户端初始化完成后，视频的参数将会从元数据中读取，同时也会自动检测出视频的格式、编码器的类型。如果调用该方法时，已经连接了一个视频服务，则该连接会先被释放掉，然后再开启由该方法连接的视频流。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoAddress` | `str`或`bytes` | | 当前读取的视频地址。若该值没有给定，则会使用[`resetPath()`](#resetpath)所设置的默认视频地址。设置该参数同时也会使得默认视频地址改变。 |
+
+----------
+
+### `dumpFile`
+
+```python
+cln.dumpFile()
+```
+
+将视频元数据的概览显示再标准输出上。
+
+:::caution
+
+该方法的显示基于C的标准输出。因此，这些输出无法被python抓取或重定向。
+
+:::
+
+----------
+
+### `start`
+
+```python
+cln.start()
+```
+
+启动解流子线程。该子线程会持续不断地接收、解码来自远端的视频帧，并确保客户端的缓存总是和实时视频流同步。
+
+:::caution
+
+该方法需要在[`FFmpegSetup()`](#ffmpegsetup)之后调用。在调用一次之后，不允许用户再重复调用该方法，直到[`terminate()`](#terminate)被调用、或客户端被[`FFmpegSetup()`](#ffmpegsetup)重启。
+
+:::
+
+----------
+
+### `terminate`
+
+```python
+cln.terminate()
+```
+
+中断当前的解流子线程。该方法需要在[`start()`](#start)之后调用。调用该方法会中断帧的接收，并导致读取出的视频帧呈现“暂停”的状态。在这种情况下，再次调用[`start()`](#start)即可恢复子线程的运行。
+
+:::caution
+
+该方法需要在[`FFmpegSetup()`](#ffmpegsetup)之后调用。调用该方法不会致使当前连接被释放。只有[`clear()`](#clear)会显式地释放连接。
+
+:::
+
+----------
+
+### `ExtractFrame`
+
+```python
+frames = cln.ExtractFrame(readSize=0)
+```
+
+从循环缓存中，读取最新的数帧。
+
+该方法只实现了一个读取数据的功能，并不会解码视频。实际上，视频的解码是由解流子线程完成的。`ExtractFrame()`总是获取最后被解码的那几帧。即使用户调用了[`terminate()`](#terminate)，该方法仍然能安全地返回有意义的结果。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `readSize` | `int`   | | 视频读取的帧数. 如果该参数设置为 `<=0`，则会使用由[`setParameter()`](#setparameter)设置的`readSize`的默认值. |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `frames`   | `np.ndarray` | 一个形状为 `(N, H, W, C)` 的数组，其中`N`由`readSize`决定（无论视频是否已经播放到末尾）。`(H, W)`分别为帧的高度和宽度。`C`代表3个RGB通道。若该方法调用的时候没有接收到任何数据，则会返回几帧完全由黑屏构成的数据。 |
+
+## 操作符
+
+### `__str__`
+
+```python
+info = str(cln)
+```
+
+返回当前客户端状态的简要报告。
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `info`  | `str` | 当前客户端状态的简报。客户端的设置和参数会以格式化字符串的形式展示。 |
+
+## 范例
+
+参见教程中的[*客户端*](../examples/client)一节。接下来展示几种常用参数设置：
+
+### 缩放获取的帧
+
+```python
+...
+cln = mpegCoder.MpegClient()
+cln.setParameter(widthDst=720, heightDst=486)
+...
+```
+
+### 设置缓存大小
+
+```python
+...
+cln = mpegCoder.MpegClient()
+# 假设源帧率是 is 29.997
+cln.setParameter(readSize=30, cacheSize=60)
+...
+```
+
+### 多线程解码
+
+```python
+...
+cln = mpegCoder.MpegClient()
+cln.setParameter(nthread=8)
+...
+```
+
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"

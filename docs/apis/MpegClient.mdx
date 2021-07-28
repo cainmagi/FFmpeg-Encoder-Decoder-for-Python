@@ -63,7 +63,7 @@ Reset the default video address to a specific value. Configuring this value will
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoAddress` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The address of the video to be read. |
 
@@ -79,15 +79,15 @@ Get the video parameter or configuration value. Each time `paramName` only accep
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
 
 Here is a list of checkable `paramName`:
 
-|   Parameter    |  Type   |  <center>Description</center>  |
+|   Parameter    |  Type   |  <div className="center">Description</div>  |
 | :------------: | :-----: | :----------------------------- |
-| `videoAddress` | `str`   | The current address of the read video. If the video stream is not opened, will return the default video address. |
+| `videoAddress` | `str` or `bytes` | The current address of the read video. If the video stream is not opened, will return the default video address. |
 | `width`        | `int`   | The width of the read video. This value is determined by the video stream. |
 | `height`       | `int`   | The height of the read video. This value is determined by the video stream. |
 | `frameCount`   | `int`   | The number of returned frames in the last frame extraction method. |
@@ -95,11 +95,11 @@ Here is a list of checkable `paramName`:
 | `nthread`      | `int`   | The number of decoder threads. |
 | `duration`     | `float` | The total seconds of this video. |
 | `estFrameNum`  | `int`   | The estimated total frame number (may be not accurate). |
-| `srcFrameRate` | `float` | The average of FPS of the source video stream. The actual frame rate may be changed on client side. |
+| `srcFrameRate` | `float` | The average frame rate of the source video stream. The unit is FPS. The actual frame rate may be changed on client side. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. These parameters could serve as `configDict` for `MpegEncoder` and `MpegServer`. |
 
@@ -111,11 +111,11 @@ Here is a list of checkable `paramName`:
 cln.setParameter(widthDst=None, heightDst=None, cacheSize=None, readSize=None, dstFrameRate=None, nthread=None)
 ```
 
-Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
+Set the configurations of the client. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
 #### Requires
 
-|    Argument    |  Type   |  Required  |  <center>Description</center>  |
+|    Argument    |  Type   |  Required  |  <div className="center">Description</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
 | `widthDst`     | `int`   | | The width of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
 | `heightDst`    | `int`   | | The height of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
@@ -135,7 +135,7 @@ Open the online video stream, and initialize the decoder. After the client initi
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoAddress` | `str` or `bytes` | | The address of the video stream to be read. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video path to change. |
 
@@ -201,13 +201,13 @@ This method is merely a reading method, and not decode frames. Instead, the deco
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `readSize` | `int`   | | The number of the frames to be read. If configured as `<=0`, will use the default `readSize` configured by [`setParameter()`](#setparameter). |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `readSize` (no matter whether the video reaches its end), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no valid frames are received, this method would return several frames that are totally black. |
 
@@ -216,14 +216,14 @@ This method is merely a reading method, and not decode frames. Instead, the deco
 ### `__str__`
 
 ```python
-info = str(dec)
+info = str(cln)
 ```
 
 Return a brief report of the current client status.
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the client status, the configurations and parameters will be listed as formatted texts. |
 

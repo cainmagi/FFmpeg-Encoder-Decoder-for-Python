@@ -40,7 +40,7 @@ This decoder instance serves as a video file reader. It supports:
 
 ### Requires
 
-|  Argument  |  Type  |  Required  |  <center>Description</center>  |
+|  Argument  |  Type  |  Required  |  <div className="center">Description</div>  |
 | :--------: | :----: | :--------: | :----------------------------- |
 | `videoPath` | `str` or `bytes` |  | The path of the video to be read. Configuring this value will causes the video to be opened by [`FFmpegSetup()`](#ffmpegsetup). We do not recommend users to set this value when initializing the decoder. |
 
@@ -72,7 +72,7 @@ Reset the default video path to a specific value. Configuring this value will no
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoPath` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The path of the video to be read. |
 
@@ -88,13 +88,13 @@ Get the video parameter or configuration value. Each time `paramName` only accep
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
 
 Here is a list of checkable `paramName`:
 
-|   Parameter    |  Type   |  <center>Description</center>  |
+|   Parameter    |  Type   |  <div className="center">Description</div>  |
 | :------------: | :-----: | :----------------------------- |
 | `videoPath`    | `str`   | The current path of the read video. If the video is not opened, will return the default video path. |
 | `width`        | `int`   | The width of the read video. This value is determined by the video file. |
@@ -104,11 +104,11 @@ Here is a list of checkable `paramName`:
 | `nthread`      | `int`   | The number of decoder threads. |
 | `duration`     | `float` | The total seconds of this video. |
 | `estFrameNum`  | `int`   | The estimated total frame number (may be not accurate). |
-| `avgFrameRate` | `float` | The average of FPS of the video stream. |
+| `avgFrameRate` | `float` | The average of the frame rate of the video stream. The unit is FPS. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. These parameters could serve as `configDict` for `MpegEncoder` and `MpegServer`. |
 
@@ -124,7 +124,7 @@ Set the configurations of the decoder. To make the configurations take effects, 
 
 #### Requires
 
-|  Argument   |  Type   |  Required  |  <center>Description</center>  |
+|  Argument   |  Type   |  Required  |  <div className="center">Description</div>  |
 | :---------: | :-----: | :--------: | :----------------------------- |
 | `widthDst`  | `int`   | | The width of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
 | `heightDst` | `int`   | | The height of extracted frames. Configuring both `widthDst` and `heightDst` will cause the frames to be scaled. If a value `<=0` is given, this value would take no effect. |
@@ -138,11 +138,11 @@ Set the configurations of the decoder. To make the configurations take effects, 
 dec.FFmpegSetup(videoPath=None)
 ```
 
-Open the video file, and initialize the decoder. After the decoder initialized, the video parameters will be loaded, the video format will be parsed and the video codec will be detected automatically. If an video is opening by the decoder now, this video will be closed first, then the new video will be opened.
+Open the video file, and initialize the decoder. After the decoder initialized, the video parameters will be loaded, the video format will be parsed and the video codec will be detected automatically. If an video is being opened by the decoder now, this video will be closed first, then the new video will be opened.
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoPath` | `str` or `bytes` | | The path of the video to be read. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video path to change. |
 
@@ -176,14 +176,14 @@ This API is recommended to be used when users only want to fetch few frames. The
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | A frame index used as the starting postion. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. |
 | `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | The number of frames that require to be extracted. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `frameNum` (if the deocder reaches the end of the file, `N` may be smaller than `frameNum`), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
 
@@ -201,14 +201,14 @@ The functionality of this API is the same as [`ExtractFrame()`](#extractframe). 
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `timePos`  | `float` | <InlineIcon icon={vsiCheckIcon}/> | A time index (second) used as the starting postion. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. |
 | `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | The number of frames that require to be extracted. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `frames`   | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is given by `frameNum` (if the deocder reaches the end of the file, `N` may be smaller than `frameNum`), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
 
@@ -220,9 +220,9 @@ The functionality of this API is the same as [`ExtractFrame()`](#extractframe). 
 gop = dec.ExtractGOP(framePos=-1)
 ```
 
-Extract a [Group of Pictures<IconExternalLink/>][wiki-gop]. The GOP size is determined by the video file. Users could use [`getParameter()`](#getparameter) to find the GOP size.
+Extract a [Group of Pictures (GOP)<IconExternalLink/>][wiki-gop]. The GOP size is determined by the video file. ~~Users could use [`getParameter()`](#getparameter) to find the GOP size.~~
 
-We recommend to use `dec.ExtractGOP()` when a video file needs to be read consecutively. When the returned value is `None`, the read cursor reaches the end of the video.
+We recommend to use `ExtractGOP()` when a video file needs to be read consecutively. When the returned value is `None`, the read cursor reaches the end of the video.
 
 :::info
 
@@ -232,13 +232,13 @@ Each time this method is used with `framePos>=0`, the current reading cursor wil
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | | A frame index used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects, the GOP will be extracted from the current reading cursor position. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `gop`      | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is the GOP size (if the deocder reaches the end of the file, `N` may be smaller than the GOP size), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
 
@@ -252,7 +252,7 @@ gop = dec.ExtractGOPByTime(timePos=-1)
 
 Extract a [Group of Pictures<IconExternalLink/>][wiki-gop]. Instead of using a frame index, this method uses a time point (the unit is `second`) to seek the starting position.
 
-We recommend to use `dec.ExtractGOPByTime()` when a video file needs to be read consecutively. When the returned value is `None`, the read cursor reaches the end of the video.
+We recommend to use `ExtractGOPByTime()` when a video file needs to be read consecutively. When the returned value is `None`, the read cursor reaches the end of the video.
 
 :::info
 
@@ -262,13 +262,13 @@ Each time this method is used with `timePos>=0`, the current reading cursor will
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `timePos`  | `float` | | A time index (second) used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects, the GOP will be extracted from the current reading cursor position. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `gop`      | `np.ndarray` | An array with a shape of `(N, H, W, C)`, where `N` is the GOP size (if the deocder reaches the end of the file, `N` may be smaller than the GOP size), `(H, W)` are the height and width of the returned frames respectively. `C` means the 3 RGB channel. If no frames could be extracted, this method would return `None`. |
 
@@ -284,7 +284,7 @@ Reset the current reading cursor of [`ExtractGOP()`](#extractgop) and [`ExtractG
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `framePos` | `int`   | | A frame index used for seeking the starting position of the GOP. This position will be used by [`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe] at the bottom level. If configured as `<0`, this value will not take effects. |
 | `timePos`  | `float` | | A time index (second) used for seeking the starting position of the GOP. If this value is configured as `<0` or the `framePos` is configured, it will not take effects. |
@@ -301,7 +301,7 @@ Return a brief report of the current decoder status.
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the decoder status, the configurations and parameters will be listed as formatted texts. |
 

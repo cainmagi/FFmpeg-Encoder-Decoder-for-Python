@@ -1,0 +1,14 @@
+{
+  "title": {
+    "message": "mpegCoder",
+    "description": "The title in the navbar"
+  },
+  "item.label.Tutorial": {
+    "message": "教程",
+    "description": "Navbar item with label Tutorial"
+  },
+  "item.label.APIs": {
+    "message": "APIs",
+    "description": "Navbar item with label APIs"
+  }
+}

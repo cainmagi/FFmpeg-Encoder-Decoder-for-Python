@@ -15,7 +15,9 @@ import OverviewSvg from '/img/overview.svg';
 
 This package is a single-module package. The classes are shown in the following figure:
 
-<OverviewSvg className="mermaid"/>
+<p>
+  <OverviewSvg className="mermaid"/>
+</p>
 
 In most APIs, the `string` formatted arguments accept both `str` and `bytes` objects. If a `str` object is given, its coding will be recognized by the file system encoding, see [`PyUnicode_DecodeFSDefaultAndSize`<IconExternalLink/>][py-decodefs]. If a `bytes` object is given, the contents will be converted to a `std::string` directly. Therefore, if users want to use an argument with a specific encoding, they could use `str_argu.encode('...')` instead of using `str_argu` directly.
 
@@ -23,7 +25,7 @@ In most APIs, the `string` formatted arguments accept both `str` and `bytes` obj
 
 The module contains four classes:
 
-|  Classes  |  <center>Description</center>  |
+|  Classes  |  <div className="center">Description</div>  |
 | :------: | :----------- |
 | <SourceURL url="MpegCoder.h#L21"><InlineIcon icon={vsiSymbolClass}/> `MpegDecoder`</SourceURL> | The FFMpeg decoder. It could be used for demuxing a video file, and return the extracted frames or GOPs. |
 | <SourceURL url="MpegCoder.h#L82"><InlineIcon icon={vsiSymbolClass}/> `MpegEncoder`</SourceURL> | The FFMpeg encoder. It is used for writing a video file. The data is encoded frame-by-frame. |
@@ -34,7 +36,7 @@ The module contains four classes:
 
 The following functions are global methods of the module.
 
-|  Classes  |  <center>Description</center>  |
+|  Functions  |  <div className="center">Description</div>  |
 | :------: | :----------- |
 | <SourceURL url="MpegPyd.h#L131"><InlineIcon icon={mdiFunctionVariant}/> `setGlobal`</SourceURL> | Used for setting the global configurations of the module. |
 | <SourceURL url="MpegPyd.h#L158"><InlineIcon icon={mdiFunctionVariant}/> `readme`</SourceURL> | Readme function. This method is used for printing brief instructions and updating reports of the module. |

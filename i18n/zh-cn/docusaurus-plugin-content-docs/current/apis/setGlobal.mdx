@@ -3,7 +3,7 @@ id: setGlobal
 title: setGlobal
 sidebar_label: setGlobal
 slug: /apis/setGlobal
-description: Set global configurations.
+description: 全局设置。
 ---
 
 import InlineIcon from '@site/src/components/InlineIcon';
@@ -24,19 +24,19 @@ import { SourceURL, Splitter } from '@site/src/envs/variables';
 mpegCoder.setGlobal(dumpLevel=None)
 ```
 
-A function used for setting global configurations. If a configuration is not specified, that item will not be changed.
+用以设置模块内的全局参数的函数。如果调用的时候没有指定某项参数，则该项参数不会被更新。
 
-## Arguments
+## 参数
 
-### Requires
+### 输入
 
-|  Argument   |  Type  |  Required  |  <div className="center">Description</div>  |
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
 | :---------: | :----: | :--------: | :----------------------------- |
-| `dumpLevel` | `int`  | | The level of dumped log. This level will only influence `mpegCoder` logs, FFMpeg logs and some codec logs. A few codec, like `libx265` is not influenced by this configuration. Avaliable values: `0`: Silent executing; `1`: (default) Dump basic informations; `2`: Dump all informations. |
+| `dumpLevel` | `int`  | | 输出日志等级。该等级只会影响到 `mpegCoder` 日志, FFMpeg 日志以及一些编解码器的日志。由于具体的实现问题，某些编解码器，例如`libx265` 无法被该关键字设置。 可用值: `0`: 静默运行；`1`: 显示基本日志； `2`: 显示完整日志。 |
 
-## Example
+## 范例
 
-### Disable all logs except errors
+### 不显示错误信息以外的所有日志
 
 ```python
 mpegCoder.setGlobal(dumpLevel=0)

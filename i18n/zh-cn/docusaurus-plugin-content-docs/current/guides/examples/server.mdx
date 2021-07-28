@@ -1,0 +1,160 @@
+---
+id: server
+title: 推送远端视频流
+sidebar_label: 服务端
+slug: /examples/server
+description: 实现一个混流、推远端视频流的服务端的范例。
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import vsiCloseIcon from '@iconify-icons/codicon/close';
+
+import ServerImg from '/img/examples/server.png';
+
+## 准备
+
+鉴于`ffserver`在FFMpeg `3.4`版本后就已经被移除（参见[这里<IconExternalLink/>][link-ffserver]），FFMpeg无法在没有一个服务器程序协同的情况下单独完成推流工作。同样的问题也存在于`mpegCoder`中。用户需要先启动一个服务器程序，该程序会持续侦听、等待推送的视频流。在此之后`mpegCoder`就可以通过`mpegCoder.MpegServer`推送视频了。
+
+:::caution
+
+实际上，你也可以在使用`MpegServer`推送视频的同时，用`mpegCoder.MpegClient`接收这个视频流。但是我们还是建议用户尽可能在两台不同的机器上运行`MpegServer`和`MpegClient`。因为`MpegServer`自带的编码器会占用很多系统资源。
+
+:::
+
+建议使用以下视频服务器项目。用户按自己的需求，从中选择一个。
+
+| 项目 | Windows | Linux |
+| :-----: | :-----: | :-----: |
+| [简单RTSP服务器（RTSP Simple Server）<IconExternalLink/>][git-rtsp-simple-server] | <InlineIcon icon={vsiCheckIcon}/> | <InlineIcon icon={vsiCheckIcon}/> |
+| [马特罗斯卡服务Mk2（Matroska Server Mk2）<IconExternalLink/>][git-mkvserver_mk2] | <InlineIcon icon={vsiCloseIcon}/> | <InlineIcon icon={vsiCheckIcon}/> |
+| [简单实时服务器（Simple Realtime Server）<IconExternalLink/>][git-srs] | <InlineIcon icon={vsiCloseIcon}/> | <InlineIcon icon={vsiCheckIcon}/> |
+
+以Windows平台和*简单RTSP服务器（RTSP Simple Server）*为例，我们只需要通过一行命令启动这个服务器程序即可：
+
+<p>
+  <img
+    style={{'maxWidth': '800px', 'width': '100%'}}
+    src={ServerImg} alt="启动简单RTSP服务器"
+  />
+</p>
+
+当服务器处于侦听状态时，我们可以使用以下地址来进行推流测试。
+
+```shell
+rtsp://localhost:8554/
+rtmp://localhost:1935/
+```
+
+## 范例：非阻塞式推流
+
+此例基于非阻塞式API `MpegServer.ServeFrame()`。在推流的过程中，确保数据同步是一个很重要的问题。如果我们一直不断地使用`ServeFrame()`，那么我们就会尽可能地能推送多少帧、就推送多少帧。这些新推送的帧就会覆盖掉之前推送的帧。在一些情况下，服务器甚至会崩溃，因为服务器无法接收如此多的帧。
+
+为了保证服务器能正常运转，我们需要按照视频的时间戳来推送帧。当`MpegServer.FFmpegSetup()`成功调用时，将会设置一个开始时间戳。`MpegServer`会维护一个计时器，每当用户调用`MpegServer.getParemeter('waitRef')`时，该方法就会返回一个推荐等待时长，用来表示推送出去的视频帧已经比实际视频帧多出了多久。这个推荐等待时长就是上述的这个时间间隔的一半（单位为秒）。如果我们推送了过多帧，就可以利用这个参数让服务等待一会。
+
+```python {16,19-20} title="server-non-blocking.py"
+import time
+import mpegCoder
+
+d = mpegCoder.MpegDecoder()
+opened = d.FFmpegSetup('test-video.mp4')
+e = mpegCoder.MpegServer()
+e.setParameter(configDict=d.getParameter(), codecName='libx264', videoAddress='rtsp://localhost:8554/video')  # 从解码器继承绝大多数设置。
+opened = opened and e.FFmpegSetup()  # 加载推流器。
+if opened:  # 如果推流器、解码器没有正常载入，停止后续步骤。
+    gop = True
+    s = 0
+    while gop is not None:
+        gop = d.ExtractGOP()  # 提取当前的画面组。
+        if gop is not None:
+            for i in gop:  # 遍历每一帧。
+                e.ServeFrame(i)  # 编码并推送当前帧。
+                s += 1
+                if s == 10:  # 每过10帧，检查、并等待播放同步。
+                    wait = e.getParameter('waitRef')
+                    time.sleep(wait)
+                    s = 0
+    e.FFmpegClose()  # 结束编码和推流，并将缓存内的所有帧刷入视频流内。
+else:
+    print(e)
+e.clear()  # 清除推流器设置。
+d.clear()  # 关闭解码器、并清除设置。
+```
+
+## 范例：双进程模式
+
+以上的例子并不是一个优雅的实现，因为`MpegDecoder`和`MpegServer`同时抢占了主线程。如果解码器需要花费相当的时间，那么推流就会出现明显延迟。因此，建议将`MpegDecoder`和`MpegServer`分离到两个不同的子进程里。下面的代码就是通过这种方式实现的。解码器和推流器通过一个共享的数据队列实现同步。在此我们使用`MpegServer.ServeFrameBlock()`取代`MpegServer.ServeFrame()`。每当调用这个方法的时候，`MpegServer`就会检查当前的播放时长，并自动确保新推送帧的时间戳不超过播放时长过多。如果新帧的时间戳和播放时长的差距过大，该方法就会阻塞所在的线程，直到这个差距小到可以接受为止。
+
+```python {14,21,23,37,43,45} title="server-dual-procs.py"
+import mpegCoder
+import multiprocessing
+
+
+class Decoder(multiprocessing.Process):
+    def __init__(self, video_name='test-video.mp4', q_o=None, name=None, daemon=None):
+        super().__init__(name=name, daemon=daemon)
+        self.video_name = video_name
+        self.q_o = q_o
+
+    def run(self):
+        d = mpegCoder.MpegDecoder()
+        opened = d.FFmpegSetup(self.video_name)
+        self.q_o.put(d.getParameter())
+        if opened:
+            gop = True
+            while gop is not None:
+                gop = d.ExtractGOP()  # 提取当前的画面组。
+                if gop is not None:
+                    for i in gop:  # 遍历每一帧。
+                        self.q_o.put(i)
+                else:
+                    self.q_o.put(None)
+        else:
+            print(d)
+        d.clear()
+
+
+class Encoder(multiprocessing.Process):
+    def __init__(self, video_addr='rtsp://localhost:8554/video', q_i=None, name=None, daemon=None):
+        super().__init__(name=name, daemon=daemon)
+        self.video_addr = video_addr
+        self.q_i = q_i
+
+    def run(self):
+        e = mpegCoder.MpegServer()
+        config_dict = self.q_i.get()  # 获取解码器的参数。
+        e.setParameter(configDict=config_dict, codecName='libx264', maxBframe=16, videoAddress=self.video_addr)
+        opened = e.FFmpegSetup()
+        if opened:  # 如果推流器没有正常加载，就停止以下步骤。
+            frame = True
+            while frame is not None:
+                frame = self.q_i.get()  # 获取一帧。
+                if frame is not None:
+                    e.ServeFrameBlock(frame)  # 编码并推送当前帧。
+            e.FFmpegClose()  # 结束编码和推流，并将缓存内的所有帧刷入视频流内。
+        else:
+            print(e)
+        e.clear()
+
+
+if __name__ == '__main__':
+    queue_data = multiprocessing.Queue(maxsize=20)
+    proc_dec = Decoder(video_name='test-video.mp4', q_o=queue_data, daemon=True)
+    proc_enc = Encoder(video_addr='rtsp://localhost:8554/video', q_i=queue_data, daemon=True)
+    proc_dec.start()
+    proc_enc.start()
+    proc_enc.join()
+    proc_dec.join()
+```
+
+:::caution
+
+在上例里，调用`MpegServer.setParameter()`时使用了`configDict`。这个输入值是`MpegDecoder.getParameter()`返回的一个python字典。该用法等价与使用`e.setParameter(decoder=d)`。然而，此例中我们必须使用这个等价用法，因为`mpegCoder`所有的实例都无法被pickled。
+
+:::
+
+[link-ffserver]:https://trac.ffmpeg.org/wiki/ffserver "ffserver"
+[git-rtsp-simple-server]:https://github.com/aler9/rtsp-simple-server "RTSP Simple Server"
+[git-mkvserver_mk2]:https://github.com/klaxa/mkvserver_mk2/blob/master/Makefile "Matroska Server Mk2"
+[git-srs]:https://ossrs.net/releases "Simple Realtime Server"

@@ -1,0 +1,107 @@
+---
+id: introduction
+title: 简介
+description: 关于mpegCoder的介绍。mpegCoder是一款用以编码、解码、解流并推流的python包。该项目完全依托于FFMpeg构建。
+slug: /
+---
+
+import Link from '@docusaurus/Link';
+import DarkButton from '@site/src/components/DarkButton';
+import FeatureCase from '@site/src/components/FeatureCase';
+import KeenSlider from '@site/src/components/KeenSlider';
+import IconExternalLink from '@theme/IconExternalLink';
+import octLaw16 from '@iconify-icons/octicon/law-16';
+import octRepoForked16 from '@iconify-icons/octicon/repo-forked-16';
+import octShareAndroid16 from '@iconify-icons/octicon/share-android-16';
+
+import OverviewSvg from '/img/icon_python.svg';
+
+本项目也称为“FFMpeg-Python编码解码器” ("*FFmpeg-Encoder-Decoder-for-Python*")，基于[FFMpeg<IconExternalLink/>][link-ffmpeg]，[Python-C-API<IconExternalLink/>][link-python-c-api]和[C++11<IconExternalLink/>][link-cpp11]编写，并通过[GPL v3 许可<IconExternalLink/>][git-license]发布。本项目建议在研究场景下使用。
+
+使用本项目，用户可以
+
+<KeenSlider>
+  <FeatureCase
+    Svg={require('/img/undraw_circuit_board_4c4d.svg').default}
+    title='利用FFMpeg的所有视频编码器'>
+    如同基于C的原版FFMpeg，本项目提供的API能在视频解码、或解流的时候，自动检测视频格式和编码器 (codec)。在编码视频的时候，用户可以自由控制编码格式、比特率以及一些其他参数。
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_video_files_fu10.svg').default}
+    title='直达FFMpeg核心'>
+    不同于<Link href='https://github.com/kkroening/ffmpeg-python' alt='ffmpeg-python'>ffmpeg-python<IconExternalLink/></Link>和<Link href='https://github.com/deuteronomy-works/pyffmpeg' alt='pyffmpeg'>pyffmpeg<IconExternalLink/></Link>，本项目在底层直接调用FFMpeg的C API，而不需要通过命令行和管道来与FFMpeg交换指令、数据。并且，本项目的数据格式就是<Link href='https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html' alt='np.ndarray'><code>np.ndarray</code><IconExternalLink/></Link>。换言之，通过本项目，用户可以轻松并用<Link href='https://numpy.org' alt='Numpy'><code>Numpy</code><IconExternalLink/></Link>和FFMpeg。
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_image_focus_wm20.svg').default}
+    title='帧级别的API'>
+    不同于<Link href='https://github.com/deuteronomy-works/pyffmpeg' alt='pyffmpeg'>pyffmpeg<IconExternalLink/></Link>，本项目并非FFMpeg在python上的简单封装。使用本项目时，用户在帧的尺度来读写视频。例如，当解码一个视频的时候，用户可以逐帧地得到视频数据，每一帧都是一个三维<Link href='https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html' alt='np.ndarray'><code>np.ndarray</code><IconExternalLink/></Link>数组。
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_completing_6bhr.svg').default}
+    title='预编译的包'>
+    本项目已经被作者预编译好。如果用户选择下载本项目附带的链接库 (<code>.so</code>或<code>.dll</code>)，则无需编译即可使用本项目。
+  </FeatureCase>
+</KeenSlider>
+
+然而，本项目在以下情况受到限制：
+
+<KeenSlider>
+  <FeatureCase
+    Svg={require('/img/undraw_design_components_9vy6.svg').default}
+    title='平台限制'>
+    目前，本项目只支持Linux和Windows。其中Linux的发行版只在Debian上预编译、并只在Debian和Ubuntu上测试。Windows的发行版编译和测试均在Windows上完成。在其他平台上，预编译的发行版可能无法正常工作，如果用户对此有特别需求，则需要自行修改代码并编译。
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_version_control_re_mg66.svg').default}
+    title='版本限制'>
+    目前，本项目只支持FFMpeg <code>4.4</code>。在使用本项目时，用户可以通过下载本项目附带的动态链接库，免去安装FFMpeg的麻烦。 本项目的一些旧版支持FFMpeg <code>3.3</code>, <code>3.4.2</code>和<code>4.0</code>。但是，作者已经弃用了这些版本，并不再提供对它们的技术支持。
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_compose_music_ovo2.svg').default}
+    title='不支持音频处理'>
+    尽管原版的FFMpeg支持音视频处理，本项目目前只实现了视频处理的部分。例如，假设用户需要处理的视频里含有音频数据，本项目会在底层忽略所有的音频相关数据。换言之，用户现在<b>无法</b>通过本项目实现音频分析。未来可能在<code>v4</code>版本支持音频处理。
+  </FeatureCase>
+  <FeatureCase
+    Svg={require('/img/undraw_creativity_wqmm.svg').default}
+    title='不支持滤镜'>
+    尽管原版的FFMpeg提供了一些视频滤镜库 (<Link href='http://ffmpeg.org/doxygen/trunk/group__lavfi.html' alt='libavfilter'><code>avfilter</code><IconExternalLink/></Link>和<Link href='http://ffmpeg.org/doxygen/trunk/group__lpp.html' alt='libpostproc'><code>postproc</code><IconExternalLink/></Link>)，本项目不使用这些模块，因为我们认为这些功能可以被一些其他的python图像处理包替代，例如<Link href='https://pypi.org/project/Pillow' alt='Pillow'>pillow<IconExternalLink/></Link>和<Link href='https://pypi.org/project/opencv-python' alt='OpenCV Python'>openCV<IconExternalLink/></Link>。另一方面，本项目保留了视频缩放和重采样的功能 (通过<Link href='http://ffmpeg.org/doxygen/trunk/group__libsws.html' alt='libswscale'><code>swscale</code><IconExternalLink/></Link>和<Link href='http://ffmpeg.org/doxygen/trunk/group__lswr.html' alt='libswresample'><code>swresample</code><IconExternalLink/></Link>完成)。
+  </FeatureCase>
+</KeenSlider>
+
+<p className="right noemph">
+  插图由<Link href='https://undraw.co' alt='unDraw'>unDraw<IconExternalLink/></Link>提供。
+</p>
+
+## 相关材料
+
+本项目的许可证：
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/LICENSE" icon={octLaw16}>
+    GPL v3 许可
+  </DarkButton>
+</p>
+
+合作与贡献指南：
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CONTRIBUTING.md" icon={octRepoForked16}>
+    贡献本项目
+  </DarkButton>
+</p>
+
+贡献者利用规约：
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/CODE_OF_CONDUCT.md" icon={octShareAndroid16}>
+    利用规约
+  </DarkButton>
+</p>
+
+
+[git-ffmpeg-python]:https://github.com/kkroening/ffmpeg-python "ffmpeg-python"
+[git-pyffmpeg]:https://github.com/deuteronomy-works/pyffmpeg "pyffmpeg"
+[git-license]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/LICENSE
+[link-cpp11]:https://en.cppreference.com/w/ "C++ 11"
+[link-python-c-api]:https://docs.python.org/3/c-api/index.html "Python-C-API"
+[link-ffmpeg]:https://ffmpeg.org "FFMpeg"

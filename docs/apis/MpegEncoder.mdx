@@ -67,7 +67,7 @@ Reset the default video path to a specific value. Configuring this value will no
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoPath` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The path of the video to be written. |
 
@@ -83,13 +83,13 @@ Get the video parameter or configuration value. Each time `paramName` only accep
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
 
 Here is a list of checkable `paramName`:
 
-|   Parameter    |  Type   |  <center>Description</center>  |
+|   Parameter    |  Type   |  <div className="center">Description</div>  |
 | :------------: | :-----: | :----------------------------- |
 | `videoPath`    | `str`   | The current path of the written video. If the video is not opened, will return the default video path. |
 | `codecName`    | `str`   | The name of the encoder. See [here<IconExternalLink/>][ffmpeg-encoder] to view a list of FFMpeg encoders. Note that not all encoders could be used, the avaliable encoders depends on the current FFMpeg built libraries. |
@@ -101,11 +101,11 @@ Here is a list of checkable `paramName`:
 | `heightSrc`    | `int`   | The height of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `height`. |
 | `GOPSize`      | `int`   | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
 | `maxBframe`    | `int`   | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
-| `frameRate`    | `tuple` | The target frame rate of the written video. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational] |
+| `frameRate`    | `float` | The target frame rate of the written video. The unit is FPS. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. |
 
@@ -121,13 +121,13 @@ enc.setParameter(
 )
 ```
 
-Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
+Set the configurations of the encoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
 #### Requires
 
-|    Argument    |  Type   |  Required  |  <center>Description</center>  |
+|    Argument    |  Type   |  Required  |  <div className="center">Description</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
-| `decoder`      | [`MpegDecoder`](./MpegDecoder) or [`MpegClient`](./MpegClient) | | When configure this argument, the required configurations will be copied from a decoder or a client. This argument is useful when trancoding a video. |
+| `decoder`      | [`MpegDecoder`](./MpegDecoder) or [`MpegClient`](./MpegClient) | | When configure this argument, the required configurations will be copied from a decoder or a client. If users also provide duplicated arguments in the same call, these copied parameters have a lower preference than those specified by users. This argument is useful when trancoding a video. |
 | `configDict`   | `dict` | | An alternative of the argument `decoder` when the parameters need to be passed through different processes. Using `configDict=decoder.getParameter()` is equivalent to using `decoder=decoder`. |
 | `videoPath`    | `str`   | | The current path of the written video. If the video is not opened, will return the default video path. |
 | `codecName`    | `str`   | | The name of the encoder. See [here<IconExternalLink/>][ffmpeg-encoder] to view a list of FFMpeg encoders. Note that not all encoders could be used, the avaliable encoders depends on the current FFMpeg built libraries. |
@@ -139,7 +139,7 @@ Set the configurations of the decoder. To make the configurations take effects, 
 | `heightSrc`    | `int`   | | The height of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `height`. |
 | `GOPSize`      | `int`   | | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
 | `maxBframe`    | `int`   | | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
-| `frameRate`    | `tuple` | | The target frame rate of the written video. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational] |
+| `frameRate`    | `tuple` | | The target frame rate of the written video. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational]. |
 
 ----------
 
@@ -149,11 +149,11 @@ Set the configurations of the decoder. To make the configurations take effects, 
 enc.FFmpegSetup(videoPath=None)
 ```
 
-Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the file name and the user configurations set by [`setParameter()`](#setparameter). If an video is opening by the encoder now, this video will be closed first, then the new video will be opened with the same configurations.
+Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the file name and the user configurations set by [`setParameter()`](#setparameter). If an video is being opened by the encoder now, this video will be closed first, then the new video will be opened with the same configurations.
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoPath` | `str` or `bytes` | | The path of the video to be written. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video path to change. |
 
@@ -185,13 +185,13 @@ Encode one frame into the video. Note that in most cases, the frame will not be 
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `is_success`   | `bool` | The status of the frame encoding. If the given frame succeeds to be encoded, will return `True`; Otherwise, will return `False`. |
 
@@ -203,7 +203,7 @@ Encode one frame into the video. Note that in most cases, the frame will not be 
 enc.FFmpegClose()
 ```
 
-Close the video file. Calling this method will flush all buffered frames into the file. Then the video tail will be writen to the file. If users does not call this method explicitly, it will be called when `clear()` is called or when the encoder is destructed.
+Close the video file. Calling this method will flush all buffered frames into the file. Then the video tail will be writen to the file. If users does not call this method explicitly, it will be called when [`clear()`](#clear) is called or when the encoder is destructed.
 
 ## Operators
 
@@ -217,7 +217,7 @@ Return a brief report of the current encoder status.
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the encoder status, the configurations and parameters will be listed as formatted texts. |
 

@@ -26,17 +26,17 @@ If you could not find your problem in this page, please fire an issue:
 
 * **Question**: Why is the first frame not able to be decoded correctly? The returned frame is totally black.
 
-* **Answer**: This problem often occurs when using `mpegCoder.MpegClient`, especially when demuxing the RTSP stream. In some video codec formats, there are I, P, and B frames. The I frame is required for decoding other frames. If the first received frame from the remote stream is not an I frame, you could not decode the frame correctly. This problem should be fixed if you let your client running for a while.
+* **Answer**: This problem often occurs when using `MpegClient`, especially when demuxing the RTSP stream. In some video codec formats, there are I, P, and B frames. The I frame is required for decoding other frames. If the first received frame from the remote stream is not an I frame, you could not decode the frame correctly. This problem should be fixed if you let your client running for a while.
 
 ### Fail to encode frames
 
 * **Question**: When encoding frames, why does `mpegCoder` collapse?
 
-* **Answer**: You may send incorrect data to `MpegEncoder.EncodeFrame()`. The input value should be a 3D [`np.ndarray`<IconExternalLink/>][link-ndarray].
+* **Answer**: You may send incorrect data to `MpegEncoder.EncodeFrame()`. The input value should be a 3D [`np.ndarray`<IconExternalLink/>][link-ndarray]. The size of this array requires to be consistent with the configuration of the encoder.
 
 ### Bad output video
 
-* **Question**: I am working with `mpegCoder.MpegEncoder`. Why is the output video broken?
+* **Question**: I am working with `MpegEncoder`. Why is the output video broken?
 
 * **Answer**: There are two typical cases for the bad output video. Please check whether you meet such cases:
 
@@ -45,9 +45,9 @@ If you could not find your problem in this page, please fire an issue:
 
 ### Stuck of the streamer
 
-* **Question**: When using `mpegCoder.MpegClient` or `mpegCoder.MpegServer`, why is the program stucked?
+* **Question**: When using `MpegClient` or `MpegServer`, why is the program stucked?
 
-* **Answer**: This problem is often caused by `mpegCoder.FFmpegSetup()`, especially when the remote server program is not launched, or the stream protocol is not accepted by the server. I have to admit that I should add a timeout option in the future.
+* **Answer**: This problem is often caused by `streamer.FFmpegSetup()`, especially when the remote server program is not launched, or the stream protocol is not accepted by the server. I have to admit that I should add a timeout option in the future.
 
 ### Fail to push the stream
 

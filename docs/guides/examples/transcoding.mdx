@@ -8,7 +8,7 @@ description: Example codes for encoding or transcoding a video.
 
 import IconExternalLink from '@theme/IconExternalLink';
 
-The following codes show an example of encoding a new video file. Although we are transcoding a video, the input of the encoder could be any data.
+The following codes show an example of encoding and muxing a new video file. Although we are transcoding a video, the input of the encoder could be any data.
 
 ```python {12,14-15} title="transcoding.py"
 import mpegCoder
@@ -19,7 +19,7 @@ opened = d.FFmpegSetup('test-video.mp4')  # Setup the decoder
 e = mpegCoder.MpegEncoder()
 e.setParameter(decoder=d, codecName='libx265', videoPath='test-video-x265.mp4', nthread=8)  # inherit most of parameters from the decoder.
 opened = opened and e.FFmpegSetup()  # Setup the encoder.
-if opened:  # If encoder is not loaded successfully, do not continue.
+if opened:  # If either the decoder or the encoder is not loaded successfully, do not continue.
     p = True
     while p is not None:
         p = d.ExtractGOP()  # Extract current GOP.
@@ -31,7 +31,7 @@ e.clear()  # Clean configs of the encoder.
 d.clear()  # Close configs of the decoder.
 ```
 
-In this example, we decode an existing video file, and encode a new video by `x265` codec. The most widely used video codecs are `libxvid`, `libx264`, `libx265`, `libvp9`, `libsvtav1`. Most of the encoder configurations are copied from the opened decoder. So the output video would share the same GOP number, B frame number, video size, bit rate and frame rate of the input video. We also reconfigure the thread number of the encoder by `8`.
+In this example, we decode an existing video file, and encode a new video by `x265` codec. The most widely used video codecs are `libxvid`, `libx264`, `libx265`, `libvp9`, `libsvtav1`. Most of the encoder configurations are copied from the opened decoder. So the output video would share the same GOP size, consecutive B frame number, picture size, bit rate and frame rate of the input video. We also reconfigure the thread number of the encoder by `8`.
 
 :::info
 
@@ -45,7 +45,7 @@ If user trigger <kbd>Ctrl</kbd>+<kbd>C</kbd> during the while loop, the video co
 
 ## Optimize the output video
 
-In the above example, the output video may not be encoded by an optimized configuration. The x265 codec could accept a maximal consecutive B frame number of `<=16`. We could also configure the output bit rate manually. Therefore, if we change the configuraitons like the following example, the output video size would be reduced significantly.
+In the above example, the output video may not be encoded by an optimized configuration. The x265 codec could accept a maximal consecutive B frame number of `<=16`. We could also configure the output bit rate manually. Therefore, if we change the configuraitons like the following example, the output video file size would be reduced significantly.
 
 ```python {3}
 ...
@@ -67,4 +67,4 @@ opened = opened and e.FFmpegSetup()
 ...
 ```
 
-This example would rescale the output frame to `720x486`, and resample the output frame rate as 5 FPS. In this case, when we call `e.EncodeFrame(i)`, the frame `i` may be not in the size of `720x486`, but `MpegEncoder` could scale it automatically.
+This example would rescale the output frame to 720x486, and resample the output frame rate as 5 FPS. In this case, when we call `e.EncodeFrame(i)`, the frame `i` may be not in the size of 720x486, but `MpegEncoder` could scale it automatically.

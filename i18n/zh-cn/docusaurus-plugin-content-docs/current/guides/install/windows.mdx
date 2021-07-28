@@ -1,9 +1,9 @@
 ---
 id: windows
-title: Installation for Windows
+title: 在Windows上手动安装
 sidebar_label: Windows
 slug: /installation/windows
-description: A tutorial about the installation or compilation of the package for Windows.
+description: 在Windows上手动安装或编译本模块的教程。
 ---
 
 import DarkButton from '@site/src/components/DarkButton';
@@ -12,15 +12,15 @@ import InlineIcon from '@site/src/components/InlineIcon';
 import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 import vsiDebugAlt from '@iconify-icons/codicon/debug-alt';
 
-This guide contains steps for installing or compiling the `mpegCoder` module manually. We recommend users who need to use `mpegCoder` in a project locally to install the package by this way.
+本教程包含安装或编译`mpegCoder`的步骤。建议需要在项目里局部部署本模块的用户使用这种方式安装。
 
-## Install the pre-compiled module
+## 安装预编译的模块
 
-### Download `mpegCoder`
+### 下载`mpegCoder`
 
-First, users need to download the single module. We provide the downloading links in the following table. Please check the correct version according to your environment.
+首先，用户需要下载本项目的单模块文件。下表提供了下载链接。请根据你的环境选择对应的版本。
 
-| mpegCoder | FFMpeg | Numpy | Python | VS | OS |
+| mpegCoder | FFMpeg | Numpy | Python | VS | 操作系统 |
 | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
 | [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py39] | `4.4` | `1.21.1` | `3.9.6` | `2019 (v142)` | `Windows 10 21H1` |
 | [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py38] | `4.4` | `1.21.1` | `3.8.10` | `2019 (v142)` | `Windows 10 21H1` |
@@ -28,35 +28,35 @@ First, users need to download the single module. We provide the downloading link
 | [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py36] | `4.4` | `1.19.5` | `3.6.13` | `2019 (v142)` | `Windows 10 21H1` |
 | [`3.1.0`<InlineIcon icon={mdiDownloadBox}/>][download-3-1-0-py35] | `4.4` | `1.15.2` | `3.5.5` | `2019 (v142)` | `Windows 10 21H1` |
 
-After extracting the tarball, we could get `mpegCoder.pyd`.
+解压所下载的taball后，就可以得到`mpegCoder.pyd`文件。
 
 :::info
 
-Note that the above versions only show the environment when building `mpegCoder`. It does not mean that they are the dependencies of running `mpegCoder`. For example, users could use `python 3.9.5` and `numpy 1.19.5` to run `mpegCoder`.
+上面提到的这些相关项目的版本，只是用来表明预编译`mpegCoder`时所用的环境。这并不代表运行这些预编译的`mpegCoder`必须要依赖这些版本。例如，用户也可以在`python 3.9.5`和`numpy 1.19.5`的环境下运行`mpegCoder`。
 
 :::
 
-### Install Numpy
+### 安装Numpy
 
-To run `mpegCoder`, you are required to install [Numpy<IconExternalLink/>][link-numpy] with the correct version first. The best version for each `mpegCoder` release has been listed before. If your Numpy version is differnt from the best version too much, `mpegCoder` may not work. Here is the command for installation.
+运行`mpegCoder`之前，必须先安装合适版本的[Numpy<IconExternalLink/>][link-numpy]。每个`mpegCoder`发行版的最佳Numpy版本已经列在上表之中。如果你安装的Numpy版本与所需的最佳版本差距过大，`mpegCoder`可能无法正常运行。以下是安装命令：
 
 ```shell
 python -m pip install numpy==<version>
 ```
 
-### Download dependencies
+### 下载依赖项
 
-The pre-compiled dependencies are available on our release page. The dependencies contain several `.dll` files. Users also need to download the tarball with the correct FFMpeg version, and extract the files.
+在发行页上，我们提供了预编译好的依赖项。这些依赖项包含几个`.dll`文件。用户需要根据`mpegCoder`所需的FFMpeg版本，来选择合适的tarball，来下载、并解压文件。
 
 | FFMpeg |
 | :-----: |
 | [`4.4`<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4] |
 
-The above files are collected from the officially released FFMpeg shared libraries. Users could also find them [here<IconExternalLink/>][link-ffmpeg-download].
+以上这些文件是直接从FFMpeg的官方发行页摘出的。用户也可以在[这里<IconExternalLink/>][link-ffmpeg-download]找到它们。
 
-### Import
+### 导入
 
-To import the module, users need to place the `mpegCoder.pyd` and the dependencies in the same folder. For example,
+要导入模块，用户需要将`mpegCoder.pyd`和所下载的依赖项文件放在同一个文件夹里，例如：
 
 ```shell
 .
@@ -68,19 +68,19 @@ To import the module, users need to place the `mpegCoder.pyd` and the dependenci
 `---swscale-5.dll
 ```
 
-After that, users could enter the same folder, and import the module by
+此后，进入这个文件夹，就可以直接通过以下代码导入本模块。
 
 ```python
 import mpegCoder
 ```
 
-## Compile the module
+## 编译模块
 
-If users need to compile the module by themselves, please follow the instructions on Github:
+如果用户需要自行编译模块，则可以按照以下发布在Github上的指导完成：
 
 <p>
   <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/README.md" icon={vsiDebugAlt}>
-    Compile with VS2019
+    使用VS2019编译
   </DarkButton>
 </p>
 

@@ -19,7 +19,7 @@ The `ffserver` has been removed after FFMpeg `3.4` (see the docs [here<IconExter
 
 :::caution
 
-It is also supported if you push a stream with `mpegCoder.MpegServer` and receive the same stream with `mpegCoder.MpegClient` in the same time. But we recommend users to run `MpegServer` and `MpegClient` on different devices, because the encoder implemented in `MpegServer` may occupy a lot of system resources.
+It is also supported if you push a stream with `MpegServer` and receive the same stream with `mpegCoder.MpegClient` in the same time. But we recommend users to run `MpegServer` and `MpegClient` on different devices, because the encoder implemented in `MpegServer` may occupy a lot of system resources.
 
 :::
 
@@ -33,10 +33,12 @@ We recommend the following video server projects. User could choose one from the
 
 Take *RTSP Simple Server* on Windows as an example. We only need to launch the server program by one command:
 
-<img
+<p>
+  <img
     style={{'maxWidth': '800px', 'width': '100%'}}
     src={ServerImg} alt="Launch the RTSP Simple Server"
-/>
+  />
+</p>
 
 When the server is listening, we could use the following addresses for the testings
 
@@ -59,8 +61,8 @@ d = mpegCoder.MpegDecoder()
 opened = d.FFmpegSetup('test-video.mp4')
 e = mpegCoder.MpegServer()
 e.setParameter(configDict=d.getParameter(), codecName='libx264', videoAddress='rtsp://localhost:8554/video')  # inherit most of parameters from the decoder.
-opened = opened and e.FFmpegSetup()  # Load the encoder.
-if opened:  # If encoder is not loaded successfully, do not continue.
+opened = opened and e.FFmpegSetup()  # Load the pusher.
+if opened:  # If the decoder and the pusher are not loaded successfully, do not continue.
     gop = True
     s = 0
     while gop is not None:
@@ -76,7 +78,7 @@ if opened:  # If encoder is not loaded successfully, do not continue.
     e.FFmpegClose()  # End encoding and pushing, and flush all frames in cache.
 else:
     print(e)
-e.clear()  # Close the encoder.
+e.clear()  # Close the pusher.
 d.clear()  # Close the decoder.
 ```
 
@@ -124,12 +126,12 @@ class Encoder(multiprocessing.Process):
         config_dict = self.q_i.get()  # Get decoder configurations.
         e.setParameter(configDict=config_dict, codecName='libx264', maxBframe=16, videoAddress=self.video_addr)
         opened = e.FFmpegSetup()
-        if opened:  # If encoder is not loaded successfully, do not continue.
+        if opened:  # If pusher is not loaded successfully, do not continue.
             frame = True
             while frame is not None:
                 frame = self.q_i.get()  # Get one frame.
                 if frame is not None:
-                    e.ServeFrameBlock(frame)  # Encode current frame.
+                    e.ServeFrameBlock(frame)  # Encode and serve the current frame.
             e.FFmpegClose()  # End encoding, and flush all frames in cache.
         else:
             print(e)

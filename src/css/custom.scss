@@ -17,6 +17,27 @@
   --ifm-code-font-size: 95%;
 }
 
+p, th, td, div {
+  &.left {
+    text-align: left;
+  }
+  &.center {
+    text-align: center;
+  }
+  &.right {
+    text-align: right;
+  }
+  &.maxspan {
+    width: max-content;
+  }
+  &.noemph {
+    opacity: 0.75;
+    &:hover, &:focus {
+      opacity: 1.0;
+    }
+  }
+}
+
 .header-github-link{
   &:hover {
     opacity: 0.6;

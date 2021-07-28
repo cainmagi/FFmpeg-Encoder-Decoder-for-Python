@@ -4,31 +4,33 @@ import Link from '@docusaurus/Link';
 import IconExternalLink from '@theme/IconExternalLink';
 import styles from './HomepageFeatures.module.css';
 
+import Translate, {translate} from '@docusaurus/Translate';
+
 const FeatureList = [
   {
-    title: 'Python without depdencies',
+    title: translate({id: 'index.feat.python.title', description: 'Feature title for Python-C-API.', message: 'Python without depdencies'}),
     Svg: require('../../static/img/icon_python.svg').default,
     description: (
       <>
-        Implemented by the <Link href="https://docs.python.org/3/c-api/index.html" label="Python-C-API">Python-C-API<IconExternalLink /></Link>. This feature has been included in stdlib. No matter when you need to compile or use this package, the only dependency is <Link href="https://numpy.org" label="numpy">Numpy<IconExternalLink /></Link>.
+        <Translate id='index.feat.python.descr' description='Feature description for Python-C-API.' values={{python: <Link href="https://docs.python.org/3/c-api/index.html" label="Python-C-API">Python-C-API<IconExternalLink /></Link>, numpy: <Link href="https://numpy.org" label="numpy">Numpy<IconExternalLink /></Link>}}>{'Implemented by the {python}. This feature has been included in stdlib. No matter when you need to compile or use this package, the only dependency is {numpy}.'}</Translate>
       </>
     ),
   },
   {
-    title: 'Fully based on FFMpeg',
+    title: translate({id: 'index.feat.ffmpeg.title', description: 'Feature title for FFMpeg.', message: 'Fully based on FFMpeg'}),
     Svg: require('../../static/img/icon_ffmpeg.svg').default,
     description: (
       <>
-        Combine the shared-lib-enabled <Link href="https://ffmpeg.org" label="FFMpeg">FFMpeg<IconExternalLink /></Link> and <Link href="https://numpy.org" label="numpy">Numpy<IconExternalLink /></Link> together. Both the two libraries are not modifed. Users could benefit from user-friendly Numpy APIs and all FFMpeg features.
+        <Translate id='index.feat.ffmpeg.descr' description='Feature description for FFMpeg.' values={{ffmpeg: <Link href="https://ffmpeg.org" label="FFMpeg">FFMpeg<IconExternalLink /></Link>, numpy: <Link href="https://numpy.org" label="numpy">Numpy<IconExternalLink /></Link>}}>{'Combine the shared-lib-enabled {ffmpeg} and {numpy} together. Both the two libraries are not modifed. Users could benefit from user-friendly Numpy APIs and all FFMpeg features.'}</Translate>
       </>
     ),
   },
   {
-    title: 'Compiled by C++',
+    title: translate({id: 'index.feat.cpp.title', description: 'Feature title for CPP11.', message: 'Compiled by C++'}),
     Svg: require('../../static/img/icon_cpp.svg').default,
     description: (
       <>
-        Compiled by C++ on both Windows and Linux. The Win version and the Linux version are compiled by VC++ and G++ respectively. All source codes of this project are open-sourced by <Link href="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/LICENSE" label="GPL v3">GPL v3 License<IconExternalLink /></Link>.
+        <Translate id='index.feat.cpp.descr' description='Feature description for CPP11.' values={{license: <Link href="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/blob/master/LICENSE" label="GPL v3">GPL v3 License<IconExternalLink /></Link>}}>{'Compiled by C++ on both Windows and Linux. The Win version and the Linux version are compiled by VC++ and G++ respectively. All source codes of this project are open-sourced by {license}.'}</Translate>
       </>
     ),
   },

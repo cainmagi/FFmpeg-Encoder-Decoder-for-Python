@@ -1,0 +1,115 @@
+---
+id: installation
+title: 与安装相关的常见故障
+sidebar_label: 与安装相关
+slug: /troubleshooting/installation
+description: 与安装相关的常见故障。
+---
+
+import DarkButton from '@site/src/components/DarkButton';
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import octInfo16 from '@iconify-icons/octicon/info-16';
+import mdiDownloadBox from '@iconify-icons/mdi/download-box';
+
+## 简介
+
+如果你无法通过本页解决你的问题，请通过以下按钮提出问题：
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues/new/choose" icon={octInfo16}>
+    提出问题
+  </DarkButton>
+</p>
+
+## 问与答
+
+### 找不到DLL
+
+* **问**: 当我导入（import）模块的时候，为什么会遇到以下错误？
+
+  ```
+  ImportError: DLL load failed while importing mpegCoder: The specified module could not be found.
+  ```
+
+* **答**: 这个问题似乎只会在以下条件皆满足的时候出现：
+
+    * 你正在使用Windows；
+    * 你正在使用手动安装的`mpegCoder`，而非pip安装的版本。
+
+  该错误时由缺少必要的依赖项导致的。主要出现在以下几种情况之一：
+
+    * 你的Python版本和预编译的`mpegCoder`模块不匹配；
+    * 所依赖的DLL文件既没有和`mpegCoder.pyd`放在同一文件夹，也没有出现在环境路径里（即名为`PATH`的环境变量）。
+
+* **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-win]并将其中包含的DLL文件解压到`mpegCoder.pyd`所在的目录下。
+
+### 找不到`.so`
+
+* **问**: 当我导入模块的时候，为什么会遇到以下错误？
+    
+  ```
+  ImportError: lib*****.so.**: cannot open shared object file: No such file or directory
+  ```
+
+* **答**: 这个问题似乎只会在以下条件皆满足的时候出现：
+
+    * 你正在使用Linux；
+    * 你正在使用手动安装的`mpegCoder`，而非pip安装的版本。
+
+  该错误时由缺少必要的依赖项导致的。主要出现在以下几种情况之一：
+
+    * 你的Python版本和预编译的`mpegCoder`模块不匹配，在这种情况下，显示所缺少的库名字将会形如`libpython3.*.so.**`；
+    * 所依赖的动态库文件没有被添加到你的环境变量`$LD_LIBRARY_PATH`里。
+
+* **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux]并将其中包含的、所缺少的`.so`文件解压到一个在`$LD_LIBRARY_PATH`里的文件夹内。
+
+### 找不到`numpy.core.multiarray`
+
+* **问**: 当我导入模块的时候，为什么会遇到以下错误？
+
+  ```
+  ImportError: numpy.core.multiarray failed to import
+  ```
+
+* **答**: 你可能没有安装[Numpy<IconExternalLink/>][link-numpy]，或者你安装的Numpy版本和预编译的`mpegCoder`不匹配。如果是由版本不一致引起的问题，一般来说较小的版本差不会造成错误。可能你使用的Numpy与作者预编译时的Numpy版本差别太大了。可以参见[预编译列表（Win）](../installation/windows#download-mpegcoder)或[预编译列表（Linux）](../installation/linux#download-mpegcoder)来找到对应最佳的Numpy版本。
+
+* **修复**: 重装Numpy，或者自行编译`mpegCoder`。
+
+### 找不到GLibC
+
+* **问**: 当我导入模块的时候，为什么会遇到以下错误？
+
+  ```
+  OSError: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.29' not found (required by ******/libdrm.so.2)
+  ```
+
+* **答**: 你的GLibC版本没有达到要求（`>=2.29`）。要想确认是这个原因，可以运行
+
+  ```shell
+  ldd --version
+  ```
+
+  该问题往往在使用较早版本的Linux发行版系统时出现。目前所支持的操作系统列表可以参见[这里](../installation/linux#import)。
+
+* **修复**: 推荐编译并安装GLibC `>=2.29`。但是，如果用户不想这样做，而是想要一个快速修复的补丁，那么可以按以下步骤照做。
+
+  如果你使用的是pip安装的`mpegCoder`。你需要在`mpegCoder`的安装目录下，找到一个名为`lib-fix`的文件夹，然后运行以下命令
+
+  ```shell
+  ln -sf <path-of-mpegCoder>/lib-fix/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
+  ```
+
+  这个文件（`libm-2.31.so`）也可以在[Linux依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux]里找到。
+
+### 不正确的依赖项
+
+* **问**: 我没有安装任何依赖项，我也没有使用从PyPI安装的版本。为什么我可以成功导入`mpegCoder`？
+
+* **答**: 你很可能之前安装过FFMpeg。换言之，FFMpeg库已经在你的环境里了。考虑到FFMpeg的API随着版本在不停变化，将本项目和一个不匹配的FFMpeg连用是危险的。请确保你使用的`mpegCoder`版本和你的FFMpeg版本一致。
+
+* **修复**: 从PyPI安装`mpegCoder`，或者下载正确的依赖项，或者自行编译`mpegCoder`。
+
+[download-ff-4-4-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dll-win-ffmpeg_4_4.tar.xz
+[download-ff-4-4-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz
+[link-numpy]:https://numpy.org "Numpy"

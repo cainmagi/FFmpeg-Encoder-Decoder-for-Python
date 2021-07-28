@@ -1,0 +1,332 @@
+---
+id: MpegDecoder
+title: MpegDecoder
+sidebar_label: MpegDecoder
+slug: /apis/MpegDecoder
+description: 面向Python的快速视频解码接口，其底层通过C-API封装FFMpeg的解码器实现。
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={vsiSymbolClass}/> Class
+  <Splitter />
+  <SourceURL url="MpegCoder.h#L21">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+dec = mpegCoder.MpegDecoder(videoPath=None)
+```
+
+帧尺度的视频解码器，用于解流并解码视频文件。
+
+该解码器实例可以被看做是一个文件读取器，其支持：
+
+* 将视频帧解码成[`np.ndarray`<IconExternalLink/>][link-ndarray]。
+* 读取连续的视频帧。
+* 设置读取指针到视频的任意位置。
+* 将解码所得的视频帧缩放到指定大小。
+
+`MpegDecoder`要求用户在读取视频帧之前，初始化视频解码器，并确保在一切工作结束后，关闭解码器。如果解码器没有被手动（显式地）关闭，则会在实例析构的时候，自动检查、并调用关闭视频的方法。
+
+## 参数
+
+### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :----: | :--------: | :----------------------------- |
+| `videoPath` | `str`或`bytes` |  | 待读取视频的路径。在初始化阶段设置该参数会使得[`FFmpegSetup()`](#ffmpegsetup)被自动调用。鉴于还有数种方式设置该参数，不建议在类初始化时设置。 |
+
+## 方法
+
+### `clear`
+
+```python
+dec.clear()
+```
+
+清除**除去**默认视频路径之外的其它所有设置、参数。如果该方法调用的时候，该解码器已经打开了一个视频，`clear()`就会自动关闭该视频。
+
+:::tip
+
+就像使用其他的文件读取类一样，建议用户总是手动调用`clear()`。
+
+:::
+
+----------
+
+### `resetPath`
+
+```python
+dec.resetPath(videoPath)
+```
+
+将默认的视频路径重置为给定的值。该方法仅仅用于设置参数，不会打开视频。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str`或`bytes` | <InlineIcon icon={vsiCheckIcon}/> | 待读取视频的路径。 |
+
+----------
+
+### `getParameter`
+
+```python
+param = dec.getParameter(paramName=None)
+```
+
+获取视频参数或设置值。每次调用时，`paramName`仅能接受一个参数名。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `paramName` | `str`或`bytes` | | 待检查的参数名字。如果没有给定，则所有的重要参数（包括一小部分私有参数）会被收集并返回成一个`dict`。 |
+
+接下来列出可以被索引的`paramName`:
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :------------: | :-----: | :----------------------------- |
+| `videoPath` | `str`或`bytes` | 当前读取的视频路径。若视频尚未打开，则会返回默认视频路径。 |
+| `width`        | `int`   | 源视频的宽度，该值仅由视频本身所决定。 |
+| `height`       | `int`   | 源视频的高度，该值仅由视频本身所决定。 |
+| `frameCount`   | `int`   | 帧计数，用来记录最后一次调用帧读取时，所读取的帧的数目。 |
+| `coderName`    | `str`   | 解码器的名字。 |
+| `nthread`      | `int`   | 解码用的线程数。 |
+| `duration`     | `float` | 视频的总时长（单位：秒）。 |
+| `estFrameNum`  | `int`   | 预估的视频总帧数（该值有可能不准确）。 |
+| `avgFrameRate` | `float` | 源视频流的平均帧率（单位为FPS）。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `param`    | 由`paramName`决定 | 返回的参数值。若函数调用时未提供`paramName`，则会收集所有重要的参数，这些重要参数可以充当[`MpegEncoder`](./MpegEncoder)和[`MpegServer`](./MpegServer)的“设置字典”(`configDict`)。 |
+
+----------
+
+### `setParameter`
+
+```python
+dec.setParameter(widthDst=None, heightDst=None, nthread=None)
+```
+
+设置解码器。该方法仅当调用于[`FFmpegSetup()`](#ffmpegsetup)之前才会生效。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :---------: | :-----: | :--------: | :----------------------------- |
+| `widthDst`  | `int`   | | 实际解得的视频帧宽度. 同时设置`widthDst`和`heightDst`将使得视频被缩放为指定大小。如果该值被设置为`<=0`，则该值不会生效。 |
+| `heightDst` | `int`   | | 实际解得的视频帧高度. 同时设置`widthDst`和`heightDst`将使得视频被缩放为指定大小。如果该值被设置为`<=0`，则该值不会生效。 |
+| `nthread`   | `int`   | | 解码用的线程数。 |
+
+----------
+
+### `FFmpegSetup`
+
+```python
+dec.FFmpegSetup(videoPath=None)
+```
+
+打开视频文件，并初始化解码器。解码器初始化完成后，视频的参数将会从元数据中读取，同时也会自动检测出视频的格式、编码器的类型。如果调用该方法时，已经打开了一个视频文件，则该文件会先被关闭，然后再开启由该方法打开的视频。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str`或`bytes` | | 当前读取的视频路径。若该值没有给定，则会使用[`resetPath()`](#resetpath)所设置的默认视频路径。设置该参数同时也会使得默认视频路径改变。 |
+
+----------
+
+### `dumpFile`
+
+```python
+dec.dumpFile()
+```
+
+将视频元数据的概览显示再标准输出上。
+
+:::caution
+
+该方法的显示基于C的标准输出。因此，这些输出无法被python抓取或重定向。
+
+:::
+
+----------
+
+### `ExtractFrame`
+
+```python
+frames = dec.ExtractFrame(framePos=0, frameNum=1)
+```
+
+从某一个特定的帧起点，获取数帧。
+
+建议用户在只需要从已知起点获取少量视频帧的场合下使用此API。此API会首先利用`framePos`搜索提取帧的起始位置，然后从此位置开始提取需要数目的帧。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `framePos` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | 用来搜索起始读取位置的帧下标。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。 |
+| `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | 需要提取的连续帧的数目。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `frames`   | `np.ndarray` | 一个形状为 `(N, H, W, C)` 的数组，其中`N`由`frameNum`决定（当定位到视频末尾时，`N`可能会比预计的数目更少）。`(H, W)`分别为帧的高度和宽度。`C`代表3个RGB通道。若该方法调用的时候没有接收到任何数据，则会返回`None`。 |
+
+----------
+
+### `ExtractFrameByTime`
+
+```python
+frames = dec.ExtractFrameByTime(timePos=0, frameNum=1)
+```
+
+从某一个特定的时间起点，获取数帧。
+
+该方法从功能上和[`ExtractFrame()`](#extractframe)一致。唯一的区别是，它并非使用帧的下标作为搜索起点，而是使用时间点（单位为秒）来搜索帧的起点。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `timePos`  | `float` | <InlineIcon icon={vsiCheckIcon}/> | 用来搜索起始读取位置的时间点（单位为秒）。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。 |
+| `frameNum` | `int`   | <InlineIcon icon={vsiCheckIcon}/> | 需要提取的连续帧的数目。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `frames`   | `np.ndarray` | 一个形状为 `(N, H, W, C)` 的数组，其中`N`由`frameNum`决定（当定位到视频末尾时，`N`可能会比预计的数目更少）。`(H, W)`分别为帧的高度和宽度。`C`代表3个RGB通道。若该方法调用的时候没有接收到任何数据，则会返回`None`。 |
+
+----------
+
+### `ExtractGOP`
+
+```python
+gop = dec.ExtractGOP(framePos=-1)
+```
+
+获取一个[画面组<IconExternalLink/>][wiki-gop]（亦称为图像组，GOP）。画面组的大小由视频文件本身所决定。~~用户可以通过调取[`getParameter()`](#getparameter)来检查图像组的大小。~~
+
+建议在需要连续地读取、遍历视频的时候，使用`ExtractGOP()`。当该方法的返回值为`None`时，表示视频已经读取到末尾。
+
+:::info
+
+每当使用该方法的时候给定了`framePos>=0`，读取指针就会被重置到`framePos`的位置。
+
+:::
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `framePos` | `int`   | | 用来搜索读取画面组时起始位置的帧下标。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `gop`      | `np.ndarray` | 一个形状为 `(N, H, W, C)` 的数组，其中`N`是画面组大小（当定位到视频末尾时，`N`可能会比画面组大小更小）。`(H, W)`分别为帧的高度和宽度。`C`代表3个RGB通道。若该方法调用的时候没有接收到任何数据，则会返回`None`。 |
+
+----------
+
+### `ExtractGOPByTime`
+
+```python
+gop = dec.ExtractGOPByTime(timePos=-1)
+```
+
+获取一个[画面组<IconExternalLink/>][wiki-gop]（亦称为图像组，GOP）。与[`ExtractGOP`](#extractgop)唯一的区别是，它并非使用帧的下标作为搜索起点，而是使用时间点（单位为秒）来搜索画面组的起点。
+
+建议在需要连续地读取、遍历视频的时候，使用`ExtractGOPByTime()`。当该方法的返回值为`None`时，表示视频已经读取到末尾。
+
+:::info
+
+每当使用该方法的时候给定了`timePos>=0`，读取指针就会被重置到`timePos`的位置。
+
+:::
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `timePos`  | `float` | | 用来搜索读取画面组时起始位置的时间点（单位为秒）。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `gop`      | `np.ndarray` | 一个形状为 `(N, H, W, C)` 的数组，其中`N`是画面组大小（当定位到视频末尾时，`N`可能会比画面组大小更小）。`(H, W)`分别为帧的高度和宽度。`C`代表3个RGB通道。若该方法调用的时候没有接收到任何数据，则会返回`None`。 |
+
+----------
+
+### `ResetGOPPosition`
+
+```python
+gop = dec.ResetGOPPosition(framePos=-1, timePos=-1)
+```
+
+重置[`ExtractGOP()`](#extractgop)和[`ExtractGOPByTime()`](#extractgopbytime)共用的当前读取指针。该指针可以被重置为一个帧下标或一个时间点。该方法仅仅用于设置参数，不会触发画面组的读取。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `framePos` | `int`   | | 用来搜索读取画面组时起始位置的帧下标。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
+| `timePos`  | `float` | | 用来搜索读取画面组时起始位置的时间点（单位为秒）。该位置会在底层传递给[`av_seek_frame`<IconExternalLink/>][ffmpeg-avseekframe]。如果给定的值`<0`，该参数则会不起作用，换言之，会从上一次读取画面的末尾，接着读取下一个画面组。 |
+
+## 操作符
+
+### `__str__`
+
+```python
+info = str(dec)
+```
+
+返回当前解码器状态的简要报告。
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `info`  | `str` | 当前解码器状态的简报。解码器的设置和参数会以格式化字符串的形式展示。 |
+
+## 范例
+
+参见教程中的[*解码*](../examples/decoding)一节。接下来展示几种常用参数设置：
+
+### 缩放获取的帧
+
+```python
+...
+dec = mpegCoder.MpegDecoder()
+dec.setParameter(widthDst=720, heightDst=486)
+...
+```
+
+### 多线程解码
+
+```python
+...
+dec = mpegCoder.MpegDecoder()
+dec.setParameter(nthread=8)
+...
+```
+
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"
+[wiki-gop]:https://en.wikipedia.org/wiki/Group_of_pictures "Group of pictures | Wikipedia"
+[ffmpeg-avseekframe]:https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gaa23f7619d8d4ea0857065d9979c75ac8 "av_seek_frame"

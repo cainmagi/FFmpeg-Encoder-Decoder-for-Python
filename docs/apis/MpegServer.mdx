@@ -27,7 +27,7 @@ sev = mpegCoder.MpegServer()
 
 The frame-level video stream service used for pushing an online video stream.
 
-This service instance is integrated with the features of [`MpegEncoder`](./MpegEncoder). Like the [FFMpeg CLI usages][ffmpeg-stream], `MpegServer` could not be run independently. A server program is required to be launched before the instance getting set up. We recommend some server programs [here](../examples/server#preparation).
+This service instance is integrated with the features of [`MpegEncoder`](./MpegEncoder). Like the [FFMpeg CLI usages<IconExternalLink/>][ffmpeg-stream], `MpegServer` could not be run independently. A server program is required to be launched before the instance getting set up. We recommend some server programs [here](../examples/server#preparation).
 
 In practice, we recommend to split this instance into a sub-process, and use the [`multiprocessing`<IconExternalLink/>][python-mp] to feed the served data. See the [tutorial](../examples/server#dual-process-example) to find the example. Although this class also provides a non-blocking style API, we do not recommend users to use that. 
 
@@ -43,7 +43,7 @@ This class does not has initialization arguments.
 sev.clear()
 ```
 
-Clear all configurations **including** the default video path. If a video is being pushed by the server, `clear()` will close the video automatically.
+Clear all configurations **including** the default video address. If a video is being pushed by the server, `clear()` will close the video automatically, and release the connection to the server.
 
 :::tip
 
@@ -63,7 +63,7 @@ Reset the default video address to a specific value. Configuring this value will
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoAddress` | `str` or `bytes` | <InlineIcon icon={vsiCheckIcon}/> | The address of the video stream to be pushed. |
 
@@ -79,13 +79,13 @@ Get the video parameter or configuration value. Each time `paramName` only accep
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `paramName` | `str` or `bytes` | | The name of the parameter to be checked. If not give, all important parameters, including some private parameters will be returned as a `dict`. |
 
 Here is a list of checkable `paramName`:
 
-|   Parameter    |  Type   |  <center>Description</center>  |
+|   Parameter    |  Type   |  <div className="center">Description</div>  |
 | :------------: | :-----: | :----------------------------- |
 | `videoAddress` | `str`   | The current address of the pushed video. If the video is not being pushed, will return the default video address. |
 | `codecName`    | `str`   | The name of the encoder. See [here<IconExternalLink/>][ffmpeg-encoder] to view a list of FFMpeg encoders. Note that not all encoders could be used, the avaliable encoders depends on the current FFMpeg built libraries. |
@@ -98,13 +98,13 @@ Here is a list of checkable `paramName`:
 | `heightSrc`    | `int`   | The height of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `height`. |
 | `GOPSize`      | `int`   | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
 | `maxBframe`    | `int`   | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
-| `frameRate`    | `tuple` | The target frame rate of the pushed video stream. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational] |
-| `waitRef`      | `float` | A wait reference with the unit of `second`. This value shows that how much seconds the served data is ahead of played data. This value is required to be used with the non-blocking API [ServeFrame()](#serveframe). |
+| `frameRate`    | `float` | The target frame rate of the pushed video stream. The unit is FPS. |
+| `waitRef`      | `float` | A wait reference with the unit of `second`. This value represents how long users need to wait from this moment before pushing the next video frame. This value is required to be used with the non-blocking API [ServeFrame()](#serveframe). |
 | `ptsAhead`     | `int`   | The target ahead time duration in the unit of time stamp. This value is used for controlling the amount of `waitRef` and the waiting time of the blocking API. It is converted from the configuration `frameAhead`. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `param`    | Determined by `paramName` | The returned value of the parameter. If no `paramName` is given, will return all important parameters. |
 
@@ -120,13 +120,13 @@ sev.setParameter(
 )
 ```
 
-Set the configurations of the decoder. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
+Set the configurations of the server. To make the configurations take effects, these parameters need to be configured before [`FFmpegSetup()`](#ffmpegsetup).
 
 #### Requires
 
-|    Argument    |  Type   |  Required  |  <center>Description</center>  |
+|    Argument    |  Type   |  Required  |  <div className="center">Description</div>  |
 | :------------: | :-----: | :--------: | :----------------------------- |
-| `decoder`      | [`MpegDecoder`](./MpegDecoder) or [`MpegClient`](./MpegClient) | | When configure this argument, the required configurations will be copied from a decoder or a client. This argument is useful when trancoding a video. |
+| `decoder`      | [`MpegDecoder`](./MpegDecoder) or [`MpegClient`](./MpegClient) | | When configure this argument, the required configurations will be copied from a decoder or a client. If users also provide duplicated arguments in the same call, these copied parameters have a lower preference than those specified by users. This argument is useful when trancoding a video. |
 | `configDict`   | `dict` | | An alternative of the argument `decoder` when the parameters need to be passed through different processes. Using `configDict=decoder.getParameter()` is equivalent to using `decoder=decoder`. |
 | `videoAddress` | `str`   | | The current address of the pushed video. If the video is not being pushed, will return the default video address. |
 | `codecName`    | `str`   | | The name of the encoder. See [here<IconExternalLink/>][ffmpeg-encoder] to view a list of FFMpeg encoders. Note that not all encoders could be used, the avaliable encoders depends on the current FFMpeg built libraries. |
@@ -139,8 +139,8 @@ Set the configurations of the decoder. To make the configurations take effects, 
 | `heightSrc`    | `int`   | | The height of the source frame. This value should be consistent with the size of the [`np.ndarray`<IconExternalLink/>][link-ndarray]. If not given, will use `height`. |
 | `GOPSize`      | `int`   | | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
 | `maxBframe`    | `int`   | | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
-| `frameRate`    | `tuple` | | The target frame rate of the pushed video stream. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational] |
-| `frameAhead`   | `int`   | | The target ahead frame number. This value is used for controlling the number of served frames. For example, `waitRef` will be calculated by the half of the duration between the played framed number and this value. The `waitRef` and the waiting time of the blocking API [`ServeFrameBlock()`](#serveframeblock) will be controlled by this value. Users do not need to specify it explicitly, because it could be calculated from the configured `GOPSize`. |
+| `frameRate`    | `tuple` | | The target frame rate of the pushed video stream. This value should be a tuple of two `int`s: `(numerator, denominator)`. This format is consistent with [`AVRational`<IconExternalLink/>][ffmpeg-avrational]. |
+| `frameAhead`   | `int`   | | The target ahead frame number. This value is used for controlling the number of served frames. For example, `waitRef` is calculated by the equation: $N_w = T \times \max(N_{pushed} - N_{played} - N_{ahead},~ 0)$, where $N_{pushed}$, $N_{played}$ and $N_{ahead}$ are the number of pushed frames, the number of played frames and `frameAhead` respectively. $T$ is the time base. By this way, the `waitRef` and the waiting time of the blocking API [`ServeFrameBlock()`](#serveframeblock) will be controlled by this value. Users do not need to specify it explicitly, because it could be calculated from the configured `GOPSize`. |
 
 ----------
 
@@ -150,11 +150,11 @@ Set the configurations of the decoder. To make the configurations take effects, 
 sev.FFmpegSetup(videoAddress=None)
 ```
 
-Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the file name and the user configurations set by [`setParameter()`](#setparameter). If an video is opening by the encoder now, this video will be closed first, then the new video will be opened with the same configurations.
+Open the video file, and initialize the encoder. During the encoder initialization, the codec and the video format will be configured according to the protocol used by the serving address and the user configurations set by [`setParameter()`](#setparameter). If an video is being pushed by the server now, this video will be disconnected and released first, then the new video will be pushed with the same configurations.
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `videoAddress` | `str` or `bytes` | | The address of the video stream to be pushed. If not given, will use the default path configured by [`resetPath()`](#resetpath). Setting this argument will also cause the default video address to change. |
 
@@ -182,19 +182,19 @@ This method is based on C stdout. Therefore, these results could not be redirect
 is_success = sev.ServeFrame(PyArrayFrame)
 ```
 
-Push one frame to the video stream. Note that in most cases, the frame will not be pushed instantly. Instead of, the frames will be saved in a low-level buffer of the codec. Only when [`FFmpegClose()`](#ffmpegclose) is called, the frames in the buffer will be flushed into the stream.
+Push one frame to the video stream. Note that in most cases, the frame will not be pushed instantly. Instead of, the frames will be saved in a low-level buffer of the codec. Only when [`FFmpegClose()`](#ffmpegclose) is called, the frames in the buffer will be flushed into the stream. But the writting to the codec buffer will be finished instantly.
 
-This is the non-blocking API, which means the current thread will be only blocked by the frame encoding operations. Users need to use this API with `sev.getParameter('waitRef')` to control the served frame number. Otherwise, serving too many frames will make the data to be dropped or cause the video server to collapse. The example of this API could be found [here](../examples/server#non-blocking-example).
+This is the non-blocking API, which means the current thread will be only blocked by the frame encoding operations. Users need to use this API with [`getParameter('waitRef')`](#getparameter) to control the number of served frames. Otherwise, serving too many frames will make the data to be dropped or cause the video server to collapse. The example about how to correctly use this API could be found [here](../examples/server#non-blocking-example).
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `is_success`   | `bool` | The status of the frame pushing. If the given frame succeeds to be encoded and pushed, will return `True`; Otherwise, will return `False`. |
 
@@ -206,19 +206,19 @@ This is the non-blocking API, which means the current thread will be only blocke
 is_success = sev.ServeFrameBlock(PyArrayFrame)
 ```
 
-Push one frame to the video stream. Note that in most cases, the frame will not be pushed instantly. Instead of, the frames will be saved in a low-level buffer of the codec. Only when [`FFmpegClose()`](#ffmpegclose) is called, the frames in the buffer will be flushed into the stream.
+Push one frame to the video stream. Note that in most cases, the frame will not be pushed instantly. Instead of, the frames will be saved in a low-level buffer of the codec. Only when [`FFmpegClose()`](#ffmpegclose) is called, the frames in the buffer will be flushed into the stream. The writting and pushing speeds to the codec buffer are controlled by user configurations.
 
 This is the **recommended** blocking API, which means the method will cause the current thread blocked if the served frames are ahead of the playing time too much. In this case, the method will wait until the playing time catch the half of the served but not played frames. This method will ensure the safety of the video server.
 
 #### Requires
 
-|  Argument  |  Type   |  Required  |  <center>Description</center>  |
+|  Argument  |  Type   |  Required  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :--------: | :----------------------------- |
 | `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | An array with a shape of `(H, W, C)`, where `(H, W)` are the source height (`heightSrc`) and source width (`widthSrc`) respectively. `C` means the 3 RGB channel. |
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `is_success`   | `bool` | The status of the frame pushing. If the given frame succeeds to be encoded and pushed, will return `True`; Otherwise, will return `False`. |
 
@@ -237,14 +237,14 @@ Close the video stream and release the connection. Calling this method will flus
 ### `__str__`
 
 ```python
-info = str(enc)
+info = str(sev)
 ```
 
 Return a brief report of the current stream encoder status.
 
 #### Returns
 
-|  Argument  |  Type  |  <center>Description</center>  |
+|  Argument  |  Type  |  <div className="center">Description</div>  |
 | :--------: | :-----: | :----------------------------- |
 | `info`  | `str` | A brief report of the stream encoder status, the configurations and parameters will be listed as formatted texts. |
 
@@ -277,7 +277,7 @@ sev.setParameter(width=1280, height=720, frameRate=(5, 1), GOPSize=12, codecName
 ```python
 ...
 sev = mpegCoder.MpegServer()
-sev.setParameter(nthread=8)
+sev.setParameter(width=1280, height=720, GOPSize=12, nthread=8, videoAddress='rtsp://localhost:8554/video')
 ...
 ```
 

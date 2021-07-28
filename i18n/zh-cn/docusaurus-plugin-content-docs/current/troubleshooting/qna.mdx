@@ -1,0 +1,41 @@
+---
+id: qna
+title: 问与答
+sidebar_label: 问与答
+slug: /troubleshooting/qna
+description: 关于mpegCoder现状的一些问答。
+---
+
+import DarkButton from '@site/src/components/DarkButton';
+import IconExternalLink from '@theme/IconExternalLink';
+import mdiEmailEditOutline from '@iconify-icons/mdi/email-edit-outline';
+
+## 简介
+
+如果你还想问更多的问题，请通过以下按钮联系作者：
+
+<p>
+  <DarkButton to="mailto:cainmagi@gmail.com" icon={mdiEmailEditOutline}>
+    联系作者
+  </DarkButton>
+</p>
+
+### 关于音频处理的计划
+
+* **问**: 当前版本`mpegCoder 3.x`不支持音频处理。以后将会实现这个特性吗？
+
+* **答**: 是的。从未来的`mpegCoder 4.x`开始，将会支持音频处理。但是我现在没有很多空余时间用在这个项目上，所以实现这个特性可能需要花很长时间。我很乐意有人能发起一个pull request (PR)帮我。
+
+### 关于免编码推流的计划
+
+* **问**: 当前版本`mpegCoder 3.x`中，`MpegServer`只支持以编码视频帧的方式推流。以后将会有一个类，用来在读取一个视频文件的同时直接将它推流出去吗？
+
+* **答**: 不。我认为这种情况下官方发行的FFMpeg本身就已经够用了。建议有这方面需求的用户联合使用一个服务器程序和[FFMpeg<IconExternalLink/>][link-ffmpeg-stream]本身提供的推流功能。
+
+### 关于商业化的计划
+
+* **问**: `mpegCoder`以后会有付费服务吗？
+
+* **答**: 不。`mpegCoder`和FFMpeg使用的是完全相同的协议（GPL v3）。在此前提下，该项目是完全开源的。尽管GPLv3允许用户开放商业计划，在这样的协议下维护商业计划对我将会是一个沉重的负担。我不会考虑任何跟此项目有关的商业活动（哪怕是捐款）。
+
+[link-ffmpeg-stream]:https://trac.ffmpeg.org/wiki/StreamingGuide "FFMpeg used for streaming"

@@ -31,7 +31,7 @@ module.exports = {
       collapsed: false,
       items: ['troubleshooting/installation', 'troubleshooting/running', 'troubleshooting/qna'],
     },
-    'changlog'
+    'changelog'
   ],
   apis: [
     'apis',

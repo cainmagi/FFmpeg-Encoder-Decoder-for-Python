@@ -1,0 +1,210 @@
+{
+  "theme.NotFound.title": {
+    "message": "此页无法找到",
+    "description": "The title of the 404 page"
+  },
+  "theme.NotFound.p1": {
+    "message": "无法找到所求的资源。",
+    "description": "The first paragraph of the 404 page"
+  },
+  "theme.NotFound.p2": {
+    "message": "请联系本站的维护人员，并告知ta该页面的问题，您可以通过发送issue完成这一点。",
+    "description": "The 2nd paragraph of the 404 page"
+  },
+  "theme.AnnouncementBar.closeButtonAriaLabel": {
+    "message": "关闭",
+    "description": "The ARIA label for close button of announcement bar"
+  },
+  "theme.blog.paginator.navAriaLabel": {
+    "message": "博客列表导航",
+    "description": "The ARIA label for the blog pagination"
+  },
+  "theme.blog.paginator.newerEntries": {
+    "message": "上一篇",
+    "description": "The label used to navigate to the newer blog posts page (previous page)"
+  },
+  "theme.blog.paginator.olderEntries": {
+    "message": "下一篇",
+    "description": "The label used to navigate to the older blog posts page (next page)"
+  },
+  "theme.blog.post.readingTime.plurals": {
+    "message": "一分钟阅读|{readingTime}分钟阅读",
+    "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.tags.tagsListLabel": {
+    "message": "标签：",
+    "description": "The label alongside a tag list"
+  },
+  "theme.blog.post.readMore": {
+    "message": "详情",
+    "description": "The label used in blog post item excerpts to link to full blog posts"
+  },
+  "theme.blog.post.paginator.navAriaLabel": {
+    "message": "博客文章导航",
+    "description": "The ARIA label for the blog posts pagination"
+  },
+  "theme.blog.post.paginator.newerPost": {
+    "message": "新文章",
+    "description": "The blog post button label to navigate to the newer/previous post"
+  },
+  "theme.blog.post.paginator.olderPost": {
+    "message": "旧文章",
+    "description": "The blog post button label to navigate to the older/next post"
+  },
+  "theme.blog.sidebar.navAriaLabel": {
+    "message": "博客近期文章导航",
+    "description": "The ARIA label for recent posts in the blog sidebar"
+  },
+  "theme.tags.tagsPageTitle": {
+    "message": "标签",
+    "description": "The title of the tag list page"
+  },
+  "theme.blog.post.plurals": {
+    "message": "文章|{count}篇文章",
+    "description": "Pluralized label for \"{count} posts\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.tagTitle": {
+    "message": "\"{tagName}\" ({nPosts})",
+    "description": "The title of the page for a blog tag"
+  },
+  "theme.tags.tagsPageLink": {
+    "message": "查看所有标签",
+    "description": "The label of the link targeting the tag list page"
+  },
+  "theme.CodeBlock.copyButtonAriaLabel": {
+    "message": "复制代码到剪贴板",
+    "description": "The ARIA label for copy code blocks button"
+  },
+  "theme.CodeBlock.copied": {
+    "message": "已复制",
+    "description": "The copied button label on code blocks"
+  },
+  "theme.CodeBlock.copy": {
+    "message": "复制",
+    "description": "The copy button label on code blocks"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "展开侧边栏",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "展开侧边栏",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.paginator.navAriaLabel": {
+    "message": "文档导览",
+    "description": "The ARIA label for the docs pagination"
+  },
+  "theme.docs.paginator.previous": {
+    "message": "上一篇",
+    "description": "The label used to navigate to the previous doc"
+  },
+  "theme.docs.paginator.next": {
+    "message": "下一篇",
+    "description": "The label used to navigate to the next doc"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "折叠侧边栏",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonAriaLabel": {
+    "message": "折叠侧边栏",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.responsiveCloseButtonLabel": {
+    "message": "关闭菜单",
+    "description": "The ARIA label for close button of mobile doc sidebar"
+  },
+  "theme.docs.sidebar.responsiveOpenButtonLabel": {
+    "message": "打开菜单",
+    "description": "The ARIA label for open button of mobile doc sidebar"
+  },
+  "theme.docs.sidebar.navAriaLabel": {
+    "message": "侧边栏导航",
+    "description": "The ARIA label for documentation menu"
+  },
+  "theme.docs.versions.unreleasedVersionLabel": {
+    "message": "该版本 ({siteTitle} {versionLabel}) 的文档尚未发布。",
+    "description": "The label used to tell the user that he's browsing an unreleased doc version"
+  },
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "该版本 ({siteTitle} {versionLabel}) 已被标记弃用，该文档不再维护。",
+    "description": "The label used to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "请查看 {latestVersionLink} ({versionLabel}) 以阅览最新文档。",
+    "description": "The label userd to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionLinkLabel": {
+    "message": "最新版本",
+    "description": "The label used for the latest version suggestion link label"
+  },
+  "theme.common.editThisPage": {
+    "message": "编辑此页",
+    "description": "The link label to edit the current page"
+  },
+  "theme.common.headingLinkTitle": {
+    "message": "回到顶端",
+    "description": "Title for link to heading"
+  },
+  "theme.lastUpdated.atDate": {
+    "message": "更新于 {date}",
+    "description": "The words used to describe on which date a page has been last updated"
+  },
+  "theme.lastUpdated.byUser": {
+    "message": "作者： {user}",
+    "description": "The words used to describe by who the page has been last updated"
+  },
+  "theme.lastUpdated.lastUpdatedAtBy": {
+    "message": "最后更新于 {atDate}{byUser}",
+    "description": "The sentence used to display when a page has been last updated, and by who"
+  },
+  "theme.common.skipToMainContent": {
+    "message": "跳到正文",
+    "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
+  },
+  "index.sub-title": {
+    "message": "本项目是一个基于C++的，支持Linux、Windows、Python 3.5+和Numpy 1.13+的FFMpeg编解码器。理论上无需安装FFMpeg，也可以使用本项目包。",
+    "description": "Sub-title text in the cover."
+  },
+  "index.button.start": {
+    "message": "开始了解",
+    "description": "Text of the index button: Get started"
+  },
+  "index.button.pypi": {
+    "message": "PyPI项目",
+    "description": "Text of the index button: PYPI Project"
+  },
+  "index.feat.python.title": {
+    "message": "无依赖项的Python包",
+    "description": "Feature title for Python-C-API."
+  },
+  "index.feat.python.descr": {
+    "message": "本项目基于Python标准库提供的 {python} 实现。无论用户是需要使用或编译本项目，只需确保安装唯一的python依赖项 {numpy}。",
+    "description": "Feature description for Python-C-API."
+  },
+  "index.feat.ffmpeg.title": {
+    "message": "完全基于FFMpeg",
+    "description": "Feature title for FFMpeg."
+  },
+  "index.feat.ffmpeg.descr": {
+    "message": "本项目实现了{ffmpeg}和{numpy}的组合，并且不需要修改任何底层实现。用户可以得益于便捷的Numpy API和FFMpeg的各种特性。",
+    "description": "Feature description for FFMpeg."
+  },
+  "index.feat.cpp.title": {
+    "message": "通过C++编译",
+    "description": "Feature title for CPP11."
+  },
+  "index.feat.cpp.descr": {
+    "message": "在 Windows 和 Linux 上通过C++编译。Win版和Linux版分别由VC++和G++编译完成。该项目的所有代码均在{license}的指导下开源。",
+    "description": "Feature description for CPP11."
+  },
+  "index.layout.title": {
+    "message": "欢迎使用{title}",
+    "description": "The title displayed in the website head."
+  },
+  "index.layout.descr": {
+    "message": "一个基于Python-C-API的、用以结合FFMpeg和Numpy的python包。",
+    "description": "The description displayed in the website head."
+  }
+}

@@ -1,0 +1,298 @@
+---
+id: MpegServer
+title: MpegServer
+sidebar_label: MpegServer
+slug: /apis/MpegServer
+description: 面向Python的快速视频推流接口，其底层通过C-API封装FFMpeg的推流器实现。
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import vsiCheckIcon from '@iconify-icons/codicon/check';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={vsiSymbolClass}/> Class
+  <Splitter />
+  <SourceURL url="MpegStreamer.h#L114">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+sev = mpegCoder.MpegServer()
+```
+
+帧尺度的视频推流器，用于推送在线（实时）视频流。
+
+该服务端实例综合了[`MpegEncoder`](./MpegEncoder)的特性。与[FFMpeg命令行用法][ffmpeg-stream]如出一辙的是，`MpegServer`无法独立地运行。换言之，需要在启动本实例之前，启动一个服务器程序。[这里](../examples/server#preparation)列出了一些可用的服务器程序。
+
+在实际场合中，我们建议用户将本实例拆分到一个子进程里，并通过[`multiprocessing`<IconExternalLink/>][python-mp]库来输送数据，例子参见[tutorial](../examples/server#dual-process-example)。尽管本类也提供了一个非阻塞式的API，但并不建议使用它。
+
+## 参数
+
+该类不提供初始化参数。
+
+## 方法
+
+### `clear`
+
+```python
+sev.clear()
+```
+
+清除**包括**默认视频地址之外的所有设置、参数。如果该方法调用的时候，该推流器正在为一个视频推送数据，`clear()`就会自动关闭该视频，并释放与服务器之间的连接。
+
+:::tip
+
+就像使用其他的文件写入类一样，建议用户总是手动调用`clear()`。
+
+:::
+
+----------
+
+### `resetPath`
+
+```python
+sev.resetPath(videoAddress)
+```
+
+将默认的视频地址重置为给定的值。该方法仅仅用于设置参数，不会推送出视频。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoAddress` | `str`或`bytes` | <InlineIcon icon={vsiCheckIcon}/> | 所推送视频流的目标地址。 |
+
+----------
+
+### `getParameter`
+
+```python
+param = sev.getParameter(paramName=None)
+```
+
+获取视频参数或设置值。每次调用时，`paramName`仅能接受一个参数名。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `paramName` | `str` or `bytes` | | 待检查的参数名字。如果没有给定，则所有的重要参数（包括一小部分私有参数）会被收集并返回成一个`dict`。 |
+
+接下来列出可以被索引的`paramName`:
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :------------: | :-----: | :----------------------------- |
+| `videoAddress` | `str`   | 当前推送视频的目标地址。若视频尚未被推送，则会返回默认视频地址。 |
+| `codecName`    | `str`   | 编码器(codec)的名字，所有可用的FFMpeg编码器列表参见[此文档<IconExternalLink/>][ffmpeg-encoder]。需要特别注意的是，并非所有的编码器都是可用的，实际哪些编码器可用，取决于当前使用的FFMpeg依赖库的编译情况。 |
+| `formatName`   | `str`   | 通过参数`videoAddress`所推测出的视频格式。 |
+| `nthread`      | `int`   | 编码用的线程数。 |
+| `bitRate`      | `float` | 所推送视频的比特率（单位为Kb/s）。该值可以直接决定输出视频的文件大小。 |
+| `width`        | `int`   | 所推送视频的宽度。该值主要由用户设置所决定。 |
+| `height`       | `int`   | 所推送视频的高度。该值主要由用户设置所决定。 |
+| `widthSrc`     | `int`   | 给定的原始输入帧的宽度。该值必须和输入的矩阵[`np.ndarray`<IconExternalLink/>][link-ndarray]大小保持一致。如果没有指定，则会使用`width`。 |
+| `heightSrc`    | `int`   | 给定的原始输入帧的高度。该值必须和输入的矩阵[`np.ndarray`<IconExternalLink/>][link-ndarray]大小保持一致。如果没有指定，则会使用`height`。 |
+| `GOPSize`      | `int`   | 每个[画面组(GOP)<IconExternalLink/>][wiki-gop]的大小。 |
+| `maxBframe`    | `int`   | 在每个画面组内，所出现的连续的B帧的帧数的最大值。在绝大多数情况下，该值无法超过`16`。 |
+| `frameRate`    | `float` | 所写入视频的目标帧率。（单位为FPS）。 |
+| `waitRef`      | `float` | 参考等待时长（单位为秒）。该值表示从获取该参数开始，建议等待多长时间后再推送下一帧。在使用非阻塞式API [ServeFrame()](#serveframe)的时候，必须检查该值。 |
+| `ptsAhead`     | `int`   | 目标前置时长（单位为时间戳）。该值是通过`frameAhead`转换而来的，并用于控制`waitRef`的值，以及阻塞式API的等待时长。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `param`    | 由`paramName`决定 | 返回的参数值。若函数调用时未提供`paramName`，则会收集所有重要的参数。 |
+
+----------
+
+### `setParameter`
+
+```python
+sev.setParameter(
+    decoder=None, configDict=None, videoPath=None, codecName=None,
+    nthread=None, bitRate=None, width=None, height=None, widthSrc=None, heightSrc=None,
+    GOPSize=None, maxBframe=None, frameRate=None, frameAhead=None
+)
+```
+
+设置编码器。该方法仅当调用于[`FFmpegSetup()`](#ffmpegsetup)之前才会生效。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :------------: | :-----: | :--------: | :----------------------------- |
+| `decoder`      | [`MpegDecoder`](./MpegDecoder)或[`MpegClient`](./MpegClient) | | 若设置该值，则必要的参数会从给定的解码器或客户端实例里拷贝。如果同次调用里还重复指定了其他参数，这些拷贝所得的参数优先级低于用户特别指定的参数。该参数在转码视频的时候特别有用。 |
+| `configDict`   | `dict` | | 当参数需要跨越子进程从其他编码器或客户端传递给此实例时，用于替代`decoder`参数的方案。使用形如`configDict=decoder.getParameter()`的方式等价于使用`decoder=decoder`参数。 |
+| `videoAddress` | `str`   | | 当前推送视频的目标地址。若视频尚未被推送，则会返回默认视频地址。 |
+| `codecName`    | `str`   | | 编码器(codec)的名字，所有可用的FFMpeg编码器列表参见[此文档<IconExternalLink/>][ffmpeg-encoder]。需要特别注意的是，并非所有的编码器都是可用的，实际哪些编码器可用，取决于当前使用的FFMpeg依赖库的编译情况。 |
+| `formatName`   | `str`   | | 通过参数`videoAddress`所推测出的视频格式。 |
+| `nthread`      | `int`   | | 编码用的线程数。 |
+| `bitRate`      | `float` | | 所推送视频的比特率（单位为Kb/s）。该值可以直接决定输出视频的文件大小。 |
+| `width`        | `int`   | | 所推送视频的宽度。 |
+| `height`       | `int`   | | 所推送视频的高度。 |
+| `widthSrc`     | `int`   | | 给定的原始输入帧的宽度。该值必须和输入的矩阵[`np.ndarray`<IconExternalLink/>][link-ndarray]大小保持一致。如果没有指定，则会使用`width`。 |
+| `heightSrc`    | `int`   | | 给定的原始输入帧的高度。该值必须和输入的矩阵[`np.ndarray`<IconExternalLink/>][link-ndarray]大小保持一致。如果没有指定，则会使用`height`。 |
+| `GOPSize`      | `int`   | | 每个[画面组(GOP)<IconExternalLink/>][wiki-gop]的大小。 |
+| `maxBframe`    | `int`   | | 在每个画面组内，所出现的连续的B帧的帧数的最大值。在绝大多数情况下，该值无法超过`16`。 |
+| `frameRate`    | `tuple` | | 所写入视频的目标帧率。该值需要是一个由两个`int`构成的二元元组： `(分子, 分母)`。此格式是为了和[`AVRational`<IconExternalLink/>][ffmpeg-avrational]保持一致。 |
+| `frameAhead`   | `int`   | | 目标前置帧数。该值用于控制推送的帧数。例如，`waitRef`是通过计算此式得到的：$N_w = T \times \max(N_{pushed} - N_{played} - N_{ahead},~ 0)$，其中$N_{pushed}$，$N_{played}$和$N_{ahead}$分别代表已经推送过的帧数，已经播放的帧数，以及`frameAhead`。$T$是视频的时基。该值通过这种方式，实现了对`waitRef`和阻塞时API [`ServeFrameBlock()`](#serveframeblock)每次等待时长的控制。用户不需要显式地指定该值，因为它可以通过用户指定的`GOPSize`推算出。 |
+
+----------
+
+### `FFmpegSetup`
+
+```python
+sev.FFmpegSetup(videoAddress=None)
+```
+
+打开视频文件，并初始化编码器。编码器初始化的过程中，所用编码方式(codec)和视频格式(例如`mp4`,`flv`)将会从用户利用[`setParameter()`](#setparameter)指定的参数设置、以及推送地址的协议检出。如果调用该方法时，已经在推送一个视频，则该视频会先被释放，然后再以相同设置推送由该方法指定的视频。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `videoPath` | `str`或`bytes` | | 当前推送视频的目标地址。若该值没有给定，则会使用[`resetPath()`](#resetpath)所设置的默认视频地址。设置该参数同时也会使得默认视频地址改变。 |
+
+----------
+
+### `dumpFile`
+
+```python
+sev.dumpFile()
+```
+
+将视频元数据的概览显示再标准输出上。
+
+:::caution
+
+该方法的显示基于C的标准输出。因此，这些输出无法被python抓取或重定向。
+
+:::
+
+----------
+
+### `ServeFrame`
+
+```python
+is_success = sev.ServeFrame(PyArrayFrame)
+```
+
+推送一帧到视频流。在绝大多数情况下，该帧将不会被马上被推送出去，而是先存放在编码器(codec)管理的底层缓存里。只有在[`FFmpegClose()`](#ffmpegclose)被调用的时候，缓存内的帧才会刷入（flush）到视频之内。但是，写入缓存的过程是马上完成的。
+
+这是一个非阻塞式的API，亦即是说，调用此方法时，当前线程只会被编码操作所阻塞。用户在使用此方法时，需要与[`getParameter('waitRef')`](#getparameter)连用以控制推送帧的数目。否则将会一口气推送过多的帧，而这要么会导致多余的数据被服务器丢掉，要么就直接导致服务器宕机。正确使用此方法的例子参见[这里](../examples/server#non-blocking-example)。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | 一个形状为`(H, W, C)`的数组，其中`(H, W)`分别为源帧的高度（`heightSrc`）和宽度（`widthSrc`）。 `C`代表3个RGB通道。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `is_success`   | `bool` | 帧推送的状态。如果给定的帧成功地编码并推送，则返回`True`，否则，返回`False`。 |
+
+----------
+
+### `ServeFrameBlock`
+
+```python
+is_success = sev.ServeFrameBlock(PyArrayFrame)
+```
+
+推送一帧到视频流。在绝大多数情况下，该帧将不会被马上被推送出去，而是先存放在编码器(codec)管理的底层缓存里。只有在[`FFmpegClose()`](#ffmpegclose)被调用的时候，缓存内的帧才会刷入（flush）到视频之内。该方法写入和推送视频帧的速度受到用户设置的约束。
+
+这是**推荐**使用的阻塞式API，亦即是说，如果已经推送的帧数明显超过已经播放的帧数，那么调用此方法会导致当前线程被阻塞。在这种情况下，该方法会一直等待，直到播放时间追上已经被推送、但还未被播放的视频时长的一半。使用该方法可以保证视频服务器的安全。
+
+#### 输入
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :--------: | :----------------------------- |
+| `PyArrayFrame` | `np.ndarray` | <InlineIcon icon={vsiCheckIcon}/> | 一个形状为`(H, W, C)`的数组，其中`(H, W)`分别为源帧的高度（`heightSrc`）和宽度（`widthSrc`）。 `C`代表3个RGB通道。 |
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `is_success`   | `bool` | 帧推送的状态。如果给定的帧成功地编码并推送，则返回`True`，否则，返回`False`。 |
+
+----------
+
+### `FFmpegClose`
+
+```python
+sev.FFmpegClose()
+```
+
+关闭视频流，并释放与服务器的连接。调用该方法会使得所有缓存内的帧被编码、并刷入（flush）到视频流中。此后，编码器会为视频流推送文件尾（video tail）。如果用户没有显式调用该方法，则会被[`clear()`](#clear)隐式调用，或者在编码器实例析构的时候隐式调用。
+
+## 操作符
+
+### `__str__`
+
+```python
+info = str(sev)
+```
+
+返回当前流编码器状态的简要报告。
+
+#### 输出
+
+|  参数   |  类型  |  <div className="center">说明</div>  |
+| :--------: | :-----: | :----------------------------- |
+| `info`  | `str` | 当前流编码器状态的简报。编码器的设置和参数会以格式化字符串的形式展示。 |
+
+## 范例
+
+参见教程中的[*`服务端`*](../examples/server)一节。接下来展示几种常用参数设置：
+
+### 优化视频编码
+
+```python
+...
+dec = mpegCoder.MpegDecoder()
+...
+sev = mpegCoder.MpegServer()
+sev.setParameter(decoder=dec, codecName='libx265', videoAddress='rtsp://localhost:8554/video', GOPSize=24, maxBframe=16)
+...
+```
+
+### 缩放、并重采样视频
+
+```python
+...
+sev = mpegCoder.MpegServer()
+sev.setParameter(width=1280, height=720, frameRate=(5, 1), GOPSize=12, codecName='libx265', videoAddress='rtsp://localhost:8554/video')
+...
+```
+
+### 多线程编码
+
+```python
+...
+sev = mpegCoder.MpegServer()
+sev.setParameter(width=1280, height=720, GOPSize=12, nthread=8, videoAddress='rtsp://localhost:8554/video')
+...
+```
+
+### 手动设置目标前置帧数
+
+```python
+...
+sev = mpegCoder.MpegServer()
+sev.setParameter(decoder=d, codecName='libx265', videoAddress='rtsp://localhost:8554/video', GOPSize=24, frameAhead=48)
+...
+```
+
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"
+[python-mp]:https://docs.python.org/3/library/multiprocessing.html "multiprocessing | Python"
+[wiki-gop]:https://en.wikipedia.org/wiki/Group_of_pictures "Group of pictures | Wikipedia"
+[ffmpeg-stream]:https://trac.ffmpeg.org/wiki/StreamingGuide "FFMpeg used for streaming"
+[ffmpeg-encoder]:https://ffmpeg.org/ffmpeg-codecs.html#toc-Video-Encoders "Video encoders of FFMpeg"
+[ffmpeg-avrational]:https://ffmpeg.org/doxygen/trunk/structAVRational.html "AVRational"
