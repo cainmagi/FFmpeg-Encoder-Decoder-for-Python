@@ -250,7 +250,7 @@ gop = dec.ExtractGOP(framePos=-1)
 gop = dec.ExtractGOPByTime(timePos=-1)
 ```
 
-获取一个[画面组<IconExternalLink/>][wiki-gop]（亦称为图像组，GOP）。与[`ExtractGOP`](#extractgop)唯一的区别是，它并非使用帧的下标作为搜索起点，而是使用时间点（单位为秒）来搜索画面组的起点。
+获取一个[画面组<IconExternalLink/>][wiki-gop]（亦称为图像组，GOP）。与[`ExtractGOP()`](#extractgop)唯一的区别是，它并非使用帧的下标作为搜索起点，而是使用时间点（单位为秒）来搜索画面组的起点。
 
 建议在需要连续地读取、遍历视频的时候，使用`ExtractGOPByTime()`。当该方法的返回值为`None`时，表示视频已经读取到末尾。
 

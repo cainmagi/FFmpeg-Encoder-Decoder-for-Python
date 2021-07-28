@@ -99,7 +99,7 @@ Here is a list of checkable `paramName`:
 | `GOPSize`      | `int`   | The size of one [GOP<IconExternalLink/>][wiki-gop]. |
 | `maxBframe`    | `int`   | The maximal number of consecutive B frames in a GOP. In most cases, this value could not be greater than `16`. |
 | `frameRate`    | `float` | The target frame rate of the pushed video stream. The unit is FPS. |
-| `waitRef`      | `float` | A wait reference with the unit of `second`. This value represents how long users need to wait from this moment before pushing the next video frame. This value is required to be used with the non-blocking API [ServeFrame()](#serveframe). |
+| `waitRef`      | `float` | A wait reference with the unit of `second`. This value represents how long users need to wait from this moment before pushing the next video frame. This value is required to be used with the non-blocking API [`ServeFrame()`](#serveframe). |
 | `ptsAhead`     | `int`   | The target ahead time duration in the unit of time stamp. This value is used for controlling the amount of `waitRef` and the waiting time of the blocking API. It is converted from the configuration `frameAhead`. |
 
 #### Returns {#returns}

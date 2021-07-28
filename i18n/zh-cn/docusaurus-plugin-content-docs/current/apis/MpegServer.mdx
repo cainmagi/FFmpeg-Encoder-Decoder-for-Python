@@ -29,7 +29,7 @@ sev = mpegCoder.MpegServer()
 
 该服务端实例综合了[`MpegEncoder`](./MpegEncoder)的特性。与[FFMpeg命令行用法][ffmpeg-stream]如出一辙的是，`MpegServer`无法独立地运行。换言之，需要在启动本实例之前，启动一个服务器程序。[这里](../examples/server#preparation)列出了一些可用的服务器程序。
 
-在实际场合中，我们建议用户将本实例拆分到一个子进程里，并通过[`multiprocessing`<IconExternalLink/>][python-mp]库来输送数据，例子参见[tutorial](../examples/server#dual-process-example)。尽管本类也提供了一个非阻塞式的API，但并不建议使用它。
+在实际场合中，我们建议用户将本实例拆分到一个子进程里，并通过[`multiprocessing`<IconExternalLink/>][python-mp]库来输送数据，例子参见[教程](../examples/server#dual-process-example)。尽管本类也提供了一个非阻塞式的API，但并不建议使用它。
 
 ## 参数 {#arguments}
 
@@ -99,7 +99,7 @@ param = sev.getParameter(paramName=None)
 | `GOPSize`      | `int`   | 每个[画面组(GOP)<IconExternalLink/>][wiki-gop]的大小。 |
 | `maxBframe`    | `int`   | 在每个画面组内，所出现的连续的B帧的帧数的最大值。在绝大多数情况下，该值无法超过`16`。 |
 | `frameRate`    | `float` | 所写入视频的目标帧率。（单位为FPS）。 |
-| `waitRef`      | `float` | 参考等待时长（单位为秒）。该值表示从获取该参数开始，建议等待多长时间后再推送下一帧。在使用非阻塞式API [ServeFrame()](#serveframe)的时候，必须检查该值。 |
+| `waitRef`      | `float` | 参考等待时长（单位为秒）。该值表示从获取该参数开始，建议等待多长时间后再推送下一帧。在使用非阻塞式API [`ServeFrame()`](#serveframe)的时候，必须检查该值。 |
 | `ptsAhead`     | `int`   | 目标前置时长（单位为时间戳）。该值是通过`frameAhead`转换而来的，并用于控制`waitRef`的值，以及阻塞式API的等待时长。 |
 
 #### 输出 {#returns}
