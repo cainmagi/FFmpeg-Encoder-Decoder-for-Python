@@ -30,9 +30,10 @@
     "prism-react-renderer": "^1.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-resize-detector": "^6.7.4",
     "rehype-katex": "4",
     "remark-math": "3",
-    "sass": "^1.35.2",
+    "sass": "^1.36.0",
     "url-loader": "^4.1.1"
   },
   "browserslist": {

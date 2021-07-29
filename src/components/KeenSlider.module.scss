@@ -1,49 +1,35 @@
 /* stylelint-disable */
+@use "sass:math";
+$dots_size: 10px;
+$arrow_size: 50px;
 
 .navigationWrapper {
   position: relative;
 }
 
-.dots {
-  display: flex;
-  padding: 10px 0;
-  justify-content: center;
-  .dot {
-    border: none;
-    width: 10px;
-    height: 10px;
-    background: #c5c5c5;
-    html[data-theme='dark'] & {
-      background: #444;
-    }
-    border-radius: 50%;
-    margin: 0 5px;
-    padding: 5px;
-    cursor: pointer;
-    &:focus{
-      outline: none;
-    }
-    &.active {
-      background: #000;
-      html[data-theme='dark'] & {
-        background: #fff;
-      }
-    }
-  }
-}
-
 .arrow {
-  width: 30px;
-  height: 30px;
+  width: math.div($arrow_size, 44) * 27;
+  height: $arrow_size;
+  margin-top: 0px - math.div($arrow_size, 2) + $dots_size;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   -webkit-transform: translateY(-50%);
   fill: #0009;
+  opacity: 0.5;
+  z-index: 10;
   html[data-theme='dark'] & {
     fill: #fff9;
   }
-  cursor: pointer;
+  &.hidden {
+    display: none;
+  }
+  &:not(.disabled):hover {
+    opacity: 1.0;
+  }
+  &:not(.disabled):not(.hidden) {
+    cursor: pointer;
+  }
   &.left {
     left: 5px;
   }
@@ -59,7 +45,41 @@
   }
 }
 
+.dots {
+  display: flex;
+  padding: $dots_size 0;
+  justify-content: center;
+  .dot {
+    border: none;
+    width: $dots_size;
+    height: $dots_size;
+    background: #c5c5c5;
+    html[data-theme='dark'] & {
+      background: #444;
+    }
+    &:not(.active):hover {
+      background: #555;
+      html[data-theme='dark'] & {
+        background: #a5a5a5;
+      }
+    }
+    border-radius: 50%;
+    margin: 0 math.div($dots_size, 2);
+    padding: math.div($dots_size, 2);
+    cursor: pointer;
+    &:focus{
+      outline: none;
+    }
+    &.active {
+      background: #000;
+      html[data-theme='dark'] & {
+        background: #fff;
+      }
+    }
+  }
+}
+
 .slideItem {
-  min-height: 5em;
+  min-height: 6rem;
   margin: 0 auto;
 }

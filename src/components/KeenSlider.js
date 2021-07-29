@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import clsx from 'clsx';
 
+import { useResizeDetector } from 'react-resize-detector';
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.scss";
 import styles from "./KeenSlider.module.scss";
@@ -37,6 +38,7 @@ function ArrowRight(props) {
 
 
 function KeenSlider(props) {
+  let sliderRes;
   const [currentSlide, setCurrentSlide] = React.useState(0)
   const [sliderRef, slider] = useKeenSlider({
     initial: props.initial !== undefined ? props.initial : 0,
@@ -55,19 +57,30 @@ function KeenSlider(props) {
         slidesPerView: 4,
       },
     },
+    slides: `.${styles.slideItem}`,
+    created(s) {
+      sliderRes=s;
+    },
     slideChanged(s) {
-      setCurrentSlide(s.details().relativeSlide)
+      setCurrentSlide(s.details().relativeSlide);
     },
   });
 
+  const onResize = useCallback(() => {
+    if (sliderRes !== undefined && sliderRes !== null) {
+      sliderRes.resize();
+    }
+  }, []);
+  const { width, height, ref } = useResizeDetector({ onResize, handleWidth: true, handleHeight: false });
+
   return (
     <>
-      <div className={styles.navigationWrapper}>
+      <div ref={ref} className={styles.navigationWrapper}>
         <div ref={sliderRef} className="keen-slider">
           {props.children && (
             React.Children.map(props.children, child => {
               return (
-                <div className={clsx(["keen-slider__slide", styles.slideItem])}>
+                <div className={styles.slideItem}>
                   {child}
                 </div>
               );
@@ -78,11 +91,11 @@ function KeenSlider(props) {
           <>
             <ArrowLeft
               onClick={(e) => e.stopPropagation() || slider.prev()}
-              disabled={currentSlide === 0}
+              disabled={false} //{currentSlide === 0}
             />
             <ArrowRight
               onClick={(e) => e.stopPropagation() || slider.next()}
-              disabled={currentSlide === slider.details().size - 1}
+              disabled={false} //{currentSlide === slider.details().size - 1}
             />
           </>
         )}
