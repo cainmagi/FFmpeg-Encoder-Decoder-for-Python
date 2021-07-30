@@ -32,7 +32,7 @@ except ImportError:
             if ispkg:
                 yield name
 
-VERSION = '3.1.0'
+VERSION = '3.1.0-b'
 
 INSTALL_REQUIRES_FILE = [
     'numpy>=1.16.0',
@@ -142,6 +142,7 @@ setup(
     url='https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python',
     project_urls={
         'Tracker': 'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues',
+        'Documentation': 'https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/',
     },
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
@@ -169,7 +170,7 @@ setup(
         'video-stream', 'python-c-api', 'rtsp-push', 'rtmp-push',
         'rtsp-player', 'rtmp-player', 'ffmpeg-encoder'
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.5,<=3.9',
     license='GPLv3',
     install_requires=INSTALL_REQUIRES_FILE,
     distclass=BinaryDistribution,
