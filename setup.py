@@ -62,7 +62,7 @@ def fetch_dependencies(python_ver='3.5', is_linux=False):
                 os.path.join('.', 'mpegCoder', '__init__.py'),
                 follow_symlinks=True
             )
-        if not os.path.isfile(os.path.join(package_path, 'mpegCoder.pyd')):
+        if not os.path.isfile(os.path.join(package_path, 'mpegCoder.so')):
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
                 '{0}-linux'.format(VERSION),
@@ -75,7 +75,7 @@ def fetch_dependencies(python_ver='3.5', is_linux=False):
                 'deps-3.0.0', 'so-linux-ffmpeg_4_4.tar.xz',
                 path=package_path, mode='auto', verbose=True, token=''
             )
-        return ('mpegCoder.pyd', 'lib/*', 'lib-fix/*')
+        return ('mpegCoder.so', 'lib/*', 'lib-fix/*')
     else:
         if not os.path.isfile(init_file_name):
             shutil.copyfile(
