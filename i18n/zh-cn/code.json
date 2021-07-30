@@ -111,18 +111,6 @@
     "message": "折叠侧边栏",
     "description": "The title attribute for collapse button of doc sidebar"
   },
-  "theme.docs.sidebar.responsiveCloseButtonLabel": {
-    "message": "关闭菜单",
-    "description": "The ARIA label for close button of mobile doc sidebar"
-  },
-  "theme.docs.sidebar.responsiveOpenButtonLabel": {
-    "message": "打开菜单",
-    "description": "The ARIA label for open button of mobile doc sidebar"
-  },
-  "theme.docs.sidebar.navAriaLabel": {
-    "message": "侧边栏导航",
-    "description": "The ARIA label for documentation menu"
-  },
   "theme.docs.versions.unreleasedVersionLabel": {
     "message": "该版本 ({siteTitle} {versionLabel}) 的文档尚未发布。",
     "description": "The label used to tell the user that he's browsing an unreleased doc version"
@@ -228,15 +216,15 @@
     "description": "Table item: version."
   },
   "versions.table.relwin": {
-    "message": "发行版 （Win）",
+    "message": "发行版（Win）",
     "description": "Table item: version."
   },
   "versions.table.rellinux": {
-    "message": "发行版 （Linux）",
+    "message": "发行版（Linux）",
     "description": "Table item: version."
   },
   "versions.prev.head": {
-    "message": "历史版本 （不再维护）",
+    "message": "历史版本（不再维护）",
     "description": "Head of the previous version."
   },
   "versions.prev.descr": {
@@ -250,5 +238,13 @@
   "theme.TOCCollapsible.toggleButtonLabel": {
     "message": "本页目录",
     "description": "The label used by the button on the collapsible TOC component"
+  },
+  "versions.next.head": {
+    "message": "预览版（未发布）",
+    "description": "Head of the next version."
+  },
+  "versions.next.descr": {
+    "message": "下列为正在开发中、还未发布版本的文档。",
+    "description": "Description of the next version."
   }
 }

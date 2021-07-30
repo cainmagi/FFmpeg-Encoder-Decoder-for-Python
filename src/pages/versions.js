@@ -124,10 +124,16 @@ function Version() {
 
         {currentVersion !== latestVersion && (
           <div className="margin-bottom--lg">
-            <h3 id="latest">Next version (Unreleased)</h3>
+            <h3 id="latest">
+              <Translate id='versions.next.head' description='Head of the next version.'>
+                Next version (Unreleased)
+              </Translate>
+            </h3>
             <p>
-              Here you can find the documentation for work-in-process unreleased
-              version.
+              <Translate id='versions.next.descr' description='Description of the next version.'>
+                Here you can find the documentation for work-in-process unreleased
+                version.
+              </Translate>
             </p>
             <table>
               <thead>
