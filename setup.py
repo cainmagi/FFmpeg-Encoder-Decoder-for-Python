@@ -32,7 +32,10 @@ except ImportError:
             if ispkg:
                 yield name
 
-VERSION = '3.1.0-b'
+VERSION = '3.1.0'
+PUBLISH_VERSION = '-b'
+# PUBLISH_VERSION Should begin from '', each failed attmpt, it need to be
+# changed as '-b', '-c', ...
 
 INSTALL_REQUIRES_FILE = [
     'numpy>=1.16.0',
@@ -134,7 +137,7 @@ with open('README_PYPI.md', 'r') as fh:
 
 setup(
     name='mpegCoder',
-    version=VERSION,
+    version=VERSION + PUBLISH_VERSION,
     description='A FFmpeg module which could provide a class for encoding, '
                 'decoding, or streaming a video in any format.',
     author='Yuchen Jin',
