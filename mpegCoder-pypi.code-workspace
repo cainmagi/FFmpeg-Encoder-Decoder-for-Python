@@ -1,0 +1,19 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "python.linting.flake8Args": [
+            "--ignore", "E501"
+        ],
+        "python.linting.pycodestyleArgs": [
+            "--ignore", "E501"
+        ],
+        "python.linting.pylintArgs": [
+            "-d", "C0301"
+        ],
+        "cSpell.enabled": true
+    }
+}
