@@ -17,11 +17,12 @@ import mpegCoder
 
 The scripts in this branch are used for building the PyPI package, which will be uploaded to:
 
-[`mpegCoder` on PyPI][https://pypi.org/project/mpegCoder]
+[`mpegCoder` on PyPI](https://pypi.org/project/mpegCoder)
 
 The script will keep updated with the newest releases of the pre-compiled modules. The following table show releases that have been uploaded:
 
-| `mpegCoder` | Uploaded |
+|  `mpegCoder`  |  Uploaded  |
+| :-----------: | :--------: |
 | `3.1.0` | :heavy_check_mark: |
 
 To learn more about `mpegCoder`, please review the [documentation][docs].
