@@ -1,0 +1,18 @@
+{
+  "version.label": {
+    "message": "3.1.0",
+    "description": "The label for version 3.1.0"
+  },
+  "sidebar.docs.category.Installation": {
+    "message": "安装",
+    "description": "The label for category Installation in sidebar docs"
+  },
+  "sidebar.docs.category.Examples": {
+    "message": "范例",
+    "description": "The label for category Examples in sidebar docs"
+  },
+  "sidebar.docs.category.Troubleshooting": {
+    "message": "常见故障",
+    "description": "The label for category Troubleshooting in sidebar docs"
+  }
+}

@@ -1,0 +1,44 @@
+---
+id: apis
+title: Overview
+description: The overview of all APIs.
+slug: /apis/
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+import InlineIcon from '@site/src/components/InlineIcon';
+import vsiSymbolClass from '@iconify-icons/codicon/symbol-class';
+import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+import OverviewSvg from '/img/overview.svg';
+
+This package is a single-module package. The classes are shown in the following figure:
+
+<p>
+  <OverviewSvg className="mermaid"/>
+</p>
+
+In most APIs, the `string` formatted arguments accept both `str` and `bytes` objects. If a `str` object is given, its coding will be recognized by the file system encoding, see [`PyUnicode_DecodeFSDefaultAndSize`<IconExternalLink/>][py-decodefs]. If a `bytes` object is given, the contents will be converted to a `std::string` directly. Therefore, if users want to use an argument with a specific encoding, they could use `str_argu.encode('...')` instead of using `str_argu` directly.
+
+## Classes {#classes}
+
+The module contains four classes:
+
+|  Classes  |  <div className="center">Description</div>  |
+| :------: | :----------- |
+| <SourceURL url="MpegCoder.h#L21"><InlineIcon icon={vsiSymbolClass}/> `MpegDecoder`</SourceURL> | The FFMpeg decoder. It could be used for demuxing a video file, and return the extracted frames or GOPs. |
+| <SourceURL url="MpegCoder.h#L82"><InlineIcon icon={vsiSymbolClass}/> `MpegEncoder`</SourceURL> | The FFMpeg encoder. It is used for writing a video file. The data is encoded frame-by-frame. |
+| <SourceURL url="MpegStreamer.h#L49"><InlineIcon icon={vsiSymbolClass}/> `MpegClient`</SourceURL> | The FFMpeg decoder designed for pulling and demuxing a remote video stream. This class manages a `std::thread`, and use the thread to synchronize the decoder with the real-time stream. |
+| <SourceURL url="MpegStreamer.h#L114"><InlineIcon icon={vsiSymbolClass}/> `MpegServer`</SourceURL> | The FFMpeg encoder designed for muxing and pushing a remote video stream. The stream is pushed frame-by-frame. Note that this class is required to be used with an active server. |
+
+## Functions {#functions}
+
+The following functions are global methods of the module.
+
+|  Functions  |  <div className="center">Description</div>  |
+| :------: | :----------- |
+| <SourceURL url="MpegPyd.h#L131"><InlineIcon icon={mdiFunctionVariant}/> `setGlobal`</SourceURL> | Used for setting the global configurations of the module. |
+| <SourceURL url="MpegPyd.h#L158"><InlineIcon icon={mdiFunctionVariant}/> `readme`</SourceURL> | Readme function. This method is used for printing brief instructions and updating reports of the module. |
+
+[py-decodefs]:https://docs.python.org/zh-cn/3/c-api/unicode.html#c.PyUnicode_DecodeFSDefaultAndSize "PyUnicode_DecodeFSDefaultAndSize"

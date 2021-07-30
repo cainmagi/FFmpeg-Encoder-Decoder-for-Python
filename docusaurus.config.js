@@ -3,6 +3,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const math = require('remark-math');
 const katex = require('rehype-katex');
 
+const versions = require('./versions.json');
+
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'mpegCoder',
@@ -40,6 +42,17 @@ module.exports = {
           docId: 'apis',
           position: 'left',
           label: 'APIs',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
+          dropdownActiveClassDisabled: true,
+          dropdownItemsAfter: [
+            {
+              to: '/versions',
+              label: 'All versions',
+            },
+          ],
         },
         {
           type: 'localeDropdown',
@@ -129,7 +142,15 @@ module.exports = {
             'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/edit/docs/',
           remarkPlugins: [math],
           rehypePlugins: [katex],
-
+          lastVersion: "3.1.0",
+          onlyIncludeVersions: [
+            'current', ...versions.slice(0, 2)
+          ],
+          versions: {
+            current: {
+              label: "Next",
+            }
+          }
         },
         theme: {
           customCss: require.resolve('./src/css/custom.scss'),

@@ -1,0 +1,41 @@
+---
+id: qna
+title: Questions and answers
+sidebar_label: Q&A
+slug: /troubleshooting/qna
+description: The questions and answers for mpegCoder.
+---
+
+import DarkButton from '@site/src/components/DarkButton';
+import IconExternalLink from '@theme/IconExternalLink';
+import mdiEmailEditOutline from '@iconify-icons/mdi/email-edit-outline';
+
+## Introduction {#introduction}
+
+If you feel like asking more questions, please contact me by the email:
+
+<p>
+  <DarkButton to="mailto:cainmagi@gmail.com" icon={mdiEmailEditOutline}>
+    Contact me
+  </DarkButton>
+</p>
+
+### Plan for audio processing {#plan-for-audio-processing}
+
+* **Question**: The audio processing is not supported by `mpegCoder 3.x`. Will it be implemented future?
+
+* **Answer**: Sure. The audio processing would be supported since `mpegCoder 4.x`. But I do not have enough time on this project, so it may take a long time to implement. I am very glad if there is anyone willing to send me a pull request (PR) about this.
+
+### Plan for no-encoding streaming {#plan-for-no-encoding-streaming}
+
+* **Question**: In `mpegCoder 3.x`, `MpegServer` only support streaming while encoding. Will there be a class for reading a video while pushing it as a stream?
+
+* **Answer**: No. I believe that using the official FFMpeg is a good enough solution. We recommend users to use a server program together with the official [FFMpeg<IconExternalLink/>][link-ffmpeg-stream] streaming features.
+
+### Commercial plan {#commercial-plan}
+
+* **Question**: Will there be a commercial plan for `mpegCoder`?
+
+* **Answer**: No. `mpegCoder` shares exactly the same license (GPL v3) of FFMpeg. This project is totally open-sourced. Although GPLv3 enables coders to add a commercial plan, such a plan would be a burden for me. I will not concern anything about the commercial plan for this project, even sponsorship.
+
+[link-ffmpeg-stream]:https://trac.ffmpeg.org/wiki/StreamingGuide "FFMpeg used for streaming"

@@ -1,0 +1,110 @@
+{
+  "version-3.1.0/docs": [
+    {
+      "type": "doc",
+      "id": "version-3.1.0/introduction"
+    },
+    {
+      "type": "category",
+      "label": "Installation",
+      "collapsed": false,
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/install/pypi"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/install/windows"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/install/linux"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/install/legacy"
+        }
+      ],
+      "collapsible": true
+    },
+    {
+      "type": "category",
+      "label": "Examples",
+      "collapsed": false,
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/examples/decoding"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/examples/transcoding"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/examples/client"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/guides/examples/server"
+        }
+      ],
+      "collapsible": true
+    },
+    {
+      "type": "category",
+      "label": "Troubleshooting",
+      "collapsed": false,
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.1.0/troubleshooting/installation"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/troubleshooting/running"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.1.0/troubleshooting/qna"
+        }
+      ],
+      "collapsible": true
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/changelog"
+    }
+  ],
+  "version-3.1.0/apis": [
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis"
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis/readme"
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis/setGlobal"
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis/MpegDecoder"
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis/MpegEncoder"
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis/MpegClient"
+    },
+    {
+      "type": "doc",
+      "id": "version-3.1.0/apis/MpegServer"
+    }
+  ]
+}

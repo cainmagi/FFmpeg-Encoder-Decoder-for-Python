@@ -40,7 +40,7 @@
     "description": "The label of footer link with label=University of Houston linking to https://www.uh.edu/"
   },
   "copyright": {
-    "message": "Copyright © 2021 mpegCoder， Yuchen Jin。 通过 Docusaurus 构建。",
+    "message": "版权所有 © 2021 mpegCoder， Yuchen Jin。 通过 Docusaurus 构建。",
     "description": "The footer copyright"
   }
 }

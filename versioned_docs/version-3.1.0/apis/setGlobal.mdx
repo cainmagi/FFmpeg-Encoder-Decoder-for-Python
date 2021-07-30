@@ -1,0 +1,43 @@
+---
+id: setGlobal
+title: setGlobal
+sidebar_label: setGlobal
+slug: /apis/setGlobal
+description: Set global configurations.
+---
+
+import InlineIcon from '@site/src/components/InlineIcon';
+import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={mdiFunctionVariant}/> Function
+  <Splitter />
+  <SourceURL url="MpegPyd.h#L131">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+mpegCoder.setGlobal(dumpLevel=None)
+```
+
+A function used for setting global configurations. If a configuration is not specified, that item will not be changed.
+
+## Arguments {#arguments}
+
+### Requires {#requires}
+
+|  Argument   |  Type  |  Required  |  <div className="center">Description</div>  |
+| :---------: | :----: | :--------: | :----------------------------- |
+| `dumpLevel` | `int`  | | The level of dumped log. This level will only influence `mpegCoder` logs, FFMpeg logs and some codec logs. A few codec, like `libx265` is not influenced by this configuration. Avaliable values: `0`: Silent executing; `1`: (default) Dump basic informations; `2`: Dump all informations. |
+
+## Example {#example}
+
+### Disable all logs except errors {#disable-all-logs-except-errors}
+
+```python
+mpegCoder.setGlobal(dumpLevel=0)
+```

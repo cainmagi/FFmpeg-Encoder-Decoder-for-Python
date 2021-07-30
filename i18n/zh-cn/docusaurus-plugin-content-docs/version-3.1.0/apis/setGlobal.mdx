@@ -1,0 +1,43 @@
+---
+id: setGlobal
+title: setGlobal
+sidebar_label: setGlobal
+slug: /apis/setGlobal
+description: 全局设置。
+---
+
+import InlineIcon from '@site/src/components/InlineIcon';
+import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={mdiFunctionVariant}/> Function
+  <Splitter />
+  <SourceURL url="MpegPyd.h#L131">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+mpegCoder.setGlobal(dumpLevel=None)
+```
+
+用以设置模块内的全局参数的函数。如果调用的时候没有指定某项参数，则该项参数不会被更新。
+
+## 参数 {#arguments}
+
+### 输入 {#requires}
+
+|  参数   |  类型  |  <div className="maxspan">必选</div>  |  <div className="center">说明</div>  |
+| :---------: | :----: | :--------: | :----------------------------- |
+| `dumpLevel` | `int`  | | 输出日志等级。该等级只会影响到 `mpegCoder` 日志, FFMpeg 日志以及一些编解码器的日志。由于具体的实现问题，某些编解码器，例如`libx265` 无法被该关键字设置。 可用值: `0`: 静默运行；`1`: 显示基本日志； `2`: 显示完整日志。 |
+
+## 范例 {#example}
+
+### 不显示错误信息以外的所有日志 {#disable-all-logs-except-errors}
+
+```python
+mpegCoder.setGlobal(dumpLevel=0)
+```

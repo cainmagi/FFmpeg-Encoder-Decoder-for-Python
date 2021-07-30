@@ -1,0 +1,37 @@
+---
+id: readme
+title: readme
+sidebar_label: readme
+slug: /apis/readme
+description: 使用该函数查看README和一些简短的用法说明。
+---
+
+import InlineIcon from '@site/src/components/InlineIcon';
+import mdiFunctionVariant from '@iconify-icons/mdi/function-variant';
+import octFileCode16 from '@iconify-icons/octicon/file-code-16';
+
+import { SourceURL, Splitter } from '@site/src/envs/variables';
+
+<p>
+  <InlineIcon icon={mdiFunctionVariant}/> Function
+  <Splitter />
+  <SourceURL url="MpegPyd.h#L158">
+    <InlineIcon icon={octFileCode16}/> Source
+  </SourceURL>
+</p>
+
+```python
+mpegCoder.readme()
+```
+
+该函数用来显示一个简短的Readme，并附带有完整的更新记录。
+
+## 参数 {#arguments}
+
+该函数不提供输入输出参数。
+
+## 范例 {#example}
+
+```python
+mpegCoder.readme()
+```
