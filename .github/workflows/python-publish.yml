@@ -32,17 +32,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
         pip install -r requirements.txt
-    - name: Build package
+    - name: Build package (Linux)
       run: |
-         if [ "$RUNNER_OS" == "Linux" ]; then
-            python setup.py bdist_wheel --plat-name manylinux1_x86_64
-         elif [ "$RUNNER_OS" == "Windows" ]; then
-            python setup.py bdist_wheel
-         else
-            echo "$RUNNER_OS not supported"
-            exit 1
-         fi
-    - name: Build and publish
+         python setup.py bdist_wheel --plat-name manylinux1_x86_64
+      if: runner.os == 'Linux'
+    - name: Build package (Windows)
+      run: |
+         python setup.py bdist_wheel
+      if: runner.os == 'Windows'
+    - name: Publish
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
