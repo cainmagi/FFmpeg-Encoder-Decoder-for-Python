@@ -169,7 +169,7 @@ setup(
         'video-stream', 'python-c-api', 'rtsp-push', 'rtmp-push',
         'rtsp-player', 'rtmp-player', 'ffmpeg-encoder'
     ],
-    python_requires='=={0}'.format(PY_VERSION),
+    python_requires='>=3.5',
     license='GPLv3',
     install_requires=INSTALL_REQUIRES_FILE,
     distclass=BinaryDistribution,
