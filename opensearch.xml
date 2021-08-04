@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"
+                       xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>mpegCoder</ShortName>
+  <Description>Search mpegCoder</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="16" height="16" type="image/x-icon">https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/img/favicon.ico</Image>
+  <Url type="text/html" method="get" template="https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/search?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/opensearch.xml" />
+  <moz:SearchForm>https://cainmagi.github.io/FFmpeg-Encoder-Decoder-for-Python/</moz:SearchForm>
+</OpenSearchDescription>
