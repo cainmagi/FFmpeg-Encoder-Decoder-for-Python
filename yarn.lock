@@ -1448,7 +1448,7 @@
     fs-extra "^10.0.0"
     tslib "^2.1.0"
 
-"@docusaurus/theme-search-algolia@2.0.0-beta.4":
+"@docusaurus/theme-search-algolia@2.0.0-beta.4", "@docusaurus/theme-search-algolia@^2.0.0-beta.4":
   version "2.0.0-beta.4"
   resolved "https://registry.yarnpkg.com/@docusaurus/theme-search-algolia/-/theme-search-algolia-2.0.0-beta.4.tgz#0c2051523428c4486ef1dd7cb5271b0d871f5c8e"
   integrity sha512-W/DfGhlAe1Vl+IJiL9rCw8yswdUrX0lTyCMNRAFi749YN4vCWo2RoxylbUuWoV6lUKoIYfj3EGyotRT2OLqtZw==
@@ -1522,20 +1522,20 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@iconify-icons/codicon@^1.1.15":
+"@iconify-icons/codicon@^1.1.18":
   version "1.1.18"
   resolved "https://registry.yarnpkg.com/@iconify-icons/codicon/-/codicon-1.1.18.tgz#41e2987bd68da234044b6b298e6083a11baac67a"
   integrity sha512-QmtVWW7gD5JvVwSmgQdHOnPKyeDWZnw5RJVxiXKYpUH9EPb1mer4BhATmvgGoc7+urU9CeaPw70ktv/Lp5IZzA==
 
-"@iconify-icons/mdi@^1.1.15":
-  version "1.1.16"
-  resolved "https://registry.yarnpkg.com/@iconify-icons/mdi/-/mdi-1.1.16.tgz#ff35b9559fcc69b0123b730b5fbddb01a4719cde"
-  integrity sha512-sWxzdsLpiuuf5bc+1Iu6GL+Mr/pQKK990authP5qil9NjFTxjnQFRXBYm0pss7ywx1O5lp4hNisyZt7WX1GXLw==
+"@iconify-icons/mdi@^1.1.17":
+  version "1.1.17"
+  resolved "https://registry.yarnpkg.com/@iconify-icons/mdi/-/mdi-1.1.17.tgz#e96afe71577983a376a638e4c517800c0d79deff"
+  integrity sha512-ssRWa5z2gyDVSsHD2aVjNmIOd4vl6zr9RuKp7ol2Hg0xrwdihQELSZ6VG4N4BPytfajYEcOZsuFL/+aB5N5tgw==
 
-"@iconify-icons/octicon@^1.1.8":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@iconify-icons/octicon/-/octicon-1.1.8.tgz#bf95a832026732619aad074aae171d1759c2a753"
-  integrity sha512-JMzXmm7pU3F8zGlD5OG7LAKs3rv0Wc/3BsbEv32mgrsY780n2bqA4A06BkarhFyaYpg3FVa49S0yAwo2mX78pw==
+"@iconify-icons/octicon@^1.1.9":
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/@iconify-icons/octicon/-/octicon-1.1.9.tgz#8a22a496c6242c00750f7ba294d2113b34a8815d"
+  integrity sha512-+v3XIOLUwoTRObth8Db2n4K9ocE2ImNT8I863fN1yA4nX8tRKD3cqPz2g2uLbdmTHgUz3kbbDelsW7/um1Q3VQ==
 
 "@iconify/react@^1.1.4":
   version "1.1.4"
@@ -1797,10 +1797,15 @@
   resolved "https://registry.yarnpkg.com/@types/html-minifier-terser/-/html-minifier-terser-5.1.2.tgz#693b316ad323ea97eed6b38ed1a3cc02b1672b57"
   integrity sha512-h4lTMgMJctJybDp8CQrxTUiiYmedihHWkjnF/8Pxseu2S6Nlfcy8kwboQ8yejh456rP2yWoEVm1sS/FVsfM48w==
 
-"@types/json-schema@*", "@types/json-schema@^7.0.5", "@types/json-schema@^7.0.8":
+"@types/json-schema@*", "@types/json-schema@^7.0.5":
   version "7.0.8"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.8.tgz#edf1bf1dbf4e04413ca8e5b17b3b7d7d54b59818"
   integrity sha512-YSBPTLTVm2e2OoQIDYx8HaeWJ5tTToLH67kXR7zYNGupXMEHa2++G8k+DczX2cFVgalypqtyZIcU19AFcmOpmg==
+
+"@types/json-schema@^7.0.8":
+  version "7.0.9"
+  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
+  integrity sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==
 
 "@types/katex@^0.11.0":
   version "0.11.1"
@@ -7420,10 +7425,10 @@ sass-loader@^10.1.1:
     schema-utils "^3.0.0"
     semver "^7.3.2"
 
-sass@^1.36.0:
-  version "1.36.0"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.36.0.tgz#5912ef9d5d16714171ba11cb17edb274c4bbc07e"
-  integrity sha512-fQzEjipfOv5kh930nu3Imzq3ie/sGDc/4KtQMJlt7RRdrkQSfe37Bwi/Rf/gfuYHsIuE1fIlDMvpyMcEwjnPvg==
+sass@^1.37.5:
+  version "1.37.5"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.37.5.tgz#f6838351f7cc814c4fcfe1d9a20e0cabbd1e7b3c"
+  integrity sha512-Cx3ewxz9QB/ErnVIiWg2cH0kiYZ0FPvheDTVC6BsiEGBTZKKZJ1Gq5Kq6jy3PKtL6+EJ8NIoaBW/RSd2R6cZOA==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
 

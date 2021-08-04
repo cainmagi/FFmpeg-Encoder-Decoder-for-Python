@@ -16,9 +16,10 @@
   "dependencies": {
     "@docusaurus/core": "^2.0.0-beta.4",
     "@docusaurus/preset-classic": "^2.0.0-beta.4",
-    "@iconify-icons/codicon": "^1.1.15",
-    "@iconify-icons/mdi": "^1.1.15",
-    "@iconify-icons/octicon": "^1.1.8",
+    "@docusaurus/theme-search-algolia": "^2.0.0-beta.4",
+    "@iconify-icons/codicon": "^1.1.18",
+    "@iconify-icons/mdi": "^1.1.17",
+    "@iconify-icons/octicon": "^1.1.9",
     "@iconify/react": "^1.1.4",
     "@mdx-js/react": "^1.6.21",
     "@svgr/webpack": "^5.5.0",
@@ -33,7 +34,7 @@
     "react-resize-detector": "^6.7.4",
     "rehype-katex": "4",
     "remark-math": "3",
-    "sass": "^1.36.0",
+    "sass": "^1.37.5",
     "url-loader": "^4.1.1"
   },
   "browserslist": {

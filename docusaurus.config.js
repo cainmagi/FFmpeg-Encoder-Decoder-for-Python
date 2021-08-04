@@ -130,6 +130,17 @@ module.exports = {
       trackingID: 'G-VY4XPTJXNM',
       anonymizeIP: true,
     },
+    algolia: {
+      apiKey: '860fac8f443a1afd20afd7960cec9441',
+      indexName: 'mpegcoder',
+      // APP id
+      appId: 'BH4D9OD16A',
+      // Optional: make the search sensitive to sub-routing.
+      // contextualSearch: true,
+      // Optional: Algolia search parameters
+      searchParameters: { 'facetFilters': ["type:content"] },
+      debug: false
+    },
   },
   presets: [
     [
