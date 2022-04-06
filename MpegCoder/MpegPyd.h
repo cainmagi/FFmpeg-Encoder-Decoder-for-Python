@@ -213,6 +213,9 @@ Yuchen's Mpeg Coder - Readme
         >>> d.clear() # Disconnect with the stream.
     For more instructions, you could tap help(mpegCoder). 
 ================================================================================
+V3.2.0 update report:
+    1. Upgrade FFMpeg to 5.0.
+    2. Fix the const assignment bug caused by the codec configuration method.
 V3.1.0 update report:
     1. Support str() type for all string arguments.
     2. Support http, ftp, sftp streams for MpegServer.

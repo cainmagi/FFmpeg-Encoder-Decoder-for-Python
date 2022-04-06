@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -77,8 +77,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\yjin4\.conda\envs\py39\include;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\yjin4\.conda\envs\py39\libs;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\cainm\.conda\envs\py310\include;C:\Users\cainm\.conda\envs\py310\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\cainm\.conda\envs\py310\libs;C:\Users\cainm\.conda\envs\py310\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -87,8 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\yjin4\.conda\envs\py39\include;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\yjin4\.conda\envs\py39\libs;C:\Users\yjin4\.conda\envs\py39\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\cainm\.conda\envs\py310\include;C:\Users\cainm\.conda\envs\py310\lib\site-packages\numpy\core\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\cainm\.conda\envs\py310\libs;C:\Users\cainm\.conda\envs\py310\lib\site-packages\numpy\core\lib;..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,11 +111,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;MpegCoder_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;python39.lib;python3.lib;npymath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python310.lib;python3.lib;npymath.lib;avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>echo F | xcopy /y /i "$(OutDir)$(TargetName)$(TargetExt)" "$(OutDir)mpegCoder.pyd"</Command>
@@ -148,13 +149,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;MpegCoder_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;python39.lib;python3.lib;npymath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python310.lib;python3.lib;npymath.lib;avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>echo F | xcopy /y /i "$(OutDir)$(TargetName)$(TargetExt)" "$(OutDir)mpegCoder.pyd"</Command>

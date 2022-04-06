@@ -1092,43 +1092,45 @@ int cmpc::CMpegEncoder::__write_frame() {
 }
 
 /* Add an output stream. */
-bool cmpc::CMpegEncoder::__add_stream(AVCodec** codec) {
+const cmpc::AVCodec* cmpc::CMpegEncoder::__add_stream() {
     /* find the encoder */
     AVCodecID codec_id;
     auto srcwidth = widthSrc > 0 ? widthSrc : width;
     auto srcheight = heightSrc > 0 ? heightSrc : height;
-    *codec = avcodec_find_encoder_by_name(codecName.c_str());
-    if (!(*codec)) {
+    auto const_codec = avcodec_find_encoder_by_name(codecName.c_str());
+    const AVCodec* codec;
+    if (!(const_codec)) {
         codec_id = PFormatCtx->oformat->video_codec;
         cerr << "Could not find encoder " << codecName << ", use " << avcodec_get_name(codec_id) << " as an alternative." << endl;
-        *codec = avcodec_find_encoder(codec_id);
+        codec = avcodec_find_encoder(codec_id);
     }
     else {
-        codec_id = (*codec)->id;
-        PFormatCtx->oformat->video_codec = codec_id;
+        codec = const_codec;
+        codec_id = codec->id;
     }
-    if (!(*codec)) {
+
+    if (!codec) {
         cerr << "Could not find encoder for '" << avcodec_get_name(codec_id) << "'" << endl;
-        return false;
+        return nullptr;
     }
 
     PStreamContex.st = avformat_new_stream(PFormatCtx, nullptr);
     if (!PStreamContex.st) {
         cerr << "Could not allocate stream" << endl;
-        return false;
+        return nullptr;
     }
     PStreamContex.st->id = PFormatCtx->nb_streams - 1;
-    auto c = avcodec_alloc_context3(*codec);
+    auto c = avcodec_alloc_context3(codec);
     if (!c) {
         cerr << "Could not alloc an encoding context" << endl;
-        return false;
+        return nullptr;
     }
     if (nthread > 0) {
         c->thread_count = nthread;
     }
     PStreamContex.enc = c;
 
-    switch ((*codec)->type) {
+    switch (codec->type) {
     case AVMediaType::AVMEDIA_TYPE_VIDEO:
         c->codec_id = codec_id;
 
@@ -1206,7 +1208,7 @@ bool cmpc::CMpegEncoder::__add_stream(AVCodec** codec) {
     /* Some formats want stream headers to be separate. */
     if (PFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
         c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-    return true;
+    return codec;
 }
 
 /* video output */
@@ -1226,7 +1228,7 @@ cmpc::AVFrame* cmpc::CMpegEncoder::__alloc_picture(enum AVPixelFormat pix_fmt, i
     return picture;
 }
 
-bool cmpc::CMpegEncoder::__open_video(AVCodec* codec, AVDictionary* opt_arg) {
+bool cmpc::CMpegEncoder::__open_video(const AVCodec* codec, const AVDictionary* opt_arg) {
     int ret;
     auto c = PStreamContex.enc;
     AVDictionary* opt = nullptr;
@@ -1809,7 +1811,7 @@ PyObject* cmpc::CMpegEncoder::getParameter() {
 }
 
 bool cmpc::CMpegEncoder::FFmpegSetup() {
-    AVCodec* video_codec = nullptr;
+    const AVCodec* video_codec;
     int ret;
 
     if (Ppacket)
@@ -1839,12 +1841,16 @@ bool cmpc::CMpegEncoder::FFmpegSetup() {
     /* Add the audio and video streams using the default format codecs
     * and initialize the codecs. */
     if (fmt->video_codec != AVCodecID::AV_CODEC_ID_NONE) {
-        if (!__add_stream(&video_codec)) {
+        video_codec = __add_stream();
+        if (!video_codec) {
             FFmpegClose();
             return false;
         }
         else
             __have_video = true;
+    }
+    else {
+        video_codec = nullptr;
     }
 
     /* Now that all the parameters are set, we can open the audio and

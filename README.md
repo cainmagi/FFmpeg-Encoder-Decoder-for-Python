@@ -46,11 +46,11 @@ The following instructions are used for building the project on Windows with Vis
 6. The `mpegCoder.pyd` should be used together with the FFMpeg shared libraries, including:
 
     ```shell
-    avcodec-58.dll
-    avformat-58.dll
-    avutil-56.dll
-    swresample-3.dll
-    swscale-5.dll
+    avcodec-59.dll
+    avformat-59.dll
+    avutil-57.dll
+    swresample-4.dll
+    swscale-6.dll
     ```
 
 ## Update reports
@@ -63,11 +63,11 @@ Current FFMpeg version is `4.4`.
 
 |   Dependency    |    Version     |
 | :-------------: | :------------: |
-| `libavcodec`    | `58.134.100.0` |
-| `libavformat`   | `58.76.100.0`  |
-| `libavutil`     | `56.70.100.0`  |
-| `libswresample` | `3.9.100.0`    |
-| `libswscale`    | `5.9.100.0`    |
+| `libavcodec`    | `59.18.100.0` |
+| `libavformat`   | `59.16.100.0`  |
+| `libavutil`     | `57.17.100.0`  |
+| `libswresample` | `4.3.100.0`    |
+| `libswscale`    | `6.4.100.0`    |
 
 [git-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/master-linux "master (Linux)"
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"

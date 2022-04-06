@@ -163,9 +163,9 @@ namespace cmpc {
         bool _LoadFrame_castFromPyFrameArray(AVFrame* frame, PyArrayObject* PyFrame);
         void __log_packet();
         int __write_frame();
-        bool __add_stream(AVCodec** codec);
+        const AVCodec* __add_stream();
         AVFrame* __alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
-        bool __open_video(AVCodec* codec, AVDictionary* opt_arg);
+        bool __open_video(const AVCodec* codec, const AVDictionary* opt_arg);
         AVFrame* __get_video_frame(PyArrayObject* PyFrame);
         int __avcodec_encode_video2(AVCodecContext* enc_ctx, AVPacket* pkt, AVFrame* frame);
         int __avcodec_encode_video2_flush(AVCodecContext* enc_ctx, AVPacket* pkt);

@@ -302,4 +302,4 @@ if __name__ == '__main__':
 
     # token = get_token(token='')
     print('Get ffmpeg dependencies...')
-    download_tarball('cainmagi', 'FFmpeg-Encoder-Decoder-for-Python', 'deps-3.0.0', 'dep-win-ffmpeg_4_4.tar.xz', path='.', mode='auto', verbose=True, token='')
+    download_tarball('cainmagi', 'FFmpeg-Encoder-Decoder-for-Python', 'deps-3.2.0', 'dep-win-ffmpeg_5_0.tar.xz', path='.', mode='auto', verbose=True, token='')
