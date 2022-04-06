@@ -59,7 +59,7 @@ Has been moved to [:bookmark_tabs: CHANGELOG.md](./CHANGELOG.md)
 
 ## Version of currently used FFmpeg library
 
-Current FFMpeg version is `4.4`.
+Current FFMpeg version is `5.0`.
 
 |   Dependency    |    Version     |
 | :-------------: | :------------: |
