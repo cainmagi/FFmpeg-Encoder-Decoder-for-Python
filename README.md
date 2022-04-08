@@ -88,7 +88,7 @@ The following instructions are used for building the project on Windows with Vis
 6. Running `mpegCoder` requires `GLIBC>=2.29`. This requirement is not satisfied in some cases. However, if you have built FFMpeg by our script, the requirement would be fulfilled (i.e. you could skip this step). If users are using our pre-built dependencies, users may need to solve this problem by
 
     ```shell
-    ln -sf /apps/ffmpeg-4.4/lib-fix/libm-2.35.so /lib/x86_64-linux-gnu/libm.so.6
+    ln -sf /apps/ffmpeg-5.0/lib-fix/libm-2.35.so /lib/x86_64-linux-gnu/libm.so.6
     ```
 
 ## Update reports
