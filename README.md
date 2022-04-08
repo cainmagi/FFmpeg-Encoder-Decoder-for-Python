@@ -30,10 +30,10 @@ This branch is used for archiving the dependencies used for building the project
 Save the script in `~/`, then run the docker:
 
 ```bash
-$ docker run --gpus all --rm -it --shm-size=1g ubuntu:jammy
+docker run --gpus all --rm -it --shm-size=1g ubuntu:jammy
 ```
 
-After that, run the following commands inside the container:
+After that, run the following commands inside the container (root mode):
 
 ```bash
 cd ~ && apt update && apt install wget
