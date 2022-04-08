@@ -1180,7 +1180,7 @@ const cmpc::AVCodec* cmpc::CMpegEncoder::__add_stream() {
                     SCALE_FLAGS, nullptr, nullptr, nullptr);
                 if (!PStreamContex.sws_ctx) {
                     cerr << "Could not initialize the conversion context" << endl;
-                    return false;
+                    return nullptr;
                 }
             }
         }
@@ -1192,7 +1192,7 @@ const cmpc::AVCodec* cmpc::CMpegEncoder::__add_stream() {
                 SCALE_FLAGS, nullptr, nullptr, nullptr);
             if (!PswsCtx) {
                 cerr << "Could not initialize the conversion context" << endl;
-                return false;
+                return nullptr;
             }
         }
         if (!RGBbuffer) {
