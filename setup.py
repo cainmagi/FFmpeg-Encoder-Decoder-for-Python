@@ -46,7 +46,7 @@ with open('README.md', 'r') as fh:
 if (not os.path.isdir(os.path.join(FFMPEG_DIR, 'include'))) or (not os.path.isdir(os.path.join(FFMPEG_DIR, 'lib'))):
     if HAS_WEBTOOLS:
         print('The FFMpeg dependencies are not found. Fetch the files online...')
-        webtools.download_tarball('cainmagi', 'FFmpeg-Encoder-Decoder-for-Python', 'deps-3.0.0', 'dep-linux-ffmpeg_4_4.tar.xz', path=os.path.join('.', 'dependencies'), mode='auto', verbose=True, token='')
+        webtools.download_tarball('cainmagi', 'FFmpeg-Encoder-Decoder-for-Python', 'deps-3.2.0', 'dep-linux-ffmpeg_5_0.tar.xz', path=os.path.join('.', 'dependencies'), mode='auto', verbose=True, token='')
     else:
         raise FileNotFoundError('The required dependencies ("include" and "lib" directories) are not found in FFMPEG_DIR path ({0})'.format(FFMPEG_DIR))
 
@@ -54,7 +54,7 @@ module_mpegCoder = Extension(
     name = TARGET,
     language = 'c++',
     define_macros = [('MAJOR_VERSION', '3'),
-                     ('MINOR_VERSION', '1'),
+                     ('MINOR_VERSION', '2'),
                      ('BUILD_VERSION', '0')],
     extra_compile_args = ['-std=c++11','-pthread'],
     include_dirs = [PYTHON_INC_DIR, np.get_include(), '{0}/include'.format(FFMPEG_DIR), BASE_SRC_DIR],
@@ -71,7 +71,7 @@ module_mpegCoder = Extension(
 
 setup(
     name = 'mpegCoder',
-    version = '3.1.0',
+    version = '3.2.0',
     description = 'A FFmpeg module which could provide a class for encoding, decoding, or streaming a video in any format.',
     author = 'Yuchen Jin',
     author_email = 'cainmagi@gmail.com',
@@ -84,11 +84,11 @@ setup(
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: POSIX :: Linux',
         'Topic :: Software Development :: Libraries :: Python Modules'
@@ -96,7 +96,7 @@ setup(
     keywords=[
         'python', 'h264', 'video', 'rtsp', 'ffmpeg', 'rtmp', 'encoder', 'numpy', 'python3', 'python3-library', 'ffmpeg-wrapper', 'video-stream', 'python-c-api', 'rtsp-push', 'rtmp-push', 'rtsp-player', 'rtmp-player', 'ffmpeg-encoder'
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.6,<3.11',
     license='GPLv3',
     ext_modules = [module_mpegCoder]
 )

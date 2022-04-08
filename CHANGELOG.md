@@ -2,6 +2,14 @@
 
 ## Update Report
 
+### V3.2.0 update report:
+
+1. Upgrade to `FFMpeg 5.0` Version.
+
+2. Fix the const assignment bug caused by the codec configuration method.
+
+3. Upgrade the dependencies of FFMpeg to the newest versions (issue [#4 :exclamation:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues/4)).
+
 ### V3.1.0 update report:
 
 1. Support `str()` type for all string arguments.

@@ -32,7 +32,7 @@ The following instructions are used for building the project on Windows with Vis
 
     We strongly suggest that users should also install the python dependencies (optional):
 
-    ```shell 
+    ```shell
     python -m pip install -r requirements.txt
     ```
 
@@ -42,23 +42,23 @@ The following instructions are used for building the project on Windows with Vis
         ```shell
         mkdir -p /apps
         chmod +rwx /apps
-        curl -O https://raw.githubusercontent.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/deps/install-ffmpeg-4_4.sh
-        chmod +rwx install-ffmpeg-4_4.sh
-        ./install-ffmpeg-4_4.sh
+        curl -O https://raw.githubusercontent.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/deps/install-ffmpeg-5_0.sh
+        chmod +rwx install-ffmpeg-5_0.sh
+        ./install-ffmpeg-5_0.sh --all --nvcuda
         ```
 
         After running this script, the FFMpeg with most of the dependencies would be complied along with the shared libraries. Then you could replace the FFMpeg path in the `setup.py` by
 
         ```python
-        FFMPEG_DIR = '/apps/build/ffmpeg-4.4'
+        FFMPEG_DIR = '/apps/build/ffmpeg-5.0'
         ```
 
-    * Download the pre-built dependencies. These dependencies are built by myself. You could download the archive [here :package:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dep-linux-ffmpeg_4_4.tar.xz). The files need to be extracted to `./dependencies`:
+    * Download the pre-built dependencies. These dependencies are built by myself. You could download the archive [here :package:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/dep-linux-ffmpeg_5_0.tar.xz). The files need to be extracted to `./dependencies`:
 
         ```shell
         cd FFmpeg-Encoder-Decoder-for-Python
         mkdir -p dependencies
-        wget -O- https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dep-linux-ffmpeg_4_4.tar.xz | tar xJ -C "./dependencies"
+        wget -O- https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/dep-linux-ffmpeg_5_0.tar.xz | tar xJ -C "./dependencies"
         ```
 
     * The dependencies could be also downloaded by the automatic script, you just need to run
@@ -75,20 +75,20 @@ The following instructions are used for building the project on Windows with Vis
     python setup.py build
     ```
 
-5. Rename the built module as `mpegCoder.so`, then you could import it in the same directory. If you have built FFMpeg by our script, you do not need any other dependencies when importing the libs. However, if not, you may need to download [the lib dependencies :package:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz) and add the `lib` folder to your `LD_LIBRARY_PATH`:
+5. Rename the built module as `mpegCoder.so`, then you could import it in the same directory. If you have built FFMpeg by our script, you do not need any other dependencies when importing the libs. However, if not, you may need to download [the lib dependencies :package:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/so-linux-ffmpeg_5_0.tar.xz) and add the `lib` folder to your `LD_LIBRARY_PATH`:
 
     ```shell
-    mkdir -p /apps/ffmpeg-4.4
-    cd /apps/ffmpeg-4.4
-    wget -O- https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz | tar xJ -C "."
-    echo "export LD_LIBRARY_PATH=/apps/ffmpeg-4.4/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
-    export LD_LIBRARY_PATH=/apps/ffmpeg-4.4/lib:$LD_LIBRARY_PATH
+    mkdir -p /apps/ffmpeg-5.0
+    cd /apps/ffmpeg-5.0
+    wget -O- https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/so-linux-ffmpeg_5_0.tar.xz | tar xJ -C "."
+    echo "export LD_LIBRARY_PATH=/apps/ffmpeg-5.0/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
+    export LD_LIBRARY_PATH=/apps/ffmpeg-5.0/lib:$LD_LIBRARY_PATH
     ```
 
 6. Running `mpegCoder` requires `GLIBC>=2.29`. This requirement is not satisfied in some cases. However, if you have built FFMpeg by our script, the requirement would be fulfilled (i.e. you could skip this step). If users are using our pre-built dependencies, users may need to solve this problem by
 
     ```shell
-    ln -sf /apps/ffmpeg-4.4/lib-fix/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
+    ln -sf /apps/ffmpeg-4.4/lib-fix/libm-2.35.so /lib/x86_64-linux-gnu/libm.so.6
     ```
 
 ## Update reports
@@ -97,15 +97,15 @@ Has been moved to [:bookmark_tabs: CHANGELOG.md](./CHANGELOG.md)
 
 ## Version of currently used FFmpeg library
 
-Current FFMpeg version is `4.4`.
+Current FFMpeg version is `5.0`.
 
 |   Dependency    |    Version     |
 | :-------------: | :------------: |
-| `libavcodec`    | `58.134.100.0` |
-| `libavformat`   | `58.76.100.0`  |
-| `libavutil`     | `56.70.100.0`  |
-| `libswresample` | `3.9.100.0`    |
-| `libswscale`    | `5.9.100.0`    |
+| `libavcodec`    | `59.18.100.0` |
+| `libavformat`   | `59.16.100.0`  |
+| `libavutil`     | `57.17.100.0`  |
+| `libswresample` | `4.3.100.0`    |
+| `libswscale`    | `6.4.100.0`    |
 
 [git-master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "master (windows)"
 [exp1]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/example-client-check "check the client"
