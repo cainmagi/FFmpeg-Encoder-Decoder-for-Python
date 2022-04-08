@@ -17,11 +17,11 @@ import mpegCoder
 
 This branch is used for archiving the dependencies used for building the project on different platforms. The installation scripts for ffmpeg would be stored here, while the Windows dependencies would be stored in the release page liste in the following table:
 
-|     Branch      |  Description  |  Release page |
-| :-------------: | :-----------: | :
+|     Branch      |  Description  |  Release page  |
+| :-------------: | :-----------: | -------------: |
 | `install-ffmpeg-4_0_6.sh` | Scripts for installing `ffmpeg 4.0.6` on Ubuntu. | [2.0.5 :link:][rel-2-0-5] |
-| `install-ffmpeg-4_4.sh` | Scripts for installing `ffmpeg 4.4` on Ubuntu. | [3.0.0 :link:][rel-3-0-0] |
-| `install-ffmpeg-5_0.sh` | Scripts for installing `ffmpeg 5.0` on Ubuntu. | [3.2.0 :link:][rel-3-2-0] |
+| `install-ffmpeg-4_4.sh` | Scripts for installing `ffmpeg 4.4` on Ubuntu.     | [3.0.0 :link:][rel-3-0-0] |
+| `install-ffmpeg-5_0.sh` | Scripts for installing `ffmpeg 5.0` on Ubuntu.     | [3.2.0 :link:][rel-3-2-0] |
 
 ## Usage
 
