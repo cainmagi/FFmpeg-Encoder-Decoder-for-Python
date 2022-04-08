@@ -21,7 +21,7 @@ This branch is used for archiving the dependencies used for building the project
 | :-------------: | :-----------: | :------------: |
 | `install-ffmpeg-4_0_6.sh` | Scripts for installing `ffmpeg 4.0.6` on Ubuntu. | [2.0.5 :link:][rel-2-0-5] |
 | `install-ffmpeg-4_4.sh` | Scripts for installing `ffmpeg 4.4` on Ubuntu.     | [3.0.0 :link:][rel-3-0-0] |
-| `install-ffmpeg-5_0.sh` | Scripts for installing `ffmpeg 5.0` on Ubuntu.     | [3.2.0 :link:][rel-3-2-0] |
+| `install-ffmpeg-5_0.sh` | Scripts for installing `ffmpeg 5.0` on Debian.     | [3.2.0 :link:][rel-3-2-0] |
 
 ## Usage
 
@@ -30,7 +30,7 @@ This branch is used for archiving the dependencies used for building the project
 Save the script in `~/`, then run the docker:
 
 ```bash
-docker run --gpus all --rm -it --shm-size=1g ubuntu:jammy
+docker run --gpus all --rm -it --shm-size=1g debian:bullseye
 ```
 
 After that, run the following commands inside the container (root mode):
@@ -42,11 +42,11 @@ chmod +rwx install-ffmpeg-5_0.sh
 ./install-ffmpeg-5_0.sh --all --nvcuda --sudofix
 ```
 
-We recommend to use `ubuntu:jammy` (the devel version), because its apt repository provides most of the dependencies claimed in the issue [#4 :exclamation:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues/4).
+We recommend to use `debian:bullseye` (the current version), because its apt repository preserves the best compatibility, and provides most of the dependencies claimed in the issue [#4 :exclamation:](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues/4).
 
 [rel-2-0-5]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/2.05 "Release of dependencies (2.0.5)"
 [rel-3-0-0]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/deps-3.0.0 "Release of dependencies (3.0.0)"
-[rel-3-2-0]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/deps-3.2.0 "Release of dependencies (3.0.0)"
+[rel-3-2-0]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/tag/deps-3.2.0 "Release of dependencies (3.2.0)"
 
 [git-master]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python "master (Windows)"
 [git-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/master-linux "master (Linux)"

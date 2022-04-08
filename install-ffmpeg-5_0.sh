@@ -4,7 +4,7 @@
 # by Yuchen Jin (cainmagi) / 04062022
 # ---------------------------------------------------------
 # This script has been tested on
-# `ubuntu:jammy`
+# `debian:bullseye`
 # docker image.
 # ---------------------------------------------------------
 # Currently, it is only designed for a full installation
@@ -48,6 +48,10 @@ function mcd {
   cd "$1" || fail
 }
 
+function apt_dependency {
+    apt-get -y install $(apt-cache depends $1 | grep Depends | sed "s/.*ends:\ //" | tr '\n' ' ') || fail
+}
+
 
 SET_HELP=false
 SET_DEBUG=false
@@ -55,9 +59,12 @@ SET_SUDOFIX=false
 SET_NVCUDA=false
 SET_ALL=false
 SET_BASIC=false
+SET_CMAKE=false
+SET_SSH=false
+SET_VORBIS=false
+SET_OPENMPT=false
 SET_KRB5=false
 SET_RUSTC=false
-SET_CMAKE=false
 SET_NASM=false
 SET_YASM=false
 SET_SRT=false
@@ -99,9 +106,12 @@ do
         --all)         SET_ALL=true ;;
         --basic)       SET_BASIC=true ;;
         --nvcuda)      SET_NVCUDA=true ;;
+        --cmake)       SET_CMAKE=true ;;
+        --ssh)         SET_SSH=true ;;
+        --vorbis)      SET_VORBIS=true ;;
+        --openmpt)     SET_OPENMPT=true ;;
         --krb5)        SET_KRB5=true ;;
         --rustc)       SET_RUSTC=true ;;
-        --cmake)       SET_CMAKE=true ;;
         --nasm)        SET_NASM=true ;;
         --yasm)        SET_YASM=true ;;
         --srt)         SET_SRT=true ;;
@@ -144,12 +154,18 @@ where the usages are:
         Install the basic dependencies by apt.
     ${COLOR_OPT}--nvcuda${RESET} [not included by --all]:
         Install NVIDA drivers and CUDA, This option will not be set by --all.
+    ${COLOR_OPT}--cmake${RESET}:
+        Install CMake.
+    ${COLOR_OPT}--ssh${RESET}:
+        Install libssh.
+    ${COLOR_OPT}--vorbis${RESET}:
+        Install Vorbis audio codec.
+    ${COLOR_OPT}--openmpt${RESET}:
+        Install OpenMPT audio codec (requiring vorbis).
     ${COLOR_OPT}--krb5${RESET}:
         Install libkrb5, with a higher version compared to apt distribution.
     ${COLOR_OPT}--rustc${RESET}:
         Install Rust-lang, Cargo-C and meson.
-    ${COLOR_OPT}--cmake${RESET}:
-        Install CMake.
     ${COLOR_OPT}--nasm${RESET}:
         Install NASM (Netwide Assembler).
     ${COLOR_OPT}--yasm${RESET}:
@@ -218,9 +234,12 @@ then
     SET_BASIC=true
     # SET_SUDOFIX=true  # should not be specified when not using root mode.
     # SET_NVCUDA=true  # not included, because this option may be not necessary if CUDA has been installed.
+    SET_CMAKE=true
+    SET_SSH=true
+    SET_VORBIS=true
+    SET_OPENMPT=true
     SET_KRB5=true
     SET_RUSTC=true
-    SET_CMAKE=true
     SET_NASM=true
     SET_YASM=true
     SET_SRT=true
@@ -265,12 +284,13 @@ if [ "x${SET_BASIC}" = "xtrue" ]; then
     sudo apt-get -y full-upgrade || fail
     sudo apt-get -y install curl autoconf automake build-essential \
         cmake git-core libass-dev libfreetype6-dev libgnutls28-dev \
-        libsdl2-dev libtool libva-dev libvdpau-dev libogg-dev \
+        libsdl2-dev libtool libva-dev libvdpau-dev libogg-dev libcmocka-dev \
         libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev \
-        libunistring-dev libopenmpt-dev libopencore-amrwb-dev \
-        libc6 libc6-dev unzip python3-pip libnuma1 libnuma-dev \
-        gcc g++ bison perl clang libomp-dev libssh-dev libssl-dev \
-        ninja-build pkg-config texinfo wget zlib1g-dev || fail
+        libunistring-dev libopencore-amrwb-dev libmpg123-dev libltdl-dev \
+        libc6 libc6-dev unzip python3-pip libnuma1 libnuma-dev portaudio19-dev \
+        gcc g++ bison perl clang libomp-dev libssl-dev libpulse-dev libsndfile-dev \
+        ninja-build pkg-config texinfo wget zlib1g-dev libgcrypt20-dev \
+        software-properties-common || fail
 fi
 
 
@@ -280,14 +300,73 @@ if [ "x${SET_NVCUDA}" = "xtrue" ]; then
     sudo apt-get update -qq || fail
     sudo apt-get -y install gcc g++ curl wget freeglut3-dev build-essential \
     libx11-dev libxmu-dev libxi-dev libglu1-mesa libglu1-mesa-dev \
-    libfreeimage-dev || fail
-    sudo apt-get -y install nvidia-cuda-toolkit || fail
+    libfreeimage-dev software-properties-common || fail
+    # The following line only works with Ubuntu
+    # sudo apt-get -y install nvidia-cuda-toolkit || fail
+    # The following commands are working with Debian.
+    sudo add-apt-repository -y "deb http://deb.debian.org/debian/ bullseye main contrib non-free" || fail
+    sudo apt-get update -qq || fail
+    sudo apt-mark hold nvidia-persistenced || fail
+    sudo apt-get -y install nvidia-cuda-toolkit  || fail
+fi
+
+
+# Install dependencies: CMake
+if [ "x${SET_CMAKE}" = "xtrue" ]; then
+msg "${COLOR_OPT}--cmake): ${COLOR_OPT_TEXT}Install CMake 3.23.0."
+    cd $SOURCE_PATH || fail
+    wget -O- https://cmake.org/files/v3.23/cmake-3.23.0.tar.gz | tar xz -C . || fail
+    cd cmake-3.23.0 || fail
+    ./bootstrap || fail
+    make -j$(nproc) || fail
+    sudo make install || fail
+fi
+
+
+# Install dependencies: libssh
+if [ "x${SET_SSH}" = "xtrue" ]; then
+    msg "${COLOR_OPT}--ssh): ${COLOR_OPT_TEXT}Install libssh 0.9.6."
+    # sudo apt-get -y install gcc g++ cmake libssl-dev libgcrypt20-dev zlib1g-dev || fail
+    cd $SOURCE_PATH || fail
+    wget -O- https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.9.6.tar.gz | tar xz -C . || fail
+    cd libssh-0.9.6 || fail
+    mkdir -p build || fail
+    cd build || fail
+    PKG_CONFIG_PATH="$BUILD_PATH/lib/pkgconfig:$PKG_CONFIG_PATH" cmake -DUNIT_TESTING=OFF -DCMAKE_INSTALL_PREFIX="$BUILD_PATH" -DCMAKE_BUILD_TYPE=Release .. || fail
+    PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+    sudo make install || fail
+fi
+
+
+# Install dependencies: libvorbis
+if [ "x${SET_VORBIS}" = "xtrue" ]; then
+    msg "${COLOR_OPT}--vorbis): ${COLOR_OPT_TEXT}Install libvorbis 1.3.7."
+    # sudo apt-get -y install libogg-dev libvorbis0a libvorbisenc2 libvorbisfile3 || fail
+    cd $SOURCE_PATH || fail
+    wget -O- https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.gz | tar xz -C . || fail
+    cd libvorbis-1.3.7 || fail
+    PATH="$BIN_PATH:$PATH" ./configure --prefix=/usr --disable-static || fail
+    PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+    sudo make install || fail
+fi
+
+
+
+# Install dependencies: libopenmpt
+if [ "x${SET_OPENMPT}" = "xtrue" ]; then
+    msg "${COLOR_OPT}--openmpt): ${COLOR_OPT_TEXT}Install libopenmpt 0.6.2."
+    # sudo apt-get -y install libmpg123-dev libltdl-dev libogg-dev libvorbis-dev zlib1g-dev libsndfile-dev portaudio19-dev libpulse-dev || fail
+    cd $SOURCE_PATH || fail
+    wget -O- https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-0.6.2+release.autotools.tar.gz | tar xz -C . || fail
+    cd libopenmpt-0.6.2+release.autotools || fail
+    PATH="$BIN_PATH:$PATH" ./configure || fail
+    PATH="$BIN_PATH:$PATH" make -j$(nproc) || fail
+    sudo make install || fail
 fi
 
 
 # Install libkrb5 1.19.3 (require yacc (bison)).
 if [ "x${SET_KRB5}" = "xtrue" ]; then
-    msg_err "Not compatible with xvid, so these codes are dropped."
     msg "${COLOR_OPT}--krb5): ${COLOR_OPT_TEXT}Install libkrb5 1.19.3."
     sudo apt-get update -qq || fail
     sudo apt-get -y install comerr-dev bison || fail
@@ -332,18 +411,6 @@ if [ "x${SET_DEBUG}" = "xtrue" ] || [ "x${SET_BASIC}" = "xtrue" ] || [ "x${SET_R
     sudo apt-get -y dist-upgrade || fail
     sudo apt-get -y autoremove || fail
     sudo apt-get -y autoclean || fail
-fi
-
-
-# Install dependencies: CMake
-if [ "x${SET_CMAKE}" = "xtrue" ]; then
-msg "${COLOR_OPT}--cmake): ${COLOR_OPT_TEXT}Install CMake 3.23.0."
-    cd $SOURCE_PATH || fail
-    wget -O- https://cmake.org/files/v3.23/cmake-3.23.0.tar.gz | tar xz -C . || fail
-    cd cmake-3.23.0 || fail
-    ./bootstrap || fail
-    make -j$(nproc) || fail
-    sudo make install || fail
 fi
 
 
