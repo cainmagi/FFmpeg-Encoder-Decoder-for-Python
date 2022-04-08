@@ -37,7 +37,7 @@ After that, run the following commands inside the container:
 
 ```bash
 cd ~ && apt update && apt install wget
-wget -O https://raw.githubusercontent.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/deps/install-ffmpeg-5_0.sh
+wget https://raw.githubusercontent.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/deps/install-ffmpeg-5_0.sh
 chmod +rwx install-ffmpeg-5_0.sh
 ./install-ffmpeg-5_0.sh --all --nvcuda --sudofix
 ```
