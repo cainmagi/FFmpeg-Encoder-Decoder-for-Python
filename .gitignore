@@ -14,7 +14,10 @@ lib/*
 *.lastbuildstate
 unsuccessfulbuild
 /MpegCoder/x64/
-/autobuild*.sh
+
+# Scripts
+*.sh
+!/apt-requirements.sh
 
 # Prerequisites
 *.d
