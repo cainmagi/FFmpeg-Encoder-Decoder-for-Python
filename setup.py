@@ -16,10 +16,15 @@
 import os
 import sys
 import site
+import pip
 import sysconfig
 import shutil
 import atexit
-import webtools
+
+# Add a small trick for fixing the requirement issue.
+pip.main(['install', 'urllib3', 'setuptools'])
+
+import webtools  # noqa: E402
 
 try:
     from setuptools import setup, find_packages

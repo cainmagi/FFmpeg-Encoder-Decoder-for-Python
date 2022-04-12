@@ -12,6 +12,7 @@ mpegCoder
 * OS: Windows version
 '''
 
+import os
 import sysconfig
 import webtools
 
@@ -37,13 +38,13 @@ if not os.path.isfile(os.path.join(basedir, 'mpegCoder.pyd')):
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
         __verion__, get_release_name(__verion__, PY_VERSION),
-        path=target_path, mode='auto', verbose=True, token=''
+        path=basedir, mode='auto', verbose=True, token=''
     )
 if not os.path.isfile(os.path.join(basedir, 'avcodec-59.dll')):
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
         'deps-3.2.0', 'dll-win-ffmpeg_5_0.tar.xz',
-        path=target_path, mode='auto', verbose=True, token=''
+        path=basedir, mode='auto', verbose=True, token=''
     )
 
 

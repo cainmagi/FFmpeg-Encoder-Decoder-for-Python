@@ -70,13 +70,13 @@ if not os.path.isfile(os.path.join(basedir, 'mpegCoder.so')):
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
         '{0}-linux'.format(__verion__),
         get_release_name(__verion__, PY_VERSION),
-        path=target_path, mode='auto', verbose=True, token=''
+        path=basedir, mode='auto', verbose=True, token=''
     )
 if not os.path.isdir(os.path.join(basedir, 'lib')):
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
         'deps-3.2.0', 'so-linux-ffmpeg_5_0.tar.xz',
-        path=target_path, mode='auto', verbose=True, token=''
+        path=basedir, mode='auto', verbose=True, token=''
     )
 
 
@@ -85,7 +85,7 @@ __dependencies.add_dependencies(
     'libva-drm.so.2', 'libva.so.2', 'libdrm.so.2'
 )
 __dependencies.add_dependencies(
-    'libva-x11.so.2', 'libvdpau.so.1', 'libXfixes.so.3', 
+    'libva-x11.so.2', 'libvdpau.so.1', 'libXfixes.so.3',
     'libXext.so.6', 'libX11.so.6', 'libxcb.so.1', 'libXau.so.6',
     'libXdmcp.so.6', 'libbsd.so.0', 'libmd.so.0',
 )
