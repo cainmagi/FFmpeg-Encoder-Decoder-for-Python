@@ -233,7 +233,7 @@ s_obj = setup(
     cmdclass={
         'install': PostInstallCommand,
     },
-    python_requires='>=3.6,<=3.10',
+    python_requires='>=3.6,<3.11',
     license='GPLv3',
     install_requires=INSTALL_REQUIRES_FILE,
     distclass=BinaryDistribution,
