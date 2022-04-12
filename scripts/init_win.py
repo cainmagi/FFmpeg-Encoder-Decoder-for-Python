@@ -49,7 +49,7 @@ if not os.path.isfile(os.path.join(basedir, 'avcodec-59.dll')):
 
 
 __all__ = (
-    'webtools',
+    'webtools', '__verion__',
     'setGlobal', 'readme',
     'MpegDecoder', 'MpegEncoder',
     'MpegClient', 'MpegServer'

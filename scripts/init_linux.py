@@ -118,7 +118,7 @@ from . import mpegCoder as mpegCoder_  # noqa: E402
 
 
 __all__ = (
-    'webtools',
+    'webtools', '__verion__',
     'setGlobal', 'readme',
     'MpegDecoder', 'MpegEncoder',
     'MpegClient', 'MpegServer'
