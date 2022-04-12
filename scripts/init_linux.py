@@ -15,7 +15,7 @@ mpegCoder
 import os
 import sysconfig
 import ctypes
-import webtools
+from . import webtools
 
 __verion__ = '3.2.0'
 PY_VERSION = sysconfig.get_python_version()
@@ -118,6 +118,7 @@ from . import mpegCoder as mpegCoder_  # noqa: E402
 
 
 __all__ = (
+    'webtools',
     'setGlobal', 'readme',
     'MpegDecoder', 'MpegEncoder',
     'MpegClient', 'MpegServer'
