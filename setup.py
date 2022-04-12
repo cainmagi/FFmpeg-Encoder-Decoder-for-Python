@@ -14,15 +14,20 @@
 '''
 
 import os
+import sys
+import site
 import sysconfig
 import shutil
+import atexit
 import webtools
 
 try:
     from setuptools import setup, find_packages
     from setuptools.dist import Distribution
+    from setuptools.command.install import install
 except ImportError:
     from distutils.core import setup, Distribution
+    from distutils.command.install import install
     from pkgutil import walk_packages
 
     def find_packages(path=('.', ), prefix=''):
@@ -32,17 +37,32 @@ except ImportError:
             if ispkg:
                 yield name
 
-VERSION = '3.1.0'
-PUBLISH_VERSION = '-b'
+
+VERSION = '3.2.0'
+PUBLISH_VERSION = ''
 # PUBLISH_VERSION Should begin from '', each failed attmpt, it need to be
 # changed as '-b', '-c', ...
 
 INSTALL_REQUIRES_FILE = [
-    'numpy>=1.16.0',
+    'numpy >= 1.16.0; python_version < "3.7.0"',
+    'numpy >= 1.20.0; python_version >= "3.7.0" and python_version < "3.8.0"',
+    'numpy >= 1.22.0; python_version >= "3.8.0"',
+    'urllib3>=1.26.0'
 ]
 
+# Fetch the platform information and dependencies
+PLATFORM_NAME = sysconfig.get_platform()
+PY_VERSION = sysconfig.get_python_version()
+if 'linux' in PLATFORM_NAME:
+    IS_LINUX = True
+elif 'win' in PLATFORM_NAME:
+    IS_LINUX = False
+else:
+    raise OSError('The platform {0} should not be used for '
+                  'building the package.'.format(PLATFORM_NAME))
 
-def get_release_name(mpegcoder_ver='3.x', python_ver='3.5', is_linux=False):
+
+def get_release_name(mpegcoder_ver='3.x', python_ver='3.6', is_linux=False):
     '''Get the name of the mpegCoder released module.'''
     python_ver = python_ver.replace('.', '')
     mpegcoder_ver = mpegcoder_ver.replace('.', '_')
@@ -53,9 +73,9 @@ def get_release_name(mpegcoder_ver='3.x', python_ver='3.5', is_linux=False):
     )
 
 
-def fetch_dependencies(python_ver='3.5', is_linux=False):
+def fetch_scripts(is_linux=False, source_path='.'):
     '''Fetch dependencies, will return a list of the dependency file names.'''
-    package_path = os.path.join('.', 'mpegCoder')
+    package_path = os.path.join(source_path, 'mpegCoder')
     init_file_name = os.path.join(package_path, '__init__.py')
     os.makedirs(package_path, exist_ok=True)
     if is_linux:
@@ -65,20 +85,6 @@ def fetch_dependencies(python_ver='3.5', is_linux=False):
                 os.path.join('.', 'mpegCoder', '__init__.py'),
                 follow_symlinks=True
             )
-        if not os.path.isfile(os.path.join(package_path, 'mpegCoder.so')):
-            webtools.download_tarball(
-                'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-                '{0}-linux'.format(VERSION),
-                get_release_name(VERSION, python_ver, is_linux),
-                path=package_path, mode='auto', verbose=True, token=''
-            )
-        if not os.path.isdir(os.path.join(package_path, 'lib')):
-            webtools.download_tarball(
-                'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-                'deps-3.0.0', 'so-linux-ffmpeg_4_4.tar.xz',
-                path=package_path, mode='auto', verbose=True, token=''
-            )
-        return ('mpegCoder.so', 'lib/*', 'lib-fix/*')
     else:
         if not os.path.isfile(init_file_name):
             shutil.copyfile(
@@ -86,22 +92,44 @@ def fetch_dependencies(python_ver='3.5', is_linux=False):
                 os.path.join('.', 'mpegCoder', '__init__.py'),
                 follow_symlinks=True
             )
-        if not os.path.isfile(os.path.join(package_path, 'mpegCoder.pyd')):
+    if not os.path.isfile(os.path.join(package_path, 'webtools.py')):
+        shutil.copyfile(
+            os.path.join('.', 'webtools.py'),
+            os.path.join('.', 'mpegCoder', 'webtools.py'),
+            follow_symlinks=True
+        )
+
+
+def fetch_dependencies(python_ver='3.6', is_linux=False, target_path='.'):
+    '''Fetch dependencies, will return a list of the dependency file names.'''
+    os.makedirs(target_path, exist_ok=True)
+    if is_linux:
+        if not os.path.isfile(os.path.join(target_path, 'mpegCoder.so')):
+            webtools.download_tarball(
+                'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
+                '{0}-linux'.format(VERSION),
+                get_release_name(VERSION, python_ver, is_linux),
+                path=target_path, mode='auto', verbose=True, token=''
+            )
+        if not os.path.isdir(os.path.join(target_path, 'lib')):
+            webtools.download_tarball(
+                'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
+                'deps-3.2.0', 'so-linux-ffmpeg_5_0.tar.xz',
+                path=target_path, mode='auto', verbose=True, token=''
+            )
+    else:
+        if not os.path.isfile(os.path.join(target_path, 'mpegCoder.pyd')):
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
                 VERSION, get_release_name(VERSION, python_ver, is_linux),
-                path=package_path, mode='auto', verbose=True, token=''
+                path=target_path, mode='auto', verbose=True, token=''
             )
-        if not os.path.isfile(os.path.join(package_path, 'avcodec-58.dll')):
+        if not os.path.isfile(os.path.join(target_path, 'avcodec-59.dll')):
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-                'deps-3.0.0', 'dll-win-ffmpeg_4_4.tar.xz',
-                path=package_path, mode='auto', verbose=True, token=''
+                'deps-3.2.0', 'dll-win-ffmpeg_5_0.tar.xz',
+                path=target_path, mode='auto', verbose=True, token=''
             )
-        return (
-            'mpegCoder.pyd', 'avcodec-58.dll', 'avformat-58.dll',
-            'avutil-56.dll', 'swresample-3.dll', 'swscale-5.dll'
-        )
 
 
 class BinaryDistribution(Distribution):
@@ -115,19 +143,43 @@ class BinaryDistribution(Distribution):
         return True
 
 
+class PostInstallCommand(install):
+    '''Post-installation for installation mode.
+    This technique is learned from
+    https://stackoverflow.com/questions/20288711/post-install-script-with-python-setuptools
+    The following script will be run after the installation.
+    '''
+    def run(self):
+        def _post_install():
+            def find_module_path(module_name):
+                if '--user' in sys.argv:
+                    paths = (site.getusersitepackages(), )
+                else:
+                    paths = (
+                        sysconfig.get_paths()["purelib"],
+                        *site.getsitepackages()
+                    )
+                for path in paths:
+                    package_path = os.path.join(path, module_name)
+                    if os.path.exists(package_path):
+                        return package_path
+                print('No installation path found, mpegCoder may not get fully installed.', file=sys.stderr)
+                return None
+
+            install_path = find_module_path('mpegCoder')
+            fetch_dependencies(python_ver=PY_VERSION, is_linux=IS_LINUX, target_path=install_path)
+
+        atexit.register(_post_install)
+        install.run(self)
+
+
 # Get into the current dir
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-# Fetch the platform information and dependencies
-PLATFORM_NAME = sysconfig.get_platform()
-PY_VERSION = sysconfig.get_python_version()
-if 'linux' in PLATFORM_NAME:
-    PACKAGE_DATA = fetch_dependencies(PY_VERSION, True)
-elif 'win' in PLATFORM_NAME:
-    PACKAGE_DATA = fetch_dependencies(PY_VERSION, False)
+if IS_LINUX:
+    fetch_scripts(True)
 else:
-    raise OSError('The platform {0} should not be used for '
-                  'building the package.'.format(PLATFORM_NAME))
+    fetch_scripts(False)
 
 
 # Fetch the long description.
@@ -135,7 +187,7 @@ with open('README_PYPI.md', 'r') as fh:
     LONG_DESCRIPTION = fh.read()
 
 
-setup(
+s_obj = setup(
     name='mpegCoder',
     version=VERSION + PUBLISH_VERSION,
     description='A FFmpeg module which could provide a class for encoding, '
@@ -153,11 +205,11 @@ setup(
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.5',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: POSIX :: Linux',
         'Operating System :: Microsoft :: Windows',
@@ -173,12 +225,15 @@ setup(
         'video-stream', 'python-c-api', 'rtsp-push', 'rtmp-push',
         'rtsp-player', 'rtmp-player', 'ffmpeg-encoder'
     ],
-    python_requires='>=3.5,<=3.9',
+    cmdclass={
+        'install': PostInstallCommand,
+    },
+    python_requires='>=3.6,<=3.10',
     license='GPLv3',
     install_requires=INSTALL_REQUIRES_FILE,
     distclass=BinaryDistribution,
     platforms=[sysconfig.get_platform()],
     packages=list(find_packages()),
-    include_package_data=True,
-    package_data={'mpegCoder': PACKAGE_DATA},
+    include_package_data=False,
+    # package_data={'mpegCoder': PACKAGE_DATA},
 )
