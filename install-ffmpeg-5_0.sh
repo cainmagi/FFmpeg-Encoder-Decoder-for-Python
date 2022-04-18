@@ -52,6 +52,10 @@ function apt_dependency {
     apt-get -y install $(apt-cache depends $1 | grep Depends | sed "s/.*ends:\ //" | tr '\n' ' ') || fail
 }
 
+function nvm_has {
+  type "$1" > /dev/null 2>&1
+}
+
 
 SET_HELP=false
 SET_DEBUG=false
@@ -393,12 +397,16 @@ fi
 
 # Install rustc and meson.
 if [ "x${SET_RUSTC}" = "xtrue" ]; then
-    msg "${COLOR_OPT}--rustc): ${COLOR_OPT_TEXT}Install Rust-lang, Cargo 1.59.0."
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh || fail
-    source $HOME/.cargo/env || fail
-    rustup toolchain install 1.59.0 || fail
-    cargo install cargo-c || fail
-
+    if nvm_has "cargo" ; then
+        msg "${COLOR_OPT}--rustc): ${COLOR_OPT_TEXT}Skip the installation of Rust-lang and Cargo, because cargo is detected."
+    else
+        msg "${COLOR_OPT}--rustc): ${COLOR_OPT_TEXT}Install Rust-lang, Cargo 1.60.0."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh || fail
+        source $HOME/.cargo/env || fail
+        rustup toolchain install 1.60.0 || fail
+        rustup default 1.60.0 || fail
+        cargo install cargo-c || fail
+    fi
     msg "${COLOR_OPT}--rustc): ${COLOR_OPT_TEXT}Install the newest meson."
     sudo pip3 install --user meson || fail
     sudo cp ~/.local/bin/meson /usr/local/bin/ || fail
