@@ -5,9 +5,11 @@ name: docusaurus
 
 on:
   pull_request:
-    branches: [docs]
+    branches:
+     - docs
   push:
-    branches: [docs]
+    branches:
+     - docs
 
 jobs:
   checks:
