@@ -126,10 +126,6 @@ module.exports = {
       darkTheme: darkCodeTheme,
     },
     hideableSidebar: true,
-    gtag: {
-      trackingID: 'G-VY4XPTJXNM',
-      anonymizeIP: true,
-    },
     algolia: {
       apiKey: '860fac8f443a1afd20afd7960cec9441',
       indexName: 'mpegcoder',
@@ -153,19 +149,26 @@ module.exports = {
             'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/edit/docs/',
           remarkPlugins: [math],
           rehypePlugins: [katex],
-          lastVersion: "3.1.0",
+          lastVersion: "3.2.0",
           onlyIncludeVersions: [
             'current', ...versions.slice(0, 2)
           ],
           versions: {
             current: {
               label: "Next",
+            },
+            "3.1.0": {
+              label: "3.1.0",
             }
           }
         },
         theme: {
           customCss: require.resolve('./src/css/custom.scss'),
         },
+		gtag: {
+		  trackingID: 'G-VY4XPTJXNM',
+		  anonymizeIP: true,
+		},
       },
     ],
   ],

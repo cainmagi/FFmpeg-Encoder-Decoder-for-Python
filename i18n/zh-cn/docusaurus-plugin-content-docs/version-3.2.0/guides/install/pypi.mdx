@@ -1,0 +1,24 @@
+---
+id: pypi
+title: 通过PyPI安装
+sidebar_label: PyPI
+slug: /installation/pypi
+description: 通过PyPI来安装本模块包的教程。
+---
+
+要安装预编译的模块包，只需要运行
+
+```shell
+pip install mpegCoder==3.2.0
+```
+
+从`mpegCoder 3.1.0`开始，将提供PyPI仓库的安装途径。目前支持的版本如下表所示，
+
+|  `mpegCoder` 版本     |  `Python` 版本     |
+| :-------------------: | :----------------: |
+| `3.1.0`               | `>=3.5, <=3.9`     |
+| `3.2.0`               | `>=3.6, <=3.10`    |
+
+如果需要检查每个与编译版本的相关细节，请参阅[Windows](./windows)和[Linux](./linux)各自的手动安装教程。
+
+通过PyPI安装的模块包将会自带所有依赖的动态链接库。在这种场合下，用户不需要自行安装任何其他依赖项。但是，如果用户发现这种方式安装的模块无法被正确导入，请先参阅[常见故障页面](../troubleshooting/installation)。

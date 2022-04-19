@@ -16,7 +16,7 @@ import { SourceURL, Splitter } from '@site/src/envs/variables';
 <p>
   <InlineIcon icon={vsiSymbolClass}/> Class
   <Splitter />
-  <SourceURL url="MpegStreamer.h#L114">
+  <SourceURL ver="3.1.0" url="MpegStreamer.h#L114">
     <InlineIcon icon={octFileCode16}/> Source
   </SourceURL>
 </p>
@@ -140,7 +140,7 @@ sev.setParameter(
 | `GOPSize`      | `int`   | | 每个[画面组(GOP)<IconExternalLink/>][wiki-gop]的大小。 |
 | `maxBframe`    | `int`   | | 在每个画面组内，所出现的连续的B帧的帧数的最大值。在绝大多数情况下，该值无法超过`16`。 |
 | `frameRate`    | `tuple` | | 所写入视频的目标帧率。该值需要是一个由两个`int`构成的二元元组： `(分子, 分母)`。此格式是为了和[`AVRational`<IconExternalLink/>][ffmpeg-avrational]保持一致。 |
-| `frameAhead`   | `int`   | | 目标前置帧数。该值用于控制推送的帧数。例如，`waitRef`是通过计算此式得到的：$N_w = T \times \max(N_{pushed} - N_{played} - N_{ahead},~ 0)$，其中$N_{pushed}$，$N_{played}$和$N_{ahead}$分别代表已经推送过的帧数，已经播放的帧数，以及`frameAhead`。$T$是视频的时基。该值通过这种方式，实现了对`waitRef`和阻塞时API [`ServeFrameBlock()`](#serveframeblock)每次等待时长的控制。用户不需要显式地指定该值，因为它可以通过用户指定的`GOPSize`推算出。 |
+| `frameAhead`   | `int`   | | 目标前置帧数。该值用于控制推送的帧数。例如，`waitRef`是通过计算此式得到的：$N_w = T \times \max(N_{pushed} - N_{played} - N_{ahead},~ 0)$，其中$N_{pushed}$，$N_{played}$和$N_{ahead}$分别代表已经推送过的帧数，已经播放的帧数，以及`frameAhead`。$T$是视频的时基。该值通过这种方式，实现了对`waitRef`和阻塞式API [`ServeFrameBlock()`](#serveframeblock)每次等待时长的控制。用户不需要显式地指定该值，因为它可以通过用户指定的`GOPSize`推算出。 |
 
 ----------
 

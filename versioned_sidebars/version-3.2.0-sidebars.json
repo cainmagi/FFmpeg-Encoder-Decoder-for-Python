@@ -1,0 +1,47 @@
+{
+  "docs": [
+    "introduction",
+    {
+      "type": "category",
+      "label": "Installation",
+      "collapsed": false,
+      "items": [
+        "guides/install/pypi",
+        "guides/install/windows",
+        "guides/install/linux",
+        "guides/install/legacy"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Examples",
+      "collapsed": false,
+      "items": [
+        "guides/examples/decoding",
+        "guides/examples/transcoding",
+        "guides/examples/client",
+        "guides/examples/server"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Troubleshooting",
+      "collapsed": false,
+      "items": [
+        "troubleshooting/installation",
+        "troubleshooting/running",
+        "troubleshooting/qna"
+      ]
+    },
+    "changelog"
+  ],
+  "apis": [
+    "apis",
+    "apis/readme",
+    "apis/setGlobal",
+    "apis/MpegDecoder",
+    "apis/MpegEncoder",
+    "apis/MpegClient",
+    "apis/MpegServer"
+  ]
+}

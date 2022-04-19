@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import clsx from 'clsx';
 
-import { useResizeDetector } from 'react-resize-detector';
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.scss";
 import styles from "./KeenSlider.module.scss";
@@ -37,45 +36,56 @@ function ArrowRight(props) {
 };
 
 
+const ResizePlugin = (slider) => {
+  const observer = new ResizeObserver(function () {
+    slider.update()
+  })
+
+  slider.on("created", () => {
+    observer.observe(slider.container)
+  })
+  slider.on("destroyed", () => {
+    observer.unobserve(slider.container)
+  })
+}
+
+
 function KeenSlider(props) {
   let sliderRes;
   const [currentSlide, setCurrentSlide] = React.useState(0)
-  const [sliderRef, slider] = useKeenSlider({
+  const [loaded, setLoaded] = React.useState(false)
+  const itemSpacing = (props.spacing !== undefined ? props.spacing : 15)
+  const [sliderRef, instanceRef] = useKeenSlider({
     initial: props.initial !== undefined ? props.initial : 0,
-    slidesPerView: props.slidesPerView !== undefined ? props.slidesPerView : 1,
-    spacing: props.spacing !== undefined ? props.spacing : 15,
     loop: props.loop !== undefined ? props.loop : true,
-    centered: props.centered !== undefined ? props.centered : true,
     breakpoints: props.breakpoints !== undefined ? props.breakpoints : {
       "(min-width: 768px)": {
-        slidesPerView: 2,
+        slides: { perView: 2, spacing: itemSpacing },
       },
-      "(min-width: 1280px)": {
-        slidesPerView: 3,
+      "(min-width: 1440px)": {
+        slides: { perView: 3, spacing: itemSpacing + 5 },
       },
       "(min-width: 1920px)": {
-        slidesPerView: 4,
+        slides: { perView: 3, spacing: itemSpacing + 15 },
       },
     },
-    slides: `.${styles.slideItem}`,
-    created(s) {
-      sliderRes=s;
+    slides: { 
+		perView: (props.slidesPerView !== undefined ? props.slidesPerView : 1),
+		origin: props.centered !== undefined ? (props.centered ? "center": "auto") : "center",
+		spacing: itemSpacing
+	},
+	selector: `.${styles.slideItem}`,
+    created() {
+      setLoaded(true)
     },
     slideChanged(s) {
-      setCurrentSlide(s.details().relativeSlide);
+      setCurrentSlide(s.track.details.rel)
     },
-  });
-
-  const onResize = useCallback(() => {
-    if (sliderRes !== undefined && sliderRes !== null) {
-      sliderRes.resize();
-    }
-  }, []);
-  const { width, height, ref } = useResizeDetector({ onResize, handleWidth: true, handleHeight: false });
+  }, [ResizePlugin]);
 
   return (
     <>
-      <div ref={ref} className={styles.navigationWrapper}>
+	  <div className={styles.navigationWrapper}>
         <div ref={sliderRef} className="keen-slider">
           {props.children && (
             React.Children.map(props.children, child => {
@@ -87,27 +97,29 @@ function KeenSlider(props) {
             })
           )}
         </div>
-        {slider && (
+        {loaded && instanceRef.current && (
           <>
             <ArrowLeft
-              onClick={(e) => e.stopPropagation() || slider.prev()}
+              onClick={(e) => e.stopPropagation() || instanceRef.current?.prev()}
               disabled={false} //{currentSlide === 0}
             />
             <ArrowRight
-              onClick={(e) => e.stopPropagation() || slider.next()}
-              disabled={false} //{currentSlide === slider.details().size - 1}
+              onClick={(e) => e.stopPropagation() || instanceRef.current?.next()}
+              disabled={false} //{currentSlide === instanceRef.current.track.details.slides.length - 1}
             />
           </>
         )}
       </div>
-      {slider && (
+      {loaded && instanceRef.current && (
         <div className={styles.dots}>
-          {Array.from(Array(slider.details().size).keys()).map((idx) => {
+          {[
+            ...Array(instanceRef.current.track.details.slides.length).keys(),
+          ].map((idx) => {
             return (
               <button
                 key={idx}
                 onClick={() => {
-                  slider.moveToSlideRelative(idx)
+                  instanceRef.current?.moveToIdx(idx)
                 }}
                 className={clsx([styles.dot, (currentSlide === idx ? styles.active : "")])}
               />

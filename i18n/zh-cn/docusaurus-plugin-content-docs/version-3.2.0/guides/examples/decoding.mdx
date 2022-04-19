@@ -1,0 +1,40 @@
+---
+id: decoding
+title: 解码视频文件
+sidebar_label: 解码
+slug: /examples/decoding
+description: 解码一个视频文件的范例。
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+
+以下代码展示了如何解流、解码并遍历一个视频的所有帧。该视频可以是任何有效的视频格式。`mpegCoder.MpegDecoder`可以自动识别视频所用的编码器（codec）。
+
+```python {7,8} title="decoding.py"
+import mpegCoder
+
+d = mpegCoder.MpegDecoder()
+opened = d.FFmpegSetup('test-video.mp4')
+if opened:  # 如果编码器没有正常载入，停止后续步骤。
+    gop = True
+    while gop is not None:
+        gop = d.ExtractGOP()  # 提取当前的画面组。
+d.clear()  # 关闭输入视频。
+```
+
+在每个循环里，都会提取出一个[画面组<IconExternalLink/>][wiki-gop]（亦称为图像组，GOP）。画面组是由连续的数帧构成的集合，同时也是视频压缩编码算法的最小单位。在`mpegCoder`里，图像组被处理成了一个四维数组[`np.ndarray`<IconExternalLink/>][link-ndarray]。其形状`(N, H, W, C)`分别代表帧数、高度、宽度、以及通道数。每一帧在返还给用户的时候，都已经转移到了RGB （`uint8`）空间里。如果视频读取到了文件尾，返回的`gop`则会是`None`。
+
+## 解码并缩放 {#decoder-rescaling}
+
+用户可以通过设置`MpegDecoder`来缩放视频帧。例如，以下的代码将会确保无论原视频尺寸如何，返回的帧都是720x486的尺寸。
+
+```python {3}
+...
+d = mpegCoder.MpegDecoder()
+d.setParameter(widthDst=720, heightDst=486)
+opened = d.FFmpegSetup('test-video.mp4')
+...
+```
+
+[wiki-gop]:https://en.wikipedia.org/wiki/Group_of_pictures "Group of pictures | Wikipedia"
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"

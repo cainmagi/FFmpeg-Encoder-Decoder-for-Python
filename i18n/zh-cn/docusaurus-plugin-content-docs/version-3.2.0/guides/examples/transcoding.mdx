@@ -1,0 +1,71 @@
+---
+id: transcoding
+title: 转码视频文件
+sidebar_label: 转码
+slug: /examples/transcoding
+description: 编码、或转码一个视频文件的范例。
+---
+
+import IconExternalLink from '@theme/IconExternalLink';
+
+以下代码展示了如何编码、混流一个新视频文件。虽然在下例里，我们实际是转码了一个视频，但编码器的输入其实可以是任何数据。
+
+```python {12,14-15} title="transcoding.py"
+import mpegCoder
+
+d = mpegCoder.MpegDecoder()
+d.setParameter(nthread=4)
+opened = d.FFmpegSetup('test-video.mp4')  # 加载解码器。
+e = mpegCoder.MpegEncoder()
+e.setParameter(decoder=d, codecName='libx265', videoPath='test-video-x265.mp4', nthread=8)  # 从解码器继承大多数的视频参数。
+opened = opened and e.FFmpegSetup()  # 设置编码器。
+if opened:  # 如果编码器、解码器没有正常载入，停止后续步骤。
+    p = True
+    while p is not None:
+        p = d.ExtractGOP()  # 提取当前的画面组。
+        if p is not None:
+            for i in p:  # 遍历每一帧。
+                e.EncodeFrame(i)  # 编码当前帧。
+    e.FFmpegClose() # 结束编码，并将缓存内的所有帧刷入文件。
+e.clear()  # 清除编码器设置。
+d.clear()  # 关闭解码器、并清除设置。
+```
+
+在该例里，我们解码了一个已经存在的视频文件，并将其用`x265`编码器（codec）编码成一个新视频。最常用的编码器有`libxvid`，`libx264`，`libx265`，`libvp9`，`libsvtav1`。此例中，编码器的大多数设置都是从解码器里拷贝来的，所以输出的视频将会和输入视频有相同的画面组大小、连续B帧数、视频尺寸、比特率以及帧率。与此同时，我们将编码使用的线程数目设置为`8`。
+
+:::info
+
+部分编码器（codec）可能不支持多线程模式。在这种情况下，无论我们之前如何设置编码器，在调用了`FFmpegSetup()`之后，有关线程数的参数都会被自动校正为`1`。
+
+:::
+
+在每个循环里，我们读取、遍历一个画面组，并将其中的数据按帧编码到新视频里。在所有的帧都编码完毕之后，`mp4`文件格式的文件尾会被写入到输出视频里。
+
+如果用户在编码的过程中触发了<kbd>Ctrl</kbd>+<kbd>C</kbd>，视频仍然可以被安全保存。但是，如果用户连续触发<kbd>Ctrl</kbd>+<kbd>C</kbd>两次，那么输出视频将会损坏，因为视频文件尾没能正常写入到文件里。
+
+## 优化视频编码 {#optimize-the-output-video}
+
+在上例里，输出的视频的参数设置可能没有达到最优化。x265编码器可以支持的最大连续B帧数不超过`16`。同时，也可以手动设置比特率。因此，如果我们按照以下方式修改参数，输出视频的文件大小将会显著降低。
+
+
+```python {3}
+...
+e = mpegCoder.MpegEncoder()
+e.setParameter(decoder=d, codecName='libx265', videoPath='test-video-x265.mp4', GOPSize=24, maxBframe=16, bitRate=48.0, nthread=8)
+opened = opened and e.FFmpegSetup()
+...
+```
+
+## 缩放、并重采样视频 {#rescaling-and-resampling}
+
+在某些场合下，我们需要将输出视频缩放到合适尺寸，并且重设视频的帧率，
+
+```python {3}
+...
+e = mpegCoder.MpegEncoder()
+e.setParameter(decoder=d, codecName='libx265', videoPath='test-video-x265.mp4', width=720, height=486, frameRate=(5, 1), nthread=8)
+opened = opened and e.FFmpegSetup()
+...
+```
+
+该设置将会使得输出视频的尺寸缩放为720x486。并且输出视频的帧率重采样为5 FPS。在此情况下，当我们调用`e.EncodeFrame(i)`时，帧`i`不一定需要是720x486的数据，因为`MpegEncoder`可以自行缩放它。

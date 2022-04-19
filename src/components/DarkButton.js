@@ -5,11 +5,17 @@ import React, {useEffect, useState} from 'react';
 
 import Link from '@docusaurus/Link';
 import { Icon, InlineIcon } from "@iconify/react";
-import useThemeContext from '@theme/hooks/useThemeContext'; //docs: https://v2.docusaurus.io/docs/2.0.0-alpha.69/theme-classic#usethemecontext
+// import useThemeContext from '@theme/hooks/useThemeContext'; //docs: https://v2.docusaurus.io/docs/2.0.0-alpha.69/theme-classic#usethemecontext
+/* Refactor:
+The original useThemeContext has been replaced by the new API useColorMode
+https://github.com/facebook/docusaurus/pull/6289
+*/
+import {useColorMode} from '@docusaurus/theme-common';
 
 
 const useButtonTheme = () => {
-  const {isDarkTheme} = useThemeContext();
+  const {colorMode, setColorMode} = useColorMode();
+  const isDarkTheme = (colorMode === 'dark');
   if (isDarkTheme) {
     return "button--secondary button--outline";
   }

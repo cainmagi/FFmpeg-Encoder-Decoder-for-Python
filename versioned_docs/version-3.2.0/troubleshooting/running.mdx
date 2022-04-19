@@ -1,0 +1,78 @@
+---
+id: running
+title: Troubleshooting for running
+sidebar_label: Running
+slug: /troubleshooting/running
+description: The troubleshooting for running mpegCoder.
+---
+
+import DarkButton from '@site/src/components/DarkButton';
+import IconExternalLink from '@theme/IconExternalLink';
+import octInfo16 from '@iconify-icons/octicon/info-16';
+
+## Introduction {#introduction}
+
+If you could not find your problem in this page, please fire an issue:
+
+<p>
+  <DarkButton to="https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues/new/choose" icon={octInfo16}>
+    Fire an issue
+  </DarkButton>
+</p>
+
+## Questions and answers {#questions-and-answers}
+
+### Fail to decode first frame {#fail-to-decode-first-frame}
+
+* **Question**: Why is the first frame not able to be decoded correctly? The returned frame is totally black.
+
+* **Answer**: This problem often occurs when using `MpegClient`, especially when demuxing the RTSP stream. In some video codec formats, there are I, P, and B frames. The I frame is required for decoding other frames. If the first received frame from the remote stream is not an I frame, you could not decode the frame correctly. This problem should be fixed if you let your client running for a while.
+
+### Fail to encode frames {#fail-to-encode-frames}
+
+* **Question**: When encoding frames, why does `mpegCoder` collapse?
+
+* **Answer**: You may send incorrect data to `MpegEncoder.EncodeFrame()`. The input value should be a 3D [`np.ndarray`<IconExternalLink/>][link-ndarray]. The size of this array requires to be consistent with the configuration of the encoder.
+
+### Bad output video {#bad-output-video}
+
+* **Question**: I am working with `MpegEncoder`. Why is the output video broken?
+
+* **Answer**: There are two typical cases for the bad output video. Please check whether you meet such cases:
+
+  * The video tail is not written correctly. This problem is often caused by a sudden termination of the program.
+  * Some of the input frames are not correctly written.
+
+### Stuck of the streamer {#stuck-of-the-streamer}
+
+* **Question**: When using `MpegClient` or `MpegServer`, why is the program stucked?
+
+* **Answer**: This problem is often caused by `streamer.FFmpegSetup()`, especially when the remote server program is not launched, or the stream protocol is not accepted by the server. I have to admit that I should add a timeout option in the future.
+
+### Fail to push the stream {#fail-to-push-the-stream}
+
+* **Question**: I could connect the server by `MpegServer.FFmpegSetup()` successfully. Why am I not able to serve the first frame by `MpegServer.ServeFrame()`?
+
+* **Answer**: This problem is often caused by using a wrong codec. Not all codecs are supported for the online streaming. We recommend users to use `libx264`.
+
+### Set log level {#set-log-level}
+
+* **Question**: I do not want the logs shown in the prompt, how to disable them?
+
+* **Answer**: We provide a global configuration method to do that:
+
+  ```python
+  mpegCoder.setGlobal(dumpLevel=0)
+  ```
+
+  This value could be `0` (only show errors), `1` (show basic logs), `2` (show detailed logs).
+
+### Reuse the instances {#reuse-the-instances}
+
+* **Question**: Can I reuse the same instance of `mpegCoder`, for example, the `mpegCoder.MpegDecoder`?
+
+* **Answer**: Of course. Remember to call `clear()` before reusing the instance.
+
+[download-ff-4-4-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dll-win-ffmpeg_4_4.tar.xz
+[download-ff-4-4-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz
+[link-ndarray]:https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html "np.ndarray"

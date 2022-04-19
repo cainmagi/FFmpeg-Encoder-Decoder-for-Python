@@ -13,7 +13,15 @@ import InlineIcon from '@site/src/components/InlineIcon';
 import mdiFileDocumentMultipleOutline from '@iconify-icons/mdi/file-document-multiple-outline';
 import octTag16 from '@iconify-icons/octicon/tag-16';
 
-import { useVersions, useLatestVersion } from '@theme/hooks/useDocs';
+// import { useVersions, useLatestVersion } from '@theme/hooks/useDocs';
+/* Refactor:
+The original useVersions / useLatestVersion have been moved to the plugin
+https://github.com/facebook/docusaurus/pull/6287
+*/
+import {
+  useVersions,
+  useLatestVersion,
+} from '@docusaurus/plugin-content-docs/client';
 
 import Translate, { translate } from '@docusaurus/Translate';
 
