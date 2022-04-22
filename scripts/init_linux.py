@@ -17,7 +17,8 @@ import sysconfig
 import ctypes
 from . import webtools
 
-__verion__ = '3.2.0'
+__verion__ = '3.2.1'
+__inner_version__ = '3.2.0'
 PY_VERSION = sysconfig.get_python_version()
 
 
@@ -68,11 +69,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 if not os.path.isfile(os.path.join(basedir, 'mpegCoder.so')):
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-        '{0}-linux'.format(__verion__),
-        get_release_name(__verion__, PY_VERSION),
+        '{0}-linux'.format(__inner_version__),
+        get_release_name(__inner_version__, PY_VERSION),
         path=basedir, mode='auto', verbose=True, token=''
     )
-if not os.path.isdir(os.path.join(basedir, 'lib')):
+if (
+    (not os.path.isdir(os.path.join(basedir, 'lib'))) or  # noqa: W504
+    (not os.path.isdir(os.path.join(basedir, 'lib', 'libcrypto.so.1.1')))
+):  # Fix a missing dependency problem caused by libssh.
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
         'deps-3.2.0', 'so-linux-ffmpeg_5_0.tar.xz',
@@ -90,7 +94,7 @@ __dependencies.add_dependencies(
     'libXdmcp.so.6', 'libbsd.so.0', 'libmd.so.0',
 )
 __dependencies.add_dependencies(
-    'libsrt.so.1.4', 'libssh.so.4'
+    'libsrt.so.1.4', 'libssh.so.4', 'libcrypto.so.1.1',
 )
 __dependencies.add_dependencies(
     'libopencore-amrwb.so.0', 'libogg.so.0', 'libmpg123.so.0',

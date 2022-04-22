@@ -24,7 +24,7 @@ import urllib3
 
 try:
     from tqdm import tqdm
-    wrapattr=tqdm.wrapattr
+    wrapattr = tqdm.wrapattr
 except ImportError:
     import contextlib
 

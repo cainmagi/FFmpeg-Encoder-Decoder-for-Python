@@ -16,7 +16,8 @@ import os
 import sysconfig
 from . import webtools
 
-__verion__ = '3.2.0'
+__verion__ = '3.2.1'
+__inner_version__ = '3.2.0'
 PY_VERSION = sysconfig.get_python_version()
 
 
@@ -37,7 +38,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 if not os.path.isfile(os.path.join(basedir, 'mpegCoder.pyd')):
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-        __verion__, get_release_name(__verion__, PY_VERSION),
+        __inner_version__, get_release_name(__inner_version__, PY_VERSION),
         path=basedir, mode='auto', verbose=True, token=''
     )
 if not os.path.isfile(os.path.join(basedir, 'avcodec-59.dll')):

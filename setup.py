@@ -43,7 +43,8 @@ except ImportError:
                 yield name
 
 
-VERSION = '3.2.0'
+VERSION = '3.2.1'
+DEPENDENCY_VERSION = '3.2.0'
 PUBLISH_VERSION = ''
 # PUBLISH_VERSION Should begin from '', each failed attmpt, it need to be
 # changed as '-b', '-c', ...
@@ -112,11 +113,14 @@ def fetch_dependencies(python_ver='3.6', is_linux=False, target_path='.'):
         if not os.path.isfile(os.path.join(target_path, 'mpegCoder.so')):
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-                '{0}-linux'.format(VERSION),
-                get_release_name(VERSION, python_ver, is_linux),
+                '{0}-linux'.format(DEPENDENCY_VERSION),
+                get_release_name(DEPENDENCY_VERSION, python_ver, is_linux),
                 path=target_path, mode='auto', verbose=True, token=''
             )
-        if not os.path.isdir(os.path.join(target_path, 'lib')):
+        if (
+            (not os.path.isdir(os.path.join(target_path, 'lib'))) or  # noqa: W504
+            (not os.path.isdir(os.path.join(target_path, 'lib', 'libcrypto.so.1.1')))
+        ):  # Fix a missing dependency problem caused by libssh.
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
                 'deps-3.2.0', 'so-linux-ffmpeg_5_0.tar.xz',
@@ -126,7 +130,7 @@ def fetch_dependencies(python_ver='3.6', is_linux=False, target_path='.'):
         if not os.path.isfile(os.path.join(target_path, 'mpegCoder.pyd')):
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
-                VERSION, get_release_name(VERSION, python_ver, is_linux),
+                DEPENDENCY_VERSION, get_release_name(DEPENDENCY_VERSION, python_ver, is_linux),
                 path=target_path, mode='auto', verbose=True, token=''
             )
         if not os.path.isfile(os.path.join(target_path, 'avcodec-59.dll')):
