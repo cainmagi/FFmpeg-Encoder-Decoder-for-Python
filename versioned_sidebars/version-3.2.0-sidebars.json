@@ -5,6 +5,12 @@
       "type": "category",
       "label": "Installation",
       "collapsed": false,
+      "link": {
+        "type": "generated-index",
+        "title": "Installation",
+        "slug": "/category/installation",
+        "description": "Learn about how to install or compile mpegCoder."
+      },
       "items": [
         "guides/install/pypi",
         "guides/install/windows",
@@ -16,6 +22,12 @@
       "type": "category",
       "label": "Examples",
       "collapsed": false,
+      "link": {
+        "type": "generated-index",
+        "title": "Examples",
+        "slug": "/category/examples",
+        "description": "Start the video processing or streaming with mpegCoder."
+      },
       "items": [
         "guides/examples/decoding",
         "guides/examples/transcoding",
@@ -27,6 +39,12 @@
       "type": "category",
       "label": "Troubleshooting",
       "collapsed": false,
+      "link": {
+        "type": "generated-index",
+        "title": "Troubleshooting",
+        "slug": "/category/troubleshooting",
+        "description": "Tackle the issues and questions."
+      },
       "items": [
         "troubleshooting/installation",
         "troubleshooting/running",

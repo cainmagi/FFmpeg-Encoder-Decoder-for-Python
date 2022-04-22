@@ -13,7 +13,6 @@ module.exports = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
     'introduction',
-    
     {
       type: 'category',
       label: 'Installation',
@@ -21,6 +20,7 @@ module.exports = {
       link: {
         type: 'generated-index',
         title: 'Installation',
+        slug: '/category/installation',
         description:
           "Learn about how to install or compile mpegCoder.",
       },
@@ -33,6 +33,7 @@ module.exports = {
       link: {
         type: 'generated-index',
         title: 'Examples',
+        slug: '/category/examples',
         description:
           "Start the video processing or streaming with mpegCoder.",
       },
@@ -45,6 +46,7 @@ module.exports = {
       link: {
         type: 'generated-index',
         title: 'Troubleshooting',
+        slug: '/category/troubleshooting',
         description:
           "Tackle the issues and questions.",
       },
