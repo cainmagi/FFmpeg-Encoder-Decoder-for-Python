@@ -43,7 +43,7 @@ except ImportError:
                 yield name
 
 
-VERSION = '3.2.2'
+VERSION = '3.2.3'
 DEPENDENCY_VERSION = '3.2.0'
 PUBLISH_VERSION = ''
 # PUBLISH_VERSION Should begin from '', each failed attmpt, it need to be
@@ -119,7 +119,7 @@ def fetch_dependencies(python_ver='3.6', is_linux=False, target_path='.'):
             )
         if (
             (not os.path.isdir(os.path.join(target_path, 'lib'))) or  # noqa: W504
-            (not os.path.isdir(os.path.join(target_path, 'lib', 'libcrypto.so.1.1')))
+            (not os.path.isfile(os.path.join(target_path, 'lib', 'libcrypto.so.1.1')))
         ):  # Fix a missing dependency problem caused by libssh.
             webtools.download_tarball(
                 'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',

@@ -17,7 +17,7 @@ import sysconfig
 import ctypes
 from . import webtools
 
-__version__ = '3.2.2'
+__version__ = '3.2.3'
 __inner_version__ = '3.2.0'
 PY_VERSION = sysconfig.get_python_version()
 
@@ -75,7 +75,7 @@ if not os.path.isfile(os.path.join(basedir, 'mpegCoder.so')):
     )
 if (
     (not os.path.isdir(os.path.join(basedir, 'lib'))) or  # noqa: W504
-    (not os.path.isdir(os.path.join(basedir, 'lib', 'libcrypto.so.1.1')))
+    (not os.path.isfile(os.path.join(basedir, 'lib', 'libcrypto.so.1.1')))
 ):  # Fix a missing dependency problem caused by libssh.
     webtools.download_tarball(
         'cainmagi', 'FFmpeg-Encoder-Decoder-for-Python',
