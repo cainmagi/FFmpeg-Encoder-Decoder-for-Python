@@ -24,13 +24,16 @@ jobs:
       - name: Test Build
         run: |
           if [ -e yarn.lock ]; then
-          yarn install --frozen-lockfile
-          elif [ -e package-lock.json ]; then
-          npm ci
+            yarn install --frozen-lockfile
+            yarn run build
           else
-          npm i
+            if [ -e package-lock.json ]; then
+              npm ci
+            else
+              npm i
+            fi
+            npm run build
           fi
-          npm run build
   gh-release:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -43,18 +46,18 @@ jobs:
       - name: Release to GitHub Pages
         run: |
           if [ -e yarn.lock ]; then
-          yarn install --frozen-lockfile
-          yarn run build
+            yarn install --frozen-lockfile
+            yarn run build
           else
-          if [ -e package-lock.json ]; then
-          npm ci
-          else
-          npm i
-          fi
-          npm run build
+            if [ -e package-lock.json ]; then
+              npm ci
+            else
+              npm i
+            fi
+            npm run build
           fi
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@4.3.0
+        uses: JamesIves/github-pages-deploy-action@v4.3.0
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: build # The folder the action should deploy.
