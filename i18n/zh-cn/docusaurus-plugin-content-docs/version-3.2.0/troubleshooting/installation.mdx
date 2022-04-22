@@ -51,7 +51,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
     * 你的Python版本和预编译的`mpegCoder`模块不匹配；
     * 所依赖的DLL文件既没有和`mpegCoder.pyd`放在同一文件夹，也没有出现在环境路径里（即名为`PATH`的环境变量）。
 
-* **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-win]并将其中包含的DLL文件解压到`mpegCoder.pyd`所在的目录下。
+* **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-win]并将其中包含的DLL文件解压到`mpegCoder.pyd`所在的目录下。
 
 ### 找不到`.so` {#so-not-found}
 
@@ -71,7 +71,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
     * 你的Python版本和预编译的`mpegCoder`模块不匹配，在这种情况下，显示所缺少的库名字将会形如`libpython3.*.so.**`；
     * 所依赖的动态库文件没有被添加到你的环境变量`$LD_LIBRARY_PATH`里。
 
-* **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux]并将其中包含的、所缺少的`.so`文件解压到一个在`$LD_LIBRARY_PATH`里的文件夹内。
+* **修复**: 下载[依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-linux]并将其中包含的、所缺少的`.so`文件解压到一个在`$LD_LIBRARY_PATH`里的文件夹内。
 
 ### 找不到`numpy.core.multiarray` {#numpycoremultiarray-not-found}
 
@@ -90,7 +90,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 * **问**: 当我导入模块的时候，为什么会遇到以下错误？
 
   ```
-  OSError: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.29' not found (required by ******/libdrm.so.2)
+  OSError: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.29' not found (required by ******/mpegCoder/lib/libsrt.so.1.4)
   ```
 
 * **答**: 你的GLibC版本没有达到要求（`>=2.29`）。要想确认是这个原因，可以运行
@@ -109,7 +109,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
   ln -sf <path-of-mpegCoder>/lib-fix/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
   ```
 
-  这个文件（`libm-2.31.so`）也可以在[Linux依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux]里找到。
+  这个文件（`libm-2.31.so`）也可以在[Linux依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-linux]里找到。
 
 ### 不正确的依赖项 {#incorrect-dependencies}
 
@@ -119,6 +119,6 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
 * **修复**: 从PyPI安装`mpegCoder`，或者下载正确的依赖项，或者自行编译`mpegCoder`。
 
-[download-ff-4-4-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dll-win-ffmpeg_4_4.tar.xz
-[download-ff-4-4-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz
+[download-ff-5-0-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/dll-win-ffmpeg_5_0.tar.xz
+[download-ff-5-0-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/so-linux-ffmpeg_5_0.tar.xz
 [link-numpy]:https://numpy.org "Numpy"

@@ -69,12 +69,12 @@ function KeenSlider(props) {
         slides: { perView: 3, spacing: itemSpacing + 15 },
       },
     },
-    slides: { 
-		perView: (props.slidesPerView !== undefined ? props.slidesPerView : 1),
-		origin: props.centered !== undefined ? (props.centered ? "center": "auto") : "center",
-		spacing: itemSpacing
-	},
-	selector: `.${styles.slideItem}`,
+    slides: {
+      perView: (props.slidesPerView !== undefined ? props.slidesPerView : 1),
+      origin: props.centered !== undefined ? (props.centered ? "center" : "auto") : "center",
+      spacing: itemSpacing
+    },
+    selector: `.${styles.slideItem}`,
     created() {
       setLoaded(true)
     },
@@ -85,7 +85,7 @@ function KeenSlider(props) {
 
   return (
     <>
-	  <div className={styles.navigationWrapper}>
+      <div className={styles.navigationWrapper}>
         <div ref={sliderRef} className="keen-slider">
           {props.children && (
             React.Children.map(props.children, child => {
@@ -112,9 +112,7 @@ function KeenSlider(props) {
       </div>
       {loaded && instanceRef.current && (
         <div className={styles.dots}>
-          {[
-            ...Array(instanceRef.current.track.details.slides.length).keys(),
-          ].map((idx) => {
+          {Array.from(Array(instanceRef.current.track.details.slides.length).keys()).map((idx) => {
             return (
               <button
                 key={idx}

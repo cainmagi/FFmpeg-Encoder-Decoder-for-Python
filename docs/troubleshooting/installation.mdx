@@ -51,7 +51,7 @@ If you could not find your problem in this page, please fire an issue:
     * Your python version does not match the `mpegCoder` module.
     * The required DLL files are neither in the same folder of `mpegCoder.pyd`, nor in the path (environment variable `PATH`).
 
-* **Fix**: Download the [dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-win] and extract the DLLs in the same folder of `mpegCoder.pyd`.
+* **Fix**: Download the [dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-win] and extract the DLLs in the same folder of `mpegCoder.pyd`.
 
 ### `.so` not found {#so-not-found}
 
@@ -71,7 +71,7 @@ If you could not find your problem in this page, please fire an issue:
     * Your python version does not match the `mpegCoder` module, in this case, the library name should be `libpython3.*.so.**`.
     * The required dependencies files are not in your environment variable `$LD_LIBRARY_PATH`.
 
-* **Fix**: Download the [dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux] and extract the missing `.so` to a folder in `$LD_LIBRARY_PATH`.
+* **Fix**: Download the [dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-linux] and extract the missing `.so` to a folder in `$LD_LIBRARY_PATH`.
 
 ### `numpy.core.multiarray` not found {#numpycoremultiarray-not-found}
 
@@ -90,7 +90,7 @@ If you could not find your problem in this page, please fire an issue:
 * **Question**: When importing the module, why meeting the following error?
 
   ```
-  OSError: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.29' not found (required by ******/libdrm.so.2)
+  OSError: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.29' not found (required by ******/mpegCoder/lib/libsrt.so.1.4)
   ```
 
 * **Answer**: Your GLibC version is not `>=2.29`. To verify that, you could run
@@ -109,7 +109,7 @@ If you could not find your problem in this page, please fire an issue:
   ln -sf <path-of-mpegCoder>/lib-fix/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
   ```
 
-  The same file (`libm-2.31.so`) could be also found in the [Linux dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-4-4-linux].
+  The same file (`libm-2.31.so`) could be also found in the [Linux dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-linux].
 
 ### Incorrect dependencies {#incorrect-dependencies}
 
@@ -119,6 +119,6 @@ If you could not find your problem in this page, please fire an issue:
 
 * **Fix**: Install `mpegCoder` from PyPI, or download our dependencies, or compile `mpegCoder` by yourself.
 
-[download-ff-4-4-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/dll-win-ffmpeg_4_4.tar.xz
-[download-ff-4-4-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.0.0/so-linux-ffmpeg_4_4.tar.xz
+[download-ff-5-0-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/dll-win-ffmpeg_5_0.tar.xz
+[download-ff-5-0-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/so-linux-ffmpeg_5_0.tar.xz
 [link-numpy]:https://numpy.org "Numpy"
