@@ -16,7 +16,7 @@ import os
 import sysconfig
 from . import webtools
 
-__verion__ = '3.2.1'
+__version__ = '3.2.2'
 __inner_version__ = '3.2.0'
 PY_VERSION = sysconfig.get_python_version()
 
@@ -50,7 +50,7 @@ if not os.path.isfile(os.path.join(basedir, 'avcodec-59.dll')):
 
 
 __all__ = (
-    'webtools', '__verion__',
+    'webtools', '__version__',
     'setGlobal', 'readme',
     'MpegDecoder', 'MpegEncoder',
     'MpegClient', 'MpegServer'

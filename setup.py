@@ -43,7 +43,7 @@ except ImportError:
                 yield name
 
 
-VERSION = '3.2.1'
+VERSION = '3.2.2'
 DEPENDENCY_VERSION = '3.2.0'
 PUBLISH_VERSION = ''
 # PUBLISH_VERSION Should begin from '', each failed attmpt, it need to be

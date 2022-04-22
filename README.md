@@ -23,6 +23,7 @@ The script will keep updated with the newest releases of the pre-compiled module
 
 |  `mpegCoder`  |  Uploaded  |
 | :-----------: | :--------: |
+| `3.2.2` | :heavy_check_mark: |
 | `3.2.1` | :heavy_check_mark: |
 | `3.2.0` | :heavy_check_mark: |
 | `3.1.0` | :heavy_check_mark: |
