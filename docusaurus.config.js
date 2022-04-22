@@ -13,6 +13,7 @@ module.exports = {
   baseUrl: '/FFmpeg-Encoder-Decoder-for-Python/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
+  trailingSlash: false,
   favicon: 'img/favicon.ico',
   organizationName: 'cainmagi', // Usually your GitHub org/user name.
   projectName: 'mpegCoder', // Usually your repo name.
@@ -165,10 +166,10 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/custom.scss'),
         },
-		gtag: {
-		  trackingID: 'G-VY4XPTJXNM',
-		  anonymizeIP: true,
-		},
+        gtag: {
+          trackingID: 'G-VY4XPTJXNM',
+          anonymizeIP: true,
+        },
       },
     ],
   ],

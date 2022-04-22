@@ -13,22 +13,41 @@ module.exports = {
   // By default, Docusaurus generates a sidebar from the docs folder structure
   docs: [
     'introduction',
+    
     {
       type: 'category',
       label: 'Installation',
       collapsed: false,
+      link: {
+        type: 'generated-index',
+        title: 'Installation',
+        description:
+          "Learn about how to install or compile mpegCoder.",
+      },
       items: ['guides/install/pypi', 'guides/install/windows', 'guides/install/linux', 'guides/install/legacy'],
     },
     {
       type: 'category',
       label: 'Examples',
       collapsed: false,
+      link: {
+        type: 'generated-index',
+        title: 'Examples',
+        description:
+          "Start the video processing or streaming with mpegCoder.",
+      },
       items: ['guides/examples/decoding', 'guides/examples/transcoding', 'guides/examples/client', 'guides/examples/server'],
     },
     {
       type: 'category',
       label: 'Troubleshooting',
       collapsed: false,
+      link: {
+        type: 'generated-index',
+        title: 'Troubleshooting',
+        description:
+          "Tackle the issues and questions.",
+      },
       items: ['troubleshooting/installation', 'troubleshooting/running', 'troubleshooting/qna'],
     },
     'changelog'
