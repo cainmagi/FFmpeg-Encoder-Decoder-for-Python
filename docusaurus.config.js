@@ -8,7 +8,7 @@ const versions = require('./versions.json');
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'mpegCoder',
-  tagline: 'This is a C++ based FFmpeg Encoder/Decoder for Python 3.5+ & Numpy 1.13+. Both Linux & Win versions are provided. Theoretically you do not need to install FFmpeg for using this library.',
+  tagline: 'This is a C++ based FFmpeg Encoder/Decoder for Python 3.6+ & Numpy 1.19+. Both Linux & Win versions are provided. Theoretically you do not need to install FFmpeg for using this library.',
   url: 'https://cainmagi.github.io',
   baseUrl: '/FFmpeg-Encoder-Decoder-for-Python/',
   onBrokenLinks: 'throw',
@@ -150,7 +150,7 @@ module.exports = {
             'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/edit/docs/',
           remarkPlugins: [math],
           rehypePlugins: [katex],
-          lastVersion: "3.2.0",
+          lastVersion: "3.2.x",
           onlyIncludeVersions: [
             'current', ...versions.slice(0, 2)
           ],

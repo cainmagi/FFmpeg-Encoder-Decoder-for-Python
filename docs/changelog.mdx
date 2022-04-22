@@ -7,6 +7,7 @@ slug: /changelog
 
 import InlineIcon from '@site/src/components/InlineIcon';
 import octIssueClosed16 from '@iconify-icons/octicon/issue-closed-16';
+import octArrowRight16 from '@iconify-icons/octicon/arrow-right-16';
 
 :::info
 
@@ -15,6 +16,20 @@ This page do not need and will not be translated to other laungages.
 :::
 
 ## Update Report of `mpegCoder`
+
+### V3.2.3 @ 4/22/2022:
+
+1. Fix a severe bug that causes the dependencies to be downloaded repeatedly.
+
+### V3.2.2 @ 4/22/2022:
+
+1. Fix a typo: `mpegCoder.__verion__` <InlineIcon icon={octArrowRight16}/> `mpegCoder.__version__`.
+
+### V3.2.1 @ 4/22/2022:
+
+1. Fix an issue caused by the missing dependency `libcrypto.so.1.1`. This fixture is only required by the Linux version.
+
+2. Format the PyPI release script.
 
 ### V3.2.0 @ 4/8/2022:
 

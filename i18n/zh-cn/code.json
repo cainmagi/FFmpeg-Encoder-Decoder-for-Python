@@ -152,7 +152,7 @@
     "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
   },
   "index.sub-title": {
-    "message": "本项目是一个基于C++的，支持Linux、Windows、Python 3.5+和Numpy 1.13+的FFMpeg编解码器。理论上无需安装FFMpeg，也可以使用本项目包。",
+    "message": "本项目是一个基于C++的，支持Linux、Windows、Python 3.6+和Numpy 1.19+的FFMpeg编解码器。理论上无需安装FFMpeg，也可以使用本项目包。",
     "description": "Sub-title text in the cover."
   },
   "index.button.start": {

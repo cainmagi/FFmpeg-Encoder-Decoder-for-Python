@@ -85,7 +85,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
 * **修复**: 重装Numpy，或者自行编译`mpegCoder`。
 
-### 找不到GLibC {#glibc-not-found}
+### 找不到GLibC 2.29 {#glibc-2-29-not-found}
 
 * **问**: 当我导入模块的时候，为什么会遇到以下错误？
 
@@ -101,7 +101,7 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
   该问题往往在使用较早版本的Linux发行版系统时出现。目前所支持的操作系统列表可以参见[这里](../installation/linux#import)。
 
-* **修复**: 推荐编译并安装GLibC `>=2.29`。但是，如果用户不想这样做，而是想要一个快速修复的补丁，那么可以按以下步骤照做。
+* **修复**: 推荐编译并安装GLibC `>=2.31`。但是，如果用户不想这样做，而是想要一个快速修复的补丁，那么可以按以下步骤照做。
 
   如果你使用的是pip安装的`mpegCoder`。你需要在`mpegCoder`的安装目录下，找到一个名为`lib-fix`的文件夹，然后运行以下命令
 
@@ -110,6 +110,36 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
   ```
 
   这个文件（`libm-2.31.so`）也可以在[Linux依赖项<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-linux]里找到。
+
+### 找不到GLibC 2.28 {#glibc-2-28-not-found}
+
+* **问**: 当我导入模块的时候，为什么会遇到以下错误？
+
+  ```
+  OSError: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by ******/mpegCoder/lib/librav1e.so.0)
+  ```
+
+* **答**: 你的GLibC版本没有达到要求（`>=2.28`）。要想确认是这个原因，可以运行
+
+  ```shell
+  ldd --version
+  ```
+
+  该问题往往在使用较早版本的Linux发行版系统时出现。目前所支持的操作系统列表可以参见[这里](../installation/linux#import)。
+
+* **修复**: 就我们的经验而言，如果用户不升级到更加新版的OS、或者自行编译GlibC，则该问题无解。在下一个版本，我们会尝试从编译GlibC开始构建我们的工具链，这有可能有助于消除由GlibC引起的一系列关于`mpegCoder`的问题。
+
+### 找不到libcrypyto {#libcrypyto-not-found}
+
+* **问**: 当我导入模块的时候，为什么会遇到以下错误？
+
+  ```
+  OSError: libcrypto.so.1.1: cannot open shared object file: No such file or directory
+  ```
+
+* **答**: 该问题是由打包本项目时、本人的疏忽引起的。该依赖项本来应该被打包到`mpegCoder`的依赖数据里、但实际没有考虑到。已知在使用一个没有安装conda的Ubuntu 22.04上，用户可能会遇到这一问题。
+
+* **修复**: 要解决该问题，请升级到`mpegCoder>=3.1.1`、或安装一个`conda`环境。如果用户不希望这样做，也可以考虑回退到`Debian 11`或`Ubuntu 20.04`这两种OS。
 
 ### 不正确的依赖项 {#incorrect-dependencies}
 

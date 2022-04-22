@@ -1,7 +1,7 @@
 {
   "version.label": {
-    "message": "3.2.0",
-    "description": "The label for version 3.2.0"
+    "message": "3.2.x",
+    "description": "The label for version 3.2.x"
   },
   "sidebar.docs.category.Installation": {
     "message": "安装",

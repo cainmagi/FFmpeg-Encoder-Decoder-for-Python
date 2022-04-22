@@ -85,7 +85,7 @@ If you could not find your problem in this page, please fire an issue:
 
 * **Fix**: Reinstall Numpy, or compile `mpegCoder` by yourself.
 
-### GLibC not found {#glibc-not-found}
+### GLibC 2.29 not found {#glibc-2-29-not-found}
 
 * **Question**: When importing the module, why meeting the following error?
 
@@ -101,7 +101,7 @@ If you could not find your problem in this page, please fire an issue:
 
   This problem often occurs when you are using an older Linux OS. The supported OS list could be found [here](../installation/linux#import).
 
-* **Fix**: We recommend to compile and install GLibC `>=2.29`. However, if users want a faster hotfix. Please follow the follwing instructions.
+* **Fix**: We recommend to compile and install GLibC `>=2.31`. However, if users want a faster hotfix. Please follow the follwing instructions.
 
   If you are using `mpegCoder` from pip. You could find a folder named `lib-fix` in where `mpegCoder` is installed, then run the following command:
 
@@ -110,6 +110,36 @@ If you could not find your problem in this page, please fire an issue:
   ```
 
   The same file (`libm-2.31.so`) could be also found in the [Linux dependencies<InlineIcon icon={mdiDownloadBox}/>][download-ff-5-0-linux].
+
+### GLibC 2.28 not found {#glibc-2-28-not-found}
+
+* **Question**: When importing the module, why meeting the following error?
+
+  ```
+  OSError: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by ******/mpegCoder/lib/librav1e.so.0)
+  ```
+
+* **Answer**: Your GLibC version is not `>=2.28`. To verify that, you could run
+
+  ```shell
+  ldd --version
+  ```
+
+  This problem often occurs when you are using an older Linux OS. The supported OS list could be found [here](../installation/linux#import).
+
+* **Fix**: To our knowledge, this issue cannot be solved if you do not upgrade to a newer OS release or compile GLibC by yourself. In the next version, we will try to build our toolchain with compiling GLibC first. This change may eliminate this issue in the future release of `mpegCoder`.
+
+### libcrypyto not found {#libcrypyto-not-found}
+
+* **Question**: When importing the module, why meeting the following error?
+
+  ```
+  OSError: libcrypto.so.1.1: cannot open shared object file: No such file or directory
+  ```
+
+* **Answer**: This problem is caused by a small mistake in the packaging. This dependency should be, but is actually not bundled with our `mpegCoder`. When using a non-conda environment on Ubuntu 22.04, you may meet this problem.
+
+* **Fix**: To solve this issue, please upgrade to `mpegCoder>=3.1.1`, or install a `conda` environment. If you do not want to do so, you can also use `Debian 11` or `Ubuntu 20.04`.
 
 ### Incorrect dependencies {#incorrect-dependencies}
 
