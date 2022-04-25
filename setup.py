@@ -22,7 +22,7 @@ import shutil
 import atexit
 
 # Add a small trick for fixing the requirement issue.
-pip.main(['install', 'urllib3', 'setuptools'])
+pip.main(['install', '-r', 'requirements.txt'])
 
 import webtools  # noqa: E402
 
@@ -43,7 +43,7 @@ except ImportError:
                 yield name
 
 
-VERSION = '3.2.3'
+VERSION = '3.2.4'
 DEPENDENCY_VERSION = '3.2.0'
 PUBLISH_VERSION = ''
 # PUBLISH_VERSION Should begin from '', each failed attmpt, it need to be

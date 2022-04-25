@@ -23,9 +23,9 @@ import tarfile
 import urllib3
 
 try:
-    from tqdm import tqdm
-    wrapattr = tqdm.wrapattr
-except ImportError:
+    from tqdm import tqdm  # Will trigger ImporError if tqdm is not installed.
+    wrapattr = tqdm.wrapattr  # Will trigger AttributeError is tqdm<4.40.0 is installed.
+except (ImportError, AttributeError):
     import contextlib
 
     @contextlib.contextmanager

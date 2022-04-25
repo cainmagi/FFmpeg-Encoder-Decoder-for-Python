@@ -17,7 +17,7 @@ import sysconfig
 import ctypes
 from . import webtools
 
-__version__ = '3.2.3'
+__version__ = '3.2.4'
 __inner_version__ = '3.2.0'
 PY_VERSION = sysconfig.get_python_version()
 
