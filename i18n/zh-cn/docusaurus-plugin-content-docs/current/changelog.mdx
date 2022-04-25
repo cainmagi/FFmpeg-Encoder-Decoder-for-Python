@@ -8,6 +8,7 @@ slug: /changelog
 import InlineIcon from '@site/src/components/InlineIcon';
 import octIssueClosed16 from '@iconify-icons/octicon/issue-closed-16';
 import octArrowRight16 from '@iconify-icons/octicon/arrow-right-16';
+import octGitBranch16 from '@iconify-icons/octicon/git-branch-16';
 
 :::info
 
@@ -16,6 +17,14 @@ import octArrowRight16 from '@iconify-icons/octicon/arrow-right-16';
 :::
 
 ## Update Report of `mpegCoder`
+
+### V3.2.4 @ 4/24/2022
+
+1. Fix a bug when `tqdm<4.40.0` is installed. Previously, this problem should not trigger if `tqdm>4.40.0` is installed, or `tqdm` is not installed ([<InlineIcon icon={octIssueClosed16}/> issue #5](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/issues/5)).
+
+2. Fix the same bug (mentioned by item 1) in the `setup.py` script.
+
+3. Add change logs to [<InlineIcon icon={octGitBranch16}/> PyPI release branch](https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/tree/3.2.4-pypi).
 
 ### V3.2.3 @ 4/22/2022:
 

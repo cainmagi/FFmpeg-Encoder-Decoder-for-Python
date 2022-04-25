@@ -119,6 +119,23 @@ import mdiDownloadBox from '@iconify-icons/mdi/download-box';
 
 * **修复**: 从PyPI安装`mpegCoder`，或者下载正确的依赖项，或者自行编译`mpegCoder`。
 
+### `tqdm`缺少属性`wrapattr` {#tqdm-has-no-attribute-wrapattr}
+
+* **问**: 当我导入模块的时候，为什么会遇到以下错误？
+
+  ```
+  AttributeError: type object 'tqdm' has no attribute 'wrapattr'
+  ```
+
+* **答**: 这个问题只出现在从`mpegCoder==3.1.0b0`到`mpegCoder==3.2.3`这几个版本。其中，`tqdm`作为一个可选的包，其实没有被列在依赖项列表里。 然则，这个可选的`tqdm`需要提供一个最早实现在`tqdm==4.40.0`中的接口[`tqdm.tqdm.wrapattr`<IconExternalLink/>][link-tqdm-wrapattr]。换言之，如果用户此先安装了`tqdm<4.40.0`，则这会触发这一故障。另一方面来说，如果没有安装过`tqdm`、抑或是安装了`tqdm>=4.40.0`，也不会遇到这一问题。
+
+* **修复**: 要解决这一问题，请升级到`mpegCoder>=3.2.4`。或者，也可以保留`mpegCoder`版本，通过以下命令升级`tqdm`：
+
+  ```bash
+  python -m pip install "tqdm>=4.40.0"
+  ```
+
 [download-ff-5-0-win]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/dll-win-ffmpeg_5_0.tar.xz
 [download-ff-5-0-linux]:https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/releases/download/deps-3.2.0/so-linux-ffmpeg_5_0.tar.xz
 [link-numpy]:https://numpy.org "Numpy"
+[link-tqdm-wrapattr]:https://tqdm.github.io/docs/tqdm/#wrapattr "tqdm.tqdm.wrapattr"

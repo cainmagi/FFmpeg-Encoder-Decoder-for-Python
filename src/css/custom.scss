@@ -7,14 +7,24 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #5cb85c;
-  --ifm-color-primary-dark: #4bad4b;
-  --ifm-color-primary-darker: #47a347;
-  --ifm-color-primary-darkest: #3b873b;
-  --ifm-color-primary-light: #6fc06f;
-  --ifm-color-primary-lighter: #79c579;
-  --ifm-color-primary-lightest: #96d196;
+  --ifm-color-primary: #3a853a;
+  --ifm-color-primary-dark: #347834;
+  --ifm-color-primary-darker: #317131;
+  --ifm-color-primary-darkest: #295d29;
+  --ifm-color-primary-light: #409240;
+  --ifm-color-primary-lighter: #439943;
+  --ifm-color-primary-lightest: #4bad4b;
   --ifm-code-font-size: 95%;
+
+  &[data-theme='dark'] {
+    --ifm-color-primary: #78c478;
+    --ifm-color-primary-dark: #62ba62;
+    --ifm-color-primary-darker: #57b657;
+    --ifm-color-primary-darkest: #439a43;
+    --ifm-color-primary-light: #8ece8e;
+    --ifm-color-primary-lighter: #99d299;
+    --ifm-color-primary-lightest: #bae1ba;
+  }
 }
 
 p, th, td, div {
@@ -57,6 +67,9 @@ p, th, td, div {
 }
 
 .header-pypi-link{
+  &.navbar__item {
+    padding: var(--ifm-navbar-item-padding-vertical) var(--ifm-navbar-item-padding-horizontal) var(--ifm-navbar-item-padding-vertical) 0;
+  }
   &:hover {
     opacity: 0.6;
   }
