@@ -88,14 +88,14 @@ p, th, td, div {
 }
 
 .docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.08);
   display: block;
   margin: 0 calc(-1 * var(--ifm-pre-padding));
   padding: 0 var(--ifm-pre-padding);
 
   /* Color which works with dark mode syntax highlighting theme */
   html[data-theme='dark'] & {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -108,13 +108,35 @@ a.noline:hover {
   }
 }
 
-// Index related
-.buttons {
-  a.button.button--secondary.button--outline:not(.button--active):not(:hover) {
-    color: var(--ifm-color-gray-900);
-    border-color: var(--ifm-color-gray-900);
-  }
-}
+// // Prism line number
+// // Edit the `src/css/custom.css` file and add the following styles
+// // Modified from https://gist.github.com/uditalias/3969a20ef759bf3a8757499429b30063
+
+// // Reset the line-number counter for each .prism-code scope
+// .prism-code {
+//   counter-reset: line-number;
+//   // Notice the chained .language-ts class name to .prism-code
+//   // You can chain more languages in order to add line numbers
+//   &.language-python .token-line::before {
+//     counter-increment: line-number;
+//     content: counter(line-number);
+//     margin-right: var(--ifm-pre-padding);
+//     text-align: right;
+//     min-width: 1.5rem;
+//     display: inline-block;
+//     opacity: .3;
+//     left: var(--ifm-pre-padding);
+//   }
+// }
+
+
+// // Index related
+// .buttons {
+//   a.button.button--secondary.button--outline:not(.button--active):not(:hover) {
+//     color: var(--ifm-color-gray-900);
+//     border-color: var(--ifm-color-gray-900);
+//   }
+// }
 
 // SVG: mermaid
 .mermaid {
