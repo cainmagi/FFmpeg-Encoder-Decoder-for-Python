@@ -29,7 +29,6 @@ module.exports = {
     {
       type: 'category',
       label: 'Examples',
-      collapsed: false,
       link: {
         type: 'generated-index',
         title: 'Examples',
@@ -42,7 +41,6 @@ module.exports = {
     {
       type: 'category',
       label: 'Troubleshooting',
-      collapsed: false,
       link: {
         type: 'generated-index',
         title: 'Troubleshooting',

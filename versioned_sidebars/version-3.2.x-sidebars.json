@@ -21,7 +21,6 @@
     {
       "type": "category",
       "label": "Examples",
-      "collapsed": false,
       "link": {
         "type": "generated-index",
         "title": "Examples",
@@ -38,7 +37,6 @@
     {
       "type": "category",
       "label": "Troubleshooting",
-      "collapsed": false,
       "link": {
         "type": "generated-index",
         "title": "Troubleshooting",

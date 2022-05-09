@@ -15,6 +15,7 @@
   --ifm-color-primary-lighter: #439943;
   --ifm-color-primary-lightest: #4bad4b;
   --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
 
   &[data-theme='dark'] {
     --ifm-color-primary: #78c478;
@@ -24,6 +25,7 @@
     --ifm-color-primary-light: #8ece8e;
     --ifm-color-primary-lighter: #99d299;
     --ifm-color-primary-lightest: #bae1ba;
+    --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -87,18 +89,6 @@ p, th, td, div {
   }
 }
 
-.docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.08);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
-
-  /* Color which works with dark mode syntax highlighting theme */
-  html[data-theme='dark'] & {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-}
-
 a.noline:hover {
   text-decoration: var(--ifm-link-decoration);
   filter: brightness(85%);
@@ -107,28 +97,6 @@ a.noline:hover {
     filter: brightness(125%);
   }
 }
-
-// // Prism line number
-// // Edit the `src/css/custom.css` file and add the following styles
-// // Modified from https://gist.github.com/uditalias/3969a20ef759bf3a8757499429b30063
-
-// // Reset the line-number counter for each .prism-code scope
-// .prism-code {
-//   counter-reset: line-number;
-//   // Notice the chained .language-ts class name to .prism-code
-//   // You can chain more languages in order to add line numbers
-//   &.language-python .token-line::before {
-//     counter-increment: line-number;
-//     content: counter(line-number);
-//     margin-right: var(--ifm-pre-padding);
-//     text-align: right;
-//     min-width: 1.5rem;
-//     display: inline-block;
-//     opacity: .3;
-//     left: var(--ifm-pre-padding);
-//   }
-// }
-
 
 // // Index related
 // .buttons {

@@ -1,12 +1,12 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/vsDark');
 const math = require('remark-math');
-const katex = require('rehype-katex');
+// const katex = require('rehype-katex');
 
 const versions = require('./versions.json');
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
-module.exports = {
+const config = {
   title: 'mpegCoder',
   tagline: 'This is a C++ based FFmpeg Encoder/Decoder for Python 3.6+ & Numpy 1.19+. Both Linux & Win versions are provided. Theoretically you do not need to install FFmpeg for using this library.',
   url: 'https://cainmagi.github.io',
@@ -126,7 +126,6 @@ module.exports = {
       theme: lightCodeTheme,
       darkTheme: darkCodeTheme,
     },
-    hideableSidebar: true,
     algolia: {
       apiKey: '860fac8f443a1afd20afd7960cec9441',
       indexName: 'mpegcoder',
@@ -137,6 +136,12 @@ module.exports = {
       // Optional: Algolia search parameters
       searchParameters: { 'facetFilters': ["type:content"] },
       debug: false
+    },
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
     },
   },
   presets: [
@@ -149,7 +154,7 @@ module.exports = {
           editUrl:
             'https://github.com/cainmagi/FFmpeg-Encoder-Decoder-for-Python/edit/docs/',
           remarkPlugins: [math],
-          rehypePlugins: [katex],
+          rehypePlugins: [],  // katex
           lastVersion: "3.2.x",
           onlyIncludeVersions: [
             'current', ...versions.slice(0, 2)
@@ -175,10 +180,19 @@ module.exports = {
   ],
   stylesheets: [
     {
-      href: 'https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css',
+      href: 'https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.css',
       integrity:
-        'sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc',
+        'sha384-KiWOvVjnN8qwAZbuQyWDIbfCLFhLXNETzBQjA/92pIowpC0d2O3nppDGQVgwd2nB',
       crossorigin: 'anonymous',
     },
   ],
 };
+
+async function createConfig() {
+  const katex = (await import('rehype-katex')).default;
+  // @ts-expect-error: we know it exists, right
+  config.presets[0][1].docs.rehypePlugins.push(katex);
+  return config;
+}
+
+module.exports = createConfig;

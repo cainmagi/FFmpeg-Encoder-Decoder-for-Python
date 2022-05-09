@@ -31,7 +31,6 @@
     {
       "type": "category",
       "label": "Examples",
-      "collapsed": false,
       "items": [
         {
           "type": "doc",
@@ -55,7 +54,6 @@
     {
       "type": "category",
       "label": "Troubleshooting",
-      "collapsed": false,
       "items": [
         {
           "type": "doc",

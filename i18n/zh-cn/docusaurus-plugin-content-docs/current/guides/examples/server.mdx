@@ -53,7 +53,7 @@ rtmp://localhost:1935/
 
 为了保证服务器能正常运转，我们需要按照视频的时间戳来推送帧。当`MpegServer.FFmpegSetup()`成功调用时，将会设置一个开始时间戳。`MpegServer`会维护一个计时器，每当用户调用`MpegServer.getParemeter('waitRef')`时，该方法就会返回一个推荐等待时长，用来表示推送出去的视频帧已经比实际视频帧多出了多久。这个推荐等待时长就是上述的这个时间间隔的一半（单位为秒）。如果我们推送了过多帧，就可以利用这个参数让服务等待一会。
 
-```python {16,19-20} title="server-non-blocking.py"
+```python {16,19-20} title="server-non-blocking.py" showLineNumbers
 import time
 import mpegCoder
 
@@ -86,7 +86,7 @@ d.clear()  # 关闭解码器、并清除设置。
 
 以上的例子并不是一个优雅的实现，因为`MpegDecoder`和`MpegServer`同时抢占了主线程。如果解码器需要花费相当的时间，那么推流就会出现明显延迟。因此，建议将`MpegDecoder`和`MpegServer`分离到两个不同的子进程里。下面的代码就是通过这种方式实现的。解码器和推流器通过一个共享的数据队列实现同步。在此我们使用`MpegServer.ServeFrameBlock()`取代`MpegServer.ServeFrame()`。每当调用这个方法的时候，`MpegServer`就会检查当前的播放时长，并自动确保新推送帧的时间戳不超过播放时长过多。如果新帧的时间戳和播放时长的差距过大，该方法就会阻塞所在的线程，直到这个差距小到可以接受为止。
 
-```python {14,21,23,37,43,45} title="server-dual-procs.py"
+```python {14,21,23,37,43,45} title="server-dual-procs.py" showLineNumbers
 import mpegCoder
 import multiprocessing
 

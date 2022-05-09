@@ -53,7 +53,7 @@ This example is based on the non-blocking API `MpegServer.ServeFrame()`. Synchro
 
 To make the server works properly, we need to push the frames according to the video timestamp. When `MpegServer.FFmpegSetup()` is called, we mark this time point as a starting time. `MpegServer` will maintain a timer. Everytime users call `MpegServer.getParemeter('waitRef')`, the method would returns a waiting period, indicating how long the pushed video stream is ahead of the playing time. The waiting period is half of the aforementioned time lag (the unit of the returned value is *second*). If we have pushed too much frames, we need to let the server wait for a while.
 
-```python {16,19-20} title="server-non-blocking.py"
+```python {16,19-20} title="server-non-blocking.py" showLineNumbers
 import time
 import mpegCoder
 
@@ -86,7 +86,7 @@ d.clear()  # Close the decoder.
 
 The above example is not an elegant implementation, because `MpegDecoder` and `MpegServer` occupy the same main thread. When decoder takes a lot of time, there would be an obvious latency. Therefore, we suggest users to split `MpegDecoder` and `MpegServer` to two different sub-processes. The following codes are implemented by this way. The decoder and the streamer are synchronized by a shared queue. Instead of using `MpegServer.ServeFrame()`, we use `MpegServer.ServeFrameBlock()` here. Each time this method is called, `MpegServer` will check the current playing time first, and ensure that the timestamp of the newly incoming frame is not ahead of the playing time too much. If the time lag between the new frame and the playing time is too long, the method will wait until the time lag becomes small enough.
 
-```python {14,21,23,37,43,45} title="server-dual-procs.py"
+```python {14,21,23,37,43,45} title="server-dual-procs.py" showLineNumbers
 import mpegCoder
 import multiprocessing
 
